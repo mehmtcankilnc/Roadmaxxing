@@ -1,0 +1,455 @@
+{
+  "name": "parallel-roads",
+  "scenario": "Westbound carriageway of the divided Turgut Ozal Blv (tram line in the median). The eastbound carriageway runs alongside and must NOT be matched.",
+  "mode": "drive",
+  "files": {
+    "clean": "parallel-roads.gpx",
+    "noisy": "parallel-roads.noisy.gpx"
+  },
+  "expected": {
+    "result": "drive",
+    "drive_count": 1,
+    "notes": "Every way in parallel_ways_not_driven (opposite carriageway) must stay undriven."
+  },
+  "distance_m": 4655.1,
+  "duration_s": 382,
+  "points": {
+    "clean": 383,
+    "noisy": 376,
+    "noisy_dropped": 7
+  },
+  "speed_kmh": {
+    "avg": 43.9,
+    "avg_moving": 49.1,
+    "max": 57.0,
+    "max_limit_on_route": 60
+  },
+  "stops": [
+    {
+      "kind": "traffic_light",
+      "at_m": 784,
+      "duration_s": 15
+    },
+    {
+      "kind": "traffic_light",
+      "at_m": 2729,
+      "duration_s": 23
+    }
+  ],
+  "start_time": "2026-11-02T12:00:00Z",
+  "osm_node_ids": [
+    11286457152,
+    2054336806,
+    11169339881,
+    2054336852,
+    11170116673,
+    2199693264,
+    11291214416,
+    11286444797,
+    11415465165,
+    11415465178,
+    11415465158,
+    11415465153,
+    11415465156,
+    11415465155,
+    11170116667,
+    2199672906,
+    11170102698,
+    11164812355,
+    13770715116,
+    11415465040,
+    247598795,
+    11415465041,
+    13507463042,
+    11415465097,
+    13770715102,
+    11415465042,
+    13770715106,
+    13770715105,
+    13770715107,
+    13770715104,
+    13507463046,
+    11415465043,
+    11415465062,
+    11415465045,
+    13507526914,
+    11279717080,
+    11170116678,
+    2199666095,
+    11212439063,
+    247598801,
+    13507526916,
+    2199666097,
+    11170116689,
+    13507526918,
+    11205889045,
+    12151527690,
+    13507526920,
+    2199666098,
+    11170116694,
+    13516782974,
+    2199666099,
+    11212439067,
+    11170116704,
+    2199666100,
+    11295257012,
+    2199698075,
+    13507463051,
+    11295245565,
+    11536180656,
+    11295257075,
+    13056011518,
+    14016003655,
+    14016003656,
+    11295269478,
+    11295257114,
+    11536180648,
+    11295257115,
+    11329738381,
+    11170116709,
+    7417383956,
+    13510322315,
+    13742887853,
+    11329738397,
+    2199490170,
+    11170116714,
+    13510322317,
+    13096479333,
+    11898967634,
+    11898967648,
+    11898967625,
+    11295482911,
+    14099928127,
+    14099928128,
+    14099928129,
+    14099928130,
+    11295482895,
+    14099928131,
+    14099928132,
+    14099928133,
+    14099928134,
+    11295482896,
+    11295482898,
+    11898967616,
+    13510383173,
+    11295482828,
+    11898967646,
+    12151541598,
+    2199467936,
+    2199467946,
+    11296263094,
+    11170589536,
+    2199467948,
+    1291984273,
+    11183743580,
+    1291984346,
+    11296263087,
+    11170606941,
+    2199467955,
+    621463971,
+    11899013437,
+    11899013425,
+    1291955705,
+    14134771372,
+    11899013417,
+    1291955662,
+    11899013431,
+    7868323974,
+    12182773792,
+    4315879310,
+    14374724932,
+    11146938934,
+    2011149708,
+    2199495772,
+    14134771590,
+    11146938935,
+    14151279306,
+    14134837729,
+    621463966,
+    14134837744,
+    7868097129,
+    7913117949,
+    1291984350,
+    1912844971,
+    11146938936,
+    1912844983,
+    14134842201,
+    1292033343,
+    14134842202,
+    621463969,
+    11211917123,
+    1290976480
+  ],
+  "osm_way_ids": [
+    1296651328,
+    1297281676,
+    1297281674,
+    1297281669,
+    1296651331,
+    1296651332,
+    22966741,
+    1218971089,
+    1297281644,
+    1297281638,
+    1501090500,
+    1210293876,
+    1218996454,
+    1218996470,
+    1204626962,
+    1205349438,
+    1204667522,
+    1204017577,
+    1203978827
+  ],
+  "ways": [
+    {
+      "id": 1296651328,
+      "highway": "primary",
+      "name": "Turgut Özal Bulvarı",
+      "oneway": "yes",
+      "limit_kmh": 60,
+      "limit_source": "tag"
+    },
+    {
+      "id": 1297281676,
+      "highway": "primary",
+      "name": "Turgut Özal Bulvarı",
+      "oneway": "yes",
+      "limit_kmh": 60,
+      "limit_source": "tag"
+    },
+    {
+      "id": 1297281674,
+      "highway": "primary",
+      "name": "Turgut Özal Bulvarı",
+      "oneway": "yes",
+      "limit_kmh": 60,
+      "limit_source": "tag"
+    },
+    {
+      "id": 1297281669,
+      "highway": "primary",
+      "name": "Turgut Özal Bulvarı",
+      "oneway": "yes",
+      "limit_kmh": 60,
+      "limit_source": "tag"
+    },
+    {
+      "id": 1296651331,
+      "highway": "primary",
+      "name": "Turgut Özal Bulvarı",
+      "oneway": "yes",
+      "limit_kmh": 60,
+      "limit_source": "tag"
+    },
+    {
+      "id": 1296651332,
+      "highway": "primary",
+      "name": "Turgut Özal Bulvarı",
+      "oneway": "yes",
+      "limit_kmh": 60,
+      "limit_source": "tag"
+    },
+    {
+      "id": 22966741,
+      "highway": "primary",
+      "name": "Turgut Özal Bulvarı",
+      "oneway": "yes",
+      "limit_kmh": 60,
+      "limit_source": "tag"
+    },
+    {
+      "id": 1218971089,
+      "highway": "primary",
+      "name": "Turgut Özal Bulvarı",
+      "oneway": "yes",
+      "limit_kmh": 60,
+      "limit_source": "tag"
+    },
+    {
+      "id": 1297281644,
+      "highway": "primary",
+      "name": "Turgut Özal Bulvarı",
+      "oneway": "yes",
+      "limit_kmh": 60,
+      "limit_source": "tag"
+    },
+    {
+      "id": 1297281638,
+      "highway": "primary",
+      "name": "Turgut Özal Bulvarı",
+      "oneway": "yes",
+      "limit_kmh": 60,
+      "limit_source": "tag"
+    },
+    {
+      "id": 1501090500,
+      "highway": "primary",
+      "name": "Turgut Özal Bulvarı",
+      "oneway": "yes",
+      "limit_kmh": 60,
+      "limit_source": "tag"
+    },
+    {
+      "id": 1210293876,
+      "highway": "primary",
+      "name": "Turgut Özal Bulvarı",
+      "oneway": "yes",
+      "limit_kmh": 60,
+      "limit_source": "tag"
+    },
+    {
+      "id": 1218996454,
+      "highway": "primary",
+      "name": "Turgut Özal Bulvarı",
+      "oneway": "yes",
+      "limit_kmh": 60,
+      "limit_source": "tag"
+    },
+    {
+      "id": 1218996470,
+      "highway": "primary",
+      "name": "Turgut Özal Bulvarı",
+      "oneway": "yes",
+      "limit_kmh": 60,
+      "limit_source": "tag"
+    },
+    {
+      "id": 1204626962,
+      "highway": "primary",
+      "name": "Turgut Özal Bulvarı",
+      "oneway": "yes",
+      "limit_kmh": 60,
+      "limit_source": "tag"
+    },
+    {
+      "id": 1205349438,
+      "highway": "primary",
+      "name": "Turgut Özal Bulvarı",
+      "oneway": "yes",
+      "limit_kmh": 60,
+      "limit_source": "tag"
+    },
+    {
+      "id": 1204667522,
+      "highway": "primary",
+      "name": "Turgut Özal Bulvarı",
+      "oneway": "yes",
+      "limit_kmh": 60,
+      "limit_source": "tag"
+    },
+    {
+      "id": 1204017577,
+      "highway": "primary",
+      "name": "Turgut Özal Bulvarı",
+      "oneway": "yes",
+      "limit_kmh": 60,
+      "limit_source": "tag"
+    },
+    {
+      "id": 1203978827,
+      "highway": "primary",
+      "name": "Turgut Özal Bulvarı",
+      "oneway": "yes",
+      "limit_kmh": 60,
+      "limit_source": "tag"
+    }
+  ],
+  "edges_without_way": 0,
+  "data": {
+    "osm_extract": "turkey-261115.osm.pbf",
+    "osm_timestamp": "2026-11-15T21:22:28Z",
+    "routing": "OSRM demo server router.project-osrm.org, car profile",
+    "seed": 20261116,
+    "osrm_distance_m": 4625.2,
+    "osrm_unresolved_nodes": 0
+  },
+  "waypoints": [
+    [
+      37.046,
+      35.306,
+      287
+    ],
+    [
+      37.0484,
+      35.295,
+      272
+    ],
+    [
+      37.0489,
+      35.276,
+      275
+    ],
+    [
+      37.0504,
+      35.265,
+      282
+    ],
+    [
+      37.0521,
+      35.255,
+      288
+    ]
+  ],
+  "road_names": [
+    "Turgut Özal Bulvarı"
+  ],
+  "parallel_ways_not_driven": [
+    {
+      "id": 1134473531,
+      "highway": "primary",
+      "name": "Turgut Özal Bulvarı",
+      "oneway": "yes",
+      "length_m": 937,
+      "mean_distance_m": 13.3
+    },
+    {
+      "id": 1203972586,
+      "highway": "primary",
+      "name": "Turgut Özal Bulvarı",
+      "oneway": "yes",
+      "length_m": 787,
+      "mean_distance_m": 26.9
+    },
+    {
+      "id": 1203988943,
+      "highway": "primary",
+      "name": "Turgut Özal Bulvarı",
+      "oneway": "yes",
+      "length_m": 639,
+      "mean_distance_m": 17.0
+    },
+    {
+      "id": 843512190,
+      "highway": "primary",
+      "name": "Turgut Özal Bulvarı",
+      "oneway": "yes",
+      "length_m": 358,
+      "mean_distance_m": 14.6
+    },
+    {
+      "id": 1221591407,
+      "highway": "primary",
+      "name": "Turgut Özal Bulvarı",
+      "oneway": "yes",
+      "length_m": 282,
+      "mean_distance_m": 19.9
+    },
+    {
+      "id": 1230923818,
+      "highway": "primary",
+      "name": "Turgut Özal Bulvarı",
+      "oneway": "yes",
+      "length_m": 247,
+      "mean_distance_m": 19.5
+    },
+    {
+      "id": 1218996476,
+      "highway": "primary",
+      "name": "Turgut Özal Bulvarı",
+      "oneway": "yes",
+      "length_m": 166,
+      "mean_distance_m": 24.3
+    }
+  ]
+}

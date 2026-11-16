@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Roadmaxxing</string>
+    <string name="main_tagline">Sürdüğün her yol haritanda yeşile döner.</string>
+    <string name="main_phase_label">Faz 0 · teknik doğrulama</string>
+    <string name="main_status_title">Durum</string>
+    <string name="main_status_loading">Yerel depolama hazırlanıyor…</string>
+    <string name="main_status_ready">Yerel depolama hazır.</string>
+    <string name="main_status_first_launch">Yerel depolama ilk kez oluşturuldu.</string>
+    <string name="main_status_schema_mismatch">Yerel depolamanın güncellenmesi gerekiyor.</string>
+    <string name="main_safe_drive">Güvenli sür. Sürerken uygulamayı kullanma.</string>
+</resources>

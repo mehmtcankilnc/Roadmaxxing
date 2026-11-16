@@ -1,0 +1,327 @@
+{
+  "name": "not-a-drive",
+  "scenario": "Walk at ~5 km/h along streets in central Seyhan. Too slow and no vehicle activity: must NOT be recorded as a drive.",
+  "mode": "walk",
+  "files": {
+    "clean": "not-a-drive.gpx",
+    "noisy": "not-a-drive.noisy.gpx"
+  },
+  "expected": {
+    "result": "not_drive",
+    "drive_count": 0,
+    "notes": "Walking pace never reaches sustained vehicle speed."
+  },
+  "distance_m": 2099.5,
+  "duration_s": 1650,
+  "points": {
+    "clean": 1651,
+    "noisy": 1625,
+    "noisy_dropped": 26
+  },
+  "speed_kmh": {
+    "avg": 4.6,
+    "avg_moving": 4.8,
+    "max": 5.0,
+    "max_limit_on_route": 6
+  },
+  "stops": [
+    {
+      "kind": "traffic_light",
+      "at_m": 375,
+      "duration_s": 32
+    },
+    {
+      "kind": "traffic_light",
+      "at_m": 1717,
+      "duration_s": 28
+    }
+  ],
+  "start_time": "2026-11-04T07:30:00Z",
+  "osm_node_ids": [
+    10581090563,
+    10581129706,
+    4578101947,
+    2026019816,
+    4578101946,
+    4578101945,
+    13188454269,
+    6504904301,
+    1297632622,
+    12031076134,
+    6504822492,
+    6504822522,
+    6504822521,
+    6504822510,
+    6504822520,
+    6504822519,
+    6504822518,
+    6504822511,
+    6504822517,
+    6504822516,
+    6504822515,
+    6504822514,
+    6504822513,
+    6504822512,
+    12031473517,
+    6504822509,
+    6504822508,
+    12806348237,
+    13188454283,
+    12806348236,
+    12806348235,
+    2201609271,
+    2201609265,
+    2203029522,
+    2203029516,
+    1297632304,
+    12063976520,
+    1297632630,
+    6504822515,
+    6504822514,
+    6504822513,
+    6504822512,
+    12031473517,
+    6504822509,
+    6504822508,
+    12806348237,
+    281255786,
+    10566658487,
+    6504822507,
+    10566658484,
+    11369408854,
+    6504822506,
+    6504822505,
+    12036060440,
+    2052580879,
+    12036060441,
+    12036060436,
+    12031104073,
+    12036060438,
+    12036060434,
+    2201660384,
+    12036060435,
+    12036060430,
+    2052580889,
+    12036060431,
+    12036060477,
+    696534057,
+    12036060478,
+    12030560208,
+    2024395266,
+    13190491807,
+    12061147806,
+    2024395259,
+    12061147807,
+    12061147812,
+    2024395258,
+    12061147813,
+    12061147817,
+    2024395298,
+    12061147818,
+    12061147831
+  ],
+  "osm_way_ids": [
+    1135081895,
+    462410777,
+    462410788,
+    462410787,
+    692857896,
+    1204017555,
+    1204017570,
+    1298776176,
+    692857900,
+    1265751620,
+    1383285684,
+    210012255,
+    210012231,
+    1302603606,
+    843531942,
+    1302603608,
+    692857900,
+    1265751620,
+    692857899,
+    1316234485,
+    1316234487,
+    70246572,
+    191874299
+  ],
+  "ways": [
+    {
+      "id": 1135081895,
+      "highway": "unclassified",
+      "limit_kmh": 6,
+      "limit_source": "walking pace"
+    },
+    {
+      "id": 462410777,
+      "highway": "residential",
+      "name": "61019 Sokak",
+      "limit_kmh": 6,
+      "limit_source": "walking pace"
+    },
+    {
+      "id": 462410788,
+      "highway": "residential",
+      "limit_kmh": 6,
+      "limit_source": "walking pace"
+    },
+    {
+      "id": 462410787,
+      "highway": "residential",
+      "limit_kmh": 6,
+      "limit_source": "walking pace"
+    },
+    {
+      "id": 692857896,
+      "highway": "secondary",
+      "name": "Cumhuriyet Caddesi",
+      "limit_kmh": 6,
+      "limit_source": "walking pace"
+    },
+    {
+      "id": 1204017555,
+      "highway": "secondary",
+      "oneway": "yes",
+      "limit_kmh": 6,
+      "limit_source": "walking pace"
+    },
+    {
+      "id": 1204017570,
+      "highway": "secondary",
+      "oneway": "yes",
+      "limit_kmh": 6,
+      "limit_source": "walking pace"
+    },
+    {
+      "id": 1298776176,
+      "highway": "secondary",
+      "oneway": "yes",
+      "limit_kmh": 6,
+      "limit_source": "walking pace"
+    },
+    {
+      "id": 692857900,
+      "highway": "secondary",
+      "oneway": "yes",
+      "limit_kmh": 6,
+      "limit_source": "walking pace"
+    },
+    {
+      "id": 1265751620,
+      "highway": "secondary",
+      "name": "Atatürk Caddesi",
+      "oneway": "yes",
+      "limit_kmh": 6,
+      "limit_source": "walking pace"
+    },
+    {
+      "id": 1383285684,
+      "highway": "secondary",
+      "oneway": "yes",
+      "limit_kmh": 6,
+      "limit_source": "walking pace"
+    },
+    {
+      "id": 210012255,
+      "highway": "residential",
+      "limit_kmh": 6,
+      "limit_source": "walking pace"
+    },
+    {
+      "id": 210012231,
+      "highway": "residential",
+      "limit_kmh": 6,
+      "limit_source": "walking pace"
+    },
+    {
+      "id": 1302603606,
+      "highway": "residential",
+      "limit_kmh": 6,
+      "limit_source": "walking pace"
+    },
+    {
+      "id": 843531942,
+      "highway": "secondary",
+      "name": "Cumhuriyet Caddesi",
+      "limit_kmh": 6,
+      "limit_source": "walking pace"
+    },
+    {
+      "id": 1302603608,
+      "highway": "secondary",
+      "name": "Cumhuriyet Caddesi",
+      "limit_kmh": 6,
+      "limit_source": "walking pace"
+    },
+    {
+      "id": 692857899,
+      "highway": "secondary",
+      "name": "Atatürk Caddesi",
+      "oneway": "yes",
+      "limit_kmh": 6,
+      "limit_source": "walking pace"
+    },
+    {
+      "id": 1316234485,
+      "highway": "secondary",
+      "name": "Vali Yolu Caddesi",
+      "limit_kmh": 6,
+      "limit_source": "walking pace"
+    },
+    {
+      "id": 1316234487,
+      "highway": "secondary",
+      "name": "Vali Yolu Caddesi",
+      "limit_kmh": 6,
+      "limit_source": "walking pace"
+    },
+    {
+      "id": 70246572,
+      "highway": "secondary",
+      "name": "Gazipaşa Bulvarı",
+      "oneway": "yes",
+      "limit_kmh": 6,
+      "limit_source": "walking pace"
+    },
+    {
+      "id": 191874299,
+      "highway": "residential",
+      "name": "63009. Sokak",
+      "limit_kmh": 6,
+      "limit_source": "walking pace"
+    }
+  ],
+  "edges_without_way": 0,
+  "data": {
+    "osm_extract": "turkey-261115.osm.pbf",
+    "osm_timestamp": "2026-11-15T21:22:28Z",
+    "routing": "OSRM demo server router.project-osrm.org, car profile",
+    "seed": 20261116,
+    "osrm_distance_m": 2079.3,
+    "osrm_unresolved_nodes": 1
+  },
+  "waypoints": [
+    [
+      36.993,
+      35.324
+    ],
+    [
+      36.996,
+      35.3275
+    ],
+    [
+      36.9985,
+      35.3245
+    ],
+    [
+      37.001,
+      35.328
+    ]
+  ],
+  "road_names": [
+    "Cumhuriyet Caddesi",
+    "Atatürk Caddesi",
+    "Vali Yolu Caddesi",
+    "63009. Sokak"
+  ]
+}

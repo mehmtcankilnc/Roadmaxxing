@@ -1,0 +1,12 @@
+-- Placeholder table so the database schema is not empty.
+-- Real tables (raw GPS trace, drives, region packs, driven segments) come with Phase 0 work.
+CREATE TABLE app_meta (
+    key TEXT NOT NULL PRIMARY KEY,
+    value TEXT NOT NULL
+);
+
+selectValue:
+SELECT value FROM app_meta WHERE key = ?;
+
+upsertValue:
+INSERT OR REPLACE INTO app_meta(key, value) VALUES (?, ?);

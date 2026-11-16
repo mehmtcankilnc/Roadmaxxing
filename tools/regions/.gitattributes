@@ -1,0 +1,4 @@
+# Keep generator inputs byte-stable across platforms (the fixture md5 is part of the golden pack).
+*.osm text eol=lf
+*.py text eol=lf
+*.md text eol=lf

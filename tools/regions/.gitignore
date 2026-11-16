@@ -1,0 +1,6 @@
+# Downloaded OSM extracts (hundreds of MB) never enter the repository.
+.cache/
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc

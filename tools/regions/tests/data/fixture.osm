@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="make_fixture_osm.py">
+  <node id="1" version="1" lat="37.0000000" lon="35.0000000"/>
+  <node id="2" version="1" lat="37.0000000" lon="35.0100000"/>
+  <node id="3" version="1" lat="37.0000000" lon="35.0200000"/>
+  <node id="4" version="1" lat="37.0100000" lon="35.0200000"/>
+  <node id="5" version="1" lat="37.0100000" lon="35.0100000"/>
+  <node id="6" version="1" lat="37.0100000" lon="35.0000000"/>
+  <node id="101" version="1" lat="37.0020000" lon="35.0020000"/>
+  <node id="102" version="1" lat="37.0020000" lon="35.0060000"/>
+  <node id="111" version="1" lat="37.0050000" lon="35.0020000"/>
+  <node id="112" version="1" lat="37.0050000" lon="35.0060000"/>
+  <node id="113" version="1" lat="37.0050000" lon="35.0100000"/>
+  <node id="114" version="1" lat="37.0050000" lon="35.0140000"/>
+  <node id="115" version="1" lat="37.0050000" lon="35.0180000"/>
+  <node id="121" version="1" lat="37.0080000" lon="35.0020000"/>
+  <node id="123" version="1" lat="37.0080000" lon="35.0140000"/>
+  <node id="124" version="1" lat="37.0080000" lon="35.0180000"/>
+  <node id="131" version="1" lat="37.0050000" lon="35.0240000"/>
+  <node id="132" version="1" lat="37.0050000" lon="35.0300000"/>
+  <node id="141" version="1" lat="37.0115000" lon="35.0060000"/>
+  <node id="151" version="1" lat="37.0015000" lon="35.0150000"/>
+  <node id="152" version="1" lat="37.0015000" lon="35.0170000"/>
+  <node id="153" version="1" lat="37.0025000" lon="35.0170000"/>
+  <node id="154" version="1" lat="37.0025000" lon="35.0150000"/>
+  <node id="161" version="1" lat="37.0020000" lon="35.0140000"/>
+  <node id="162" version="1" lat="37.0035000" lon="35.0040000"/>
+  <node id="163" version="1" lat="37.0065000" lon="35.0040000"/>
+  <node id="164" version="1" lat="37.0065000" lon="35.0120000"/>
+  <node id="165" version="1" lat="37.0085000" lon="35.0120000"/>
+  <way id="902" version="1">
+    <nd ref="3"/>
+    <nd ref="4"/>
+  </way>
+  <way id="904" version="1">
+    <nd ref="6"/>
+    <nd ref="1"/>
+  </way>
+  <way id="905" version="1">
+    <nd ref="2"/>
+    <nd ref="5"/>
+  </way>
+  <way id="911" version="1">
+    <nd ref="1"/>
+    <nd ref="2"/>
+  </way>
+  <way id="912" version="1">
+    <nd ref="2"/>
+    <nd ref="3"/>
+  </way>
+  <way id="913" version="1">
+    <nd ref="4"/>
+    <nd ref="5"/>
+  </way>
+  <way id="914" version="1">
+    <nd ref="5"/>
+    <nd ref="6"/>
+  </way>
+  <way id="1001" version="1">
+    <nd ref="111"/>
+    <nd ref="112"/>
+    <nd ref="113"/>
+    <nd ref="114"/>
+    <nd ref="115"/>
+    <tag k="highway" v="primary"/>
+    <tag k="name" v="Ana Cadde"/>
+  </way>
+  <way id="1002" version="1">
+    <nd ref="101"/>
+    <nd ref="102"/>
+    <tag k="highway" v="residential"/>
+  </way>
+  <way id="1003" version="1">
+    <nd ref="123"/>
+    <nd ref="124"/>
+    <tag k="highway" v="residential"/>
+    <tag k="oneway" v="yes"/>
+  </way>
+  <way id="1005" version="1">
+    <nd ref="115"/>
+    <nd ref="131"/>
+    <nd ref="132"/>
+    <tag k="highway" v="secondary"/>
+  </way>
+  <way id="1006" version="1">
+    <nd ref="112"/>
+    <nd ref="141"/>
+    <tag k="highway" v="tertiary"/>
+  </way>
+  <way id="1007" version="1">
+    <nd ref="151"/>
+    <nd ref="152"/>
+    <nd ref="153"/>
+    <nd ref="154"/>
+    <nd ref="151"/>
+    <tag k="highway" v="tertiary"/>
+    <tag k="junction" v="roundabout"/>
+  </way>
+  <way id="2001" version="1">
+    <nd ref="101"/>
+    <nd ref="111"/>
+    <nd ref="121"/>
+    <tag k="highway" v="residential"/>
+  </way>
+  <way id="2002" version="1">
+    <nd ref="102"/>
+    <nd ref="112"/>
+    <tag k="highway" v="residential"/>
+  </way>
+  <way id="2003" version="1">
+    <nd ref="114"/>
+    <nd ref="123"/>
+    <tag k="highway" v="residential"/>
+    <tag k="oneway" v="-1"/>
+  </way>
+  <way id="2004" version="1">
+    <nd ref="115"/>
+    <nd ref="124"/>
+    <tag k="highway" v="living_street"/>
+  </way>
+  <way id="2005" version="1">
+    <nd ref="121"/>
+    <nd ref="123"/>
+    <tag k="highway" v="unclassified"/>
+  </way>
+  <way id="3001" version="1">
+    <nd ref="102"/>
+    <nd ref="161"/>
+    <nd ref="114"/>
+    <tag k="highway" v="service"/>
+  </way>
+  <way id="3002" version="1">
+    <nd ref="101"/>
+    <nd ref="162"/>
+    <nd ref="163"/>
+    <tag k="highway" v="footway"/>
+  </way>
+  <way id="3003" version="1">
+    <nd ref="113"/>
+    <nd ref="164"/>
+    <tag k="highway" v="residential"/>
+    <tag k="access" v="private"/>
+  </way>
+  <way id="3004" version="1">
+    <nd ref="164"/>
+    <nd ref="165"/>
+    <tag k="highway" v="construction"/>
+  </way>
+  <relation id="1" version="1">
+    <member type="way" ref="911" role="outer"/>
+    <member type="way" ref="912" role="outer"/>
+    <member type="way" ref="902" role="outer"/>
+    <member type="way" ref="913" role="outer"/>
+    <member type="way" ref="914" role="outer"/>
+    <member type="way" ref="904" role="outer"/>
+    <tag k="type" v="boundary"/>
+    <tag k="boundary" v="administrative"/>
+    <tag k="admin_level" v="4"/>
+    <tag k="name" v="Testil"/>
+    <tag k="name:tr" v="Testil"/>
+    <tag k="name:en" v="Testprovince"/>
+    <tag k="ISO3166-2" v="TR-99"/>
+  </relation>
+  <relation id="11" version="1">
+    <member type="way" ref="911" role="outer"/>
+    <member type="way" ref="905" role="outer"/>
+    <member type="way" ref="914" role="outer"/>
+    <member type="way" ref="904" role="outer"/>
+    <tag k="type" v="boundary"/>
+    <tag k="boundary" v="administrative"/>
+    <tag k="admin_level" v="6"/>
+    <tag k="name" v="Batı"/>
+    <tag k="name:tr" v="Batı"/>
+    <tag k="name:en" v="West"/>
+  </relation>
+  <relation id="12" version="1">
+    <member type="way" ref="912" role="outer"/>
+    <member type="way" ref="902" role="outer"/>
+    <member type="way" ref="913" role="outer"/>
+    <member type="way" ref="905" role="outer"/>
+    <tag k="type" v="boundary"/>
+    <tag k="boundary" v="administrative"/>
+    <tag k="admin_level" v="6"/>
+    <tag k="name" v="Doğu"/>
+    <tag k="name:tr" v="Doğu"/>
+    <tag k="name:en" v="East"/>
+  </relation>
+</osm>

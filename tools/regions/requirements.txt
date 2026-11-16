@@ -1,0 +1,4 @@
+# Pinned exact versions (approved packages only).
+osmium==4.0.2
+shapely==2.1.2
+pytest==8.4.2

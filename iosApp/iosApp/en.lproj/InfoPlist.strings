@@ -1,0 +1,5 @@
+/* Permission texts shown by iOS (English). Keep in sync with tr.lproj/InfoPlist.strings. */
+"CFBundleDisplayName" = "Roadmaxxing";
+"NSLocationAlwaysAndWhenInUseUsageDescription" = "Roadmaxxing records your drives in the background so every road you drive turns green on your map.";
+"NSLocationWhenInUseUsageDescription" = "Roadmaxxing uses your location to match your drives to roads and show how much of your city you have explored.";
+"NSMotionUsageDescription" = "Roadmaxxing uses motion data to detect when you start driving, so GPS stays off when you are not driving and saves battery.";

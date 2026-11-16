@@ -1,0 +1,5 @@
+# Cached routing responses and the OSM extract cache never enter the repository.
+.cache/
+__pycache__/
+.pytest_cache/
+*.pyc

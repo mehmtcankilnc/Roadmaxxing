@@ -1,0 +1,247 @@
+{
+  "defaults": {
+    "seed": 20261116,
+    "start_time": "2026-11-02T08:00:00Z"
+  },
+  "routes": [
+    {
+      "name": "main-roads",
+      "scenario": "Arterials in central Adana: Turgut Ozal Blv (eastbound carriageway), Ozdemir Sabanci Blv, Kasim Gulek Cd, Fuzuli Cd, Girne Blv (D400).",
+      "mode": "drive",
+      "source": "osrm",
+      "urban": true,
+      "start_time": "2026-11-02T08:00:00Z",
+      "waypoints": [
+        [37.0519, 35.255, 105],
+        [37.0502, 35.265, 101],
+        [37.0488, 35.276, 93],
+        [37.0484, 35.295, 94],
+        [37.0459, 35.306, 108],
+        [37.0231, 35.322, 186],
+        [37.0172, 35.325, 157],
+        [37.0149, 35.325, 116],
+        [37.0055, 35.332, 191],
+        [36.99, 35.33, 167],
+        [36.9903, 35.336, 103],
+        [36.9864, 35.358, 100],
+        [36.985, 35.368, 100],
+        [36.9834, 35.387, 92]
+      ],
+      "signal_stops": {
+        "count": 4,
+        "duration_s": [12, 45],
+        "spacing_m": 700,
+        "margin_m": 400
+      },
+      "expected": {
+        "result": "drive",
+        "drive_count": 1
+      }
+    },
+    {
+      "name": "residential",
+      "scenario": "Dense residential grid in Seyhan (57xxx Sokak area west of Kurttepe), many 90-degree turns at low speed.",
+      "mode": "drive",
+      "source": "osrm",
+      "urban": true,
+      "start_time": "2026-11-02T10:00:00Z",
+      "waypoints": [
+        [36.997042, 35.304212, 357],
+        [36.997895, 35.304227, 12],
+        [36.998096, 35.303661, 233],
+        [36.997478, 35.302591, 236],
+        [36.996768, 35.303343, 55],
+        [36.997416, 35.30384, 234],
+        [36.996971, 35.303048, 236],
+        [36.997752, 35.303766, 55],
+        [36.998767, 35.304645, 33],
+        [37.000022, 35.306662, 56],
+        [36.99957, 35.307956, 164],
+        [36.999471, 35.308216, 350],
+        [36.99965, 35.308466, 173],
+        [36.999254, 35.30972, 82]
+      ],
+      "signal_stops": {
+        "count": 2,
+        "duration_s": [3, 10],
+        "spacing_m": 400,
+        "margin_m": 200
+      },
+      "expected": {
+        "result": "drive",
+        "drive_count": 1
+      }
+    },
+    {
+      "name": "parallel-roads",
+      "scenario": "Westbound carriageway of the divided Turgut Ozal Blv (tram line in the median). The eastbound carriageway runs alongside and must NOT be matched.",
+      "mode": "drive",
+      "source": "osrm",
+      "urban": true,
+      "start_time": "2026-11-02T12:00:00Z",
+      "waypoints": [
+        [37.046, 35.306, 287],
+        [37.0484, 35.295, 272],
+        [37.0489, 35.276, 275],
+        [37.0504, 35.265, 282],
+        [37.0521, 35.255, 288]
+      ],
+      "report_parallel_ways": true,
+      "signal_stops": {
+        "count": 2,
+        "duration_s": [10, 35],
+        "spacing_m": 800,
+        "margin_m": 400
+      },
+      "expected": {
+        "result": "drive",
+        "drive_count": 1,
+        "notes": "Every way in parallel_ways_not_driven (opposite carriageway) must stay undriven."
+      }
+    },
+    {
+      "name": "traffic-stop",
+      "scenario": "Urban drive with a stop-and-go stretch and a 4-minute full stop in traffic in the middle; must stay ONE drive (stop < 5 min emulator timeout).",
+      "mode": "drive",
+      "source": "osrm",
+      "urban": true,
+      "start_time": "2026-11-02T17:30:00Z",
+      "waypoints": [
+        [37.0331, 35.321, 150],
+        [37.0231, 35.322, 186],
+        [37.0172, 35.325, 157],
+        [37.0149, 35.325, 116],
+        [37.0055, 35.332, 191],
+        [36.99, 35.33, 167]
+      ],
+      "stop_and_go": {
+        "from_fraction": 0.3,
+        "length_m": 600,
+        "cap_kmh": 15,
+        "stop_every_m": [40, 90],
+        "stop_s": [3, 15]
+      },
+      "stops": [
+        {
+          "kind": "traffic_jam",
+          "at_fraction": 0.55,
+          "duration_s": 240
+        }
+      ],
+      "expected": {
+        "result": "drive",
+        "drive_count": 1,
+        "notes": "240 s stationary, below the 5 min no-activity end rule; the drive must not split."
+      }
+    },
+    {
+      "name": "traffic-stop-long",
+      "scenario": "Same route as traffic-stop but the full stop lasts 6.5 minutes (beyond the 5 min no-activity end rule).",
+      "mode": "drive",
+      "source": "osrm",
+      "urban": true,
+      "start_time": "2026-11-02T18:30:00Z",
+      "waypoints": [
+        [37.0331, 35.321, 150],
+        [37.0231, 35.322, 186],
+        [37.0172, 35.325, 157],
+        [37.0149, 35.325, 116],
+        [37.0055, 35.332, 191],
+        [36.99, 35.33, 167]
+      ],
+      "stop_and_go": {
+        "from_fraction": 0.3,
+        "length_m": 600,
+        "cap_kmh": 15,
+        "stop_every_m": [40, 90],
+        "stop_s": [3, 15]
+      },
+      "stops": [
+        {
+          "kind": "traffic_jam",
+          "at_fraction": 0.55,
+          "duration_s": 390
+        }
+      ],
+      "expected": {
+        "result": "drive",
+        "drive_count": 2,
+        "notes": "Boundary case. Without activity recognition (emulator) 390 s stationary > 5 min ends the first drive; movement afterwards starts a second drive. Both parts must still be matched."
+      }
+    },
+    {
+      "name": "intercity",
+      "scenario": "Intercity leg Adana -> Ceyhan on D400 (Girne Blv, Adana-Osmaniye yolu). Stays inside Adana province (Seyhan/Yuregir -> Ceyhan district), no province border.",
+      "mode": "drive",
+      "source": "osrm",
+      "urban": false,
+      "start_time": "2026-11-03T09:00:00Z",
+      "waypoints": [
+        [36.9831, 35.395, 92],
+        [36.9792, 35.457, 99],
+        [36.9744, 35.496, 99],
+        [36.9676, 35.568, 94],
+        [36.9654, 35.61, 93],
+        [37.035, 35.747, 54],
+        [37.0455, 35.766, 53]
+      ],
+      "signal_stops": {
+        "count": 2,
+        "duration_s": [15, 40],
+        "spacing_m": 3000,
+        "margin_m": 1000
+      },
+      "expected": {
+        "result": "drive",
+        "drive_count": 1
+      }
+    },
+    {
+      "name": "not-a-drive",
+      "scenario": "Walk at ~5 km/h along streets in central Seyhan. Too slow and no vehicle activity: must NOT be recorded as a drive.",
+      "mode": "walk",
+      "source": "osrm",
+      "walk_speed_kmh": 5.0,
+      "start_time": "2026-11-04T07:30:00Z",
+      "waypoints": [
+        [36.993, 35.324],
+        [36.996, 35.3275],
+        [36.9985, 35.3245],
+        [37.001, 35.328]
+      ],
+      "signal_stops": {
+        "count": 2,
+        "duration_s": [15, 40],
+        "spacing_m": 300,
+        "margin_m": 150
+      },
+      "expected": {
+        "result": "not_drive",
+        "drive_count": 0,
+        "notes": "Walking pace never reaches sustained vehicle speed."
+      }
+    },
+    {
+      "name": "not-a-drive-train",
+      "scenario": "Regional train on the Mersin-Adana railway, Adana station westwards towards Yenice, up to 100 km/h with one station stop. Follows rail, not roads: must NOT be recorded as a drive.",
+      "mode": "train",
+      "source": "osm_rail",
+      "train_max_kmh": 100,
+      "start_time": "2026-11-04T16:00:00Z",
+      "from": [37.0045, 35.3215],
+      "to": [36.9745, 35.056],
+      "stops": [
+        {
+          "kind": "station",
+          "at_fraction": 0.45,
+          "duration_s": 60
+        }
+      ],
+      "expected": {
+        "result": "not_drive",
+        "drive_count": 0,
+        "notes": "Vehicle speed but the track runs on railway geometry; the matcher must not paint parallel roads and the speed/road filter should reject it. osm_node_ids/osm_way_ids are railway elements."
+      }
+    }
+  ]
+}

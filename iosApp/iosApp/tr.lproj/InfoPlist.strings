@@ -1,0 +1,5 @@
+/* Permission texts shown by iOS (Turkish). Keep in sync with en.lproj/InfoPlist.strings. */
+"CFBundleDisplayName" = "Roadmaxxing";
+"NSLocationAlwaysAndWhenInUseUsageDescription" = "Roadmaxxing, sürdüğün her yol haritanda yeşile dönsün diye sürüşlerini arka planda kaydeder.";
+"NSLocationWhenInUseUsageDescription" = "Roadmaxxing, sürüşlerini yollarla eşleştirmek ve şehrinin ne kadarını keşfettiğini göstermek için konumunu kullanır.";
+"NSMotionUsageDescription" = "Roadmaxxing, sürüşe başladığını anlamak için hareket verisini kullanır; böylece sürmediğinde GPS kapalı kalır ve pil tasarrufu sağlanır.";

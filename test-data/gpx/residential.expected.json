@@ -1,0 +1,235 @@
+{
+  "name": "residential",
+  "scenario": "Dense residential grid in Seyhan (57xxx Sokak area west of Kurttepe), many 90-degree turns at low speed.",
+  "mode": "drive",
+  "files": {
+    "clean": "residential.gpx",
+    "noisy": "residential.noisy.gpx"
+  },
+  "expected": {
+    "result": "drive",
+    "drive_count": 1
+  },
+  "distance_m": 2083.3,
+  "duration_s": 294,
+  "points": {
+    "clean": 295,
+    "noisy": 289,
+    "noisy_dropped": 6
+  },
+  "speed_kmh": {
+    "avg": 25.5,
+    "avg_moving": 27.4,
+    "max": 37.5,
+    "max_limit_on_route": 50
+  },
+  "stops": [
+    {
+      "kind": "traffic_light",
+      "at_m": 338,
+      "duration_s": 9
+    },
+    {
+      "kind": "traffic_light",
+      "at_m": 1185,
+      "duration_s": 8
+    }
+  ],
+  "start_time": "2026-11-02T10:00:00Z",
+  "osm_node_ids": [
+    2041584435,
+    2201749311,
+    2041584451,
+    2201749329,
+    2041584456,
+    2201749373,
+    2041584457,
+    2201749421,
+    2201749417,
+    2201749334,
+    2201749307,
+    2201749292,
+    2201749287,
+    2201749285,
+    2201749275,
+    2201749295,
+    2201749311,
+    2041584451,
+    2201749329,
+    2201749312,
+    2201749285,
+    2201749287,
+    2201749292,
+    2201749321,
+    2201749373,
+    2041584457,
+    2201749421,
+    2041584438,
+    2041584455,
+    2041584449,
+    2041584440,
+    2041584448,
+    2041584432,
+    2201608410,
+    2201608406,
+    2201608401,
+    2041584450,
+    2041584442,
+    2041584458,
+    2041584459,
+    2201608403,
+    2201608404,
+    2201608398,
+    2201608394,
+    2201608395,
+    2201608396,
+    2201608397,
+    2041584446
+  ],
+  "osm_way_ids": [
+    193633031,
+    210032290,
+    210032636,
+    193633031,
+    210032717,
+    210032290,
+    210032567,
+    193633031,
+    193633033,
+    210012122,
+    210012133,
+    193633033
+  ],
+  "ways": [
+    {
+      "id": 193633031,
+      "highway": "unclassified",
+      "limit_kmh": 50,
+      "limit_source": "default"
+    },
+    {
+      "id": 210032290,
+      "highway": "residential",
+      "limit_kmh": 50,
+      "limit_source": "default"
+    },
+    {
+      "id": 210032636,
+      "highway": "residential",
+      "limit_kmh": 50,
+      "limit_source": "default"
+    },
+    {
+      "id": 210032717,
+      "highway": "residential",
+      "limit_kmh": 50,
+      "limit_source": "default"
+    },
+    {
+      "id": 210032567,
+      "highway": "residential",
+      "limit_kmh": 50,
+      "limit_source": "default"
+    },
+    {
+      "id": 193633033,
+      "highway": "unclassified",
+      "limit_kmh": 50,
+      "limit_source": "default"
+    },
+    {
+      "id": 210012122,
+      "highway": "residential",
+      "limit_kmh": 50,
+      "limit_source": "default"
+    },
+    {
+      "id": 210012133,
+      "highway": "residential",
+      "limit_kmh": 50,
+      "limit_source": "default"
+    }
+  ],
+  "edges_without_way": 0,
+  "data": {
+    "osm_extract": "turkey-261115.osm.pbf",
+    "osm_timestamp": "2026-11-15T21:22:28Z",
+    "routing": "OSRM demo server router.project-osrm.org, car profile",
+    "seed": 20261116,
+    "osrm_distance_m": 2029.3,
+    "osrm_unresolved_nodes": 0
+  },
+  "waypoints": [
+    [
+      36.997042,
+      35.304212,
+      357
+    ],
+    [
+      36.997895,
+      35.304227,
+      12
+    ],
+    [
+      36.998096,
+      35.303661,
+      233
+    ],
+    [
+      36.997478,
+      35.302591,
+      236
+    ],
+    [
+      36.996768,
+      35.303343,
+      55
+    ],
+    [
+      36.997416,
+      35.30384,
+      234
+    ],
+    [
+      36.996971,
+      35.303048,
+      236
+    ],
+    [
+      36.997752,
+      35.303766,
+      55
+    ],
+    [
+      36.998767,
+      35.304645,
+      33
+    ],
+    [
+      37.000022,
+      35.306662,
+      56
+    ],
+    [
+      36.99957,
+      35.307956,
+      164
+    ],
+    [
+      36.999471,
+      35.308216,
+      350
+    ],
+    [
+      36.99965,
+      35.308466,
+      173
+    ],
+    [
+      36.999254,
+      35.30972,
+      82
+    ]
+  ],
+  "road_names": []
+}

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Launcher label only; in-app texts live in composeApp/src/commonMain/composeResources. -->
+    <string name="app_name" translatable="false">Roadmaxxing</string>
+</resources>

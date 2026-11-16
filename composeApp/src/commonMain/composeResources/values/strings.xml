@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Roadmaxxing</string>
+    <string name="main_tagline">Every road you drive turns green on your map.</string>
+    <string name="main_phase_label">Phase 0 · technical check</string>
+    <string name="main_status_title">Status</string>
+    <string name="main_status_loading">Preparing local storage…</string>
+    <string name="main_status_ready">Local storage is ready.</string>
+    <string name="main_status_first_launch">Local storage created for the first time.</string>
+    <string name="main_status_schema_mismatch">Local storage needs an update.</string>
+    <string name="main_safe_drive">Drive safely. Never use the app while driving.</string>
+</resources>
