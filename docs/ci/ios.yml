@@ -1,0 +1,222 @@
+# Reference workflow for .github/workflows/ios.yml
+# Based on the owner's proven workflow from another KMP project (BrainScroll), adapted for Roadmaxxing.
+# Rules: write this file once when the project skeleton exists; change it only with the owner's approval,
+# batching changes to avoid commit churn. See docs/ci/README.md.
+
+name: iOS
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+    paths:
+      - "composeApp/**"
+      - "shared/**"
+      - "iosApp/**"
+      - "gradle/**"
+      - "*.gradle.kts"
+      - "gradle.properties"
+      - ".github/workflows/ios.yml"
+  pull_request:
+    paths:
+      - "composeApp/**"
+      - "shared/**"
+      - "iosApp/**"
+      - "gradle/**"
+      - "*.gradle.kts"
+      - "gradle.properties"
+      - ".github/workflows/ios.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Test and build for simulator
+    # Pinned image instead of macos-latest so a silent Xcode upgrade does not break the build.
+    runs-on: macos-15
+    timeout-minutes: 60
+    env:
+      REVENUECAT_IOS_API_KEY: ${{ secrets.REVENUECAT_IOS_API_KEY }}
+      POSTHOG_API_KEY: ${{ secrets.POSTHOG_API_KEY }}
+      GOOGLE_SERVICE_INFO_PLIST_BASE64: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST_BASE64 }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Cache Kotlin/Native
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-${{ hashFiles('gradle/libs.versions.toml') }}
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x gradlew
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      # GoogleService-Info.plist is not committed; it comes from a secret.
+      - name: Write Firebase config
+        run: printf '%s' "$GOOGLE_SERVICE_INFO_PLIST_BASE64" | base64 --decode > iosApp/iosApp/GoogleService-Info.plist
+
+      # Runs the shared module's tests on the iOS simulator. iosMain code cannot be compiled
+      # on the owner's machine (no Mac), so this is where it is checked.
+      - name: Run shared tests on iOS simulator
+        run: ./gradlew :shared:iosSimulatorArm64Test
+
+      - name: Build iOS app without signing
+        run: >
+          xcodebuild build
+          -project iosApp/iosApp.xcodeproj
+          -scheme iosApp
+          -configuration Debug
+          -sdk iphonesimulator
+          -destination 'generic/platform=iOS Simulator'
+          ARCHS=arm64
+          CODE_SIGNING_ALLOWED=NO
+
+      - name: Remove Firebase config
+        if: always()
+        run: rm -f iosApp/iosApp/GoogleService-Info.plist
+
+  testflight:
+    name: Upload to TestFlight
+    needs: build
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
+    runs-on: macos-15
+    timeout-minutes: 60
+    environment: testflight
+    env:
+      APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
+      APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+      APPSTORE_API_KEY_P8: ${{ secrets.APPSTORE_API_KEY_P8 }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      REVENUECAT_IOS_API_KEY: ${{ secrets.REVENUECAT_IOS_API_KEY }}
+      POSTHOG_API_KEY: ${{ secrets.POSTHOG_API_KEY }}
+      GOOGLE_SERVICE_INFO_PLIST_BASE64: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST_BASE64 }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Cache Kotlin/Native
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-${{ hashFiles('gradle/libs.versions.toml') }}
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x gradlew
+
+      - name: Write Firebase config
+        run: printf '%s' "$GOOGLE_SERVICE_INFO_PLIST_BASE64" | base64 --decode > iosApp/iosApp/GoogleService-Info.plist
+
+      - name: Write App Store Connect API key
+        run: |
+          mkdir -p "$RUNNER_TEMP/keys"
+          printf '%s\n' "$APPSTORE_API_KEY_P8" > "$RUNNER_TEMP/keys/AuthKey_${APPSTORE_KEY_ID}.p8"
+          chmod 600 "$RUNNER_TEMP/keys/AuthKey_${APPSTORE_KEY_ID}.p8"
+
+      # The archive is built unsigned. A development profile would need a registered
+      # device, which TestFlight does not need. Signing happens in the export step.
+      - name: Archive
+        run: >
+          xcodebuild archive
+          -project iosApp/iosApp.xcodeproj
+          -scheme iosApp
+          -configuration Release
+          -destination 'generic/platform=iOS'
+          -archivePath "$RUNNER_TEMP/Roadmaxxing.xcarchive"
+          CODE_SIGNING_ALLOWED=NO
+          CODE_SIGNING_REQUIRED=NO
+          DEVELOPMENT_TEAM="$APPLE_TEAM_ID"
+          CURRENT_PROJECT_VERSION="${{ github.run_number }}"
+
+      # An unsigned archive carries no entitlements, so the export step has nothing to keep and Sign in with
+      # Apple fails with error 1000. Xcode forbids ad hoc signing for iOS builds, but plain codesign allows it:
+      # sign the app ad hoc with the entitlements file so they are embedded. Export re-signs with the real profile.
+      - name: Embed entitlements in the archive
+        run: |
+          APP=$(find "$RUNNER_TEMP/Roadmaxxing.xcarchive/Products" -maxdepth 3 -name "*.app" | head -1)
+          if [ -d "$APP/Frameworks" ]; then
+            find "$APP/Frameworks" -maxdepth 1 \( -name "*.framework" -o -name "*.dylib" \) -exec codesign --force --sign - {} \;
+          fi
+          codesign --force --sign - --entitlements iosApp/iosApp/iosApp.entitlements "$APP"
+
+      # Information only (it never stops the upload): shows which entitlements the archive carries.
+      - name: Show entitlements in the archive
+        continue-on-error: true
+        run: |
+          ARCHIVE="$RUNNER_TEMP/Roadmaxxing.xcarchive"
+          APP=$(find "$ARCHIVE/Products" -maxdepth 3 -name "*.app" | head -1)
+          echo "App bundle: $APP"
+          echo "--- entitlement files in the archive ---"
+          find "$ARCHIVE" -name "*.xcent" -print -exec cat {} \;
+          echo "--- entitlements embedded in the binary ---"
+          codesign -d --entitlements :- "$APP" 2>&1 || true
+          if codesign -d --entitlements :- "$APP" 2>/dev/null | grep -q "com.apple.developer.applesignin"; then
+            echo "OK: the Sign in with Apple entitlement is in the archive."
+          else
+            echo "::warning::The Sign in with Apple entitlement is NOT in the archive. Apple sign-in will fail on devices."
+          fi
+
+      - name: Create export options
+        run: |
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>app-store-connect</string>
+            <key>destination</key>
+            <string>upload</string>
+            <key>signingStyle</key>
+            <string>automatic</string>
+            <key>teamID</key>
+            <string>${APPLE_TEAM_ID}</string>
+            <key>uploadSymbols</key>
+            <true/>
+          </dict>
+          </plist>
+          EOF
+
+      - name: Export and upload to TestFlight
+        run: >
+          xcodebuild -exportArchive
+          -archivePath "$RUNNER_TEMP/Roadmaxxing.xcarchive"
+          -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist"
+          -exportPath "$RUNNER_TEMP/export"
+          -allowProvisioningUpdates
+          -authenticationKeyPath "$RUNNER_TEMP/keys/AuthKey_${APPSTORE_KEY_ID}.p8"
+          -authenticationKeyID "$APPSTORE_KEY_ID"
+          -authenticationKeyIssuerID "$APPSTORE_ISSUER_ID"
+
+      - name: Remove secrets from disk
+        if: always()
+        run: |
+          rm -rf "$RUNNER_TEMP/keys"
+          rm -f iosApp/iosApp/GoogleService-Info.plist
