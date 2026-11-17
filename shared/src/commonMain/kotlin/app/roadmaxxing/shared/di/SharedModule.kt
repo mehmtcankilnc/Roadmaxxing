@@ -10,6 +10,7 @@ import app.roadmaxxing.shared.domain.RegionPackProvider
 import app.roadmaxxing.shared.domain.TraceMatcher
 import app.roadmaxxing.shared.drive.DriveRecorder
 import app.roadmaxxing.shared.drive.TrackingStatusHolder
+import app.roadmaxxing.shared.map.DrivenRoadsProvider
 import app.roadmaxxing.shared.matching.RoadMatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -37,4 +38,7 @@ val sharedModule: Module = module {
         )
     }
     single { ProgressRepository(store = get(), packProvider = get(), cpuDispatcher = Dispatchers.Default) }
+    single {
+        DrivenRoadsProvider(packProvider = get(), store = get(), dispatcher = Dispatchers.Default)
+    }
 }

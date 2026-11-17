@@ -52,3 +52,6 @@ WHERE id = ?;
 
 lastProcessed:
 SELECT * FROM drive WHERE status = 'PROCESSED' ORDER BY processed_at_ms DESC LIMIT 1;
+
+lastProcessedId:
+SELECT id FROM drive WHERE status = 'PROCESSED' ORDER BY processed_at_ms DESC, id DESC LIMIT 1;

@@ -19,6 +19,7 @@ kotlinx-datetime = "0.8.0"
 koin = "4.2.2"
 sqldelight = "2.4.1"
 play-services-location = "21.4.0"
+maplibre-compose = "0.20.0"
 
 android-compileSdk = "37"
 android-targetSdk = "36"
@@ -63,6 +64,10 @@ sqldelight-native-driver = { module = "app.cash.sqldelight:native-driver", versi
 
 # Google Play services (Android only): fused location, activity transitions, geofencing
 play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "play-services-location" }
+
+# MapLibre Compose (pre-1.0 API, pinned exactly). Built with Kotlin 2.4.20 / CMP 1.12.1; iOS needs 15.5+.
+maplibre-compose = { module = "org.maplibre.compose:maplibre-compose", version.ref = "maplibre-compose" }
+maplibre-compose-runtime-opengl-android = { module = "org.maplibre.compose:maplibre-compose-runtime-opengl-android", version.ref = "maplibre-compose" }
 
 # Testing
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }

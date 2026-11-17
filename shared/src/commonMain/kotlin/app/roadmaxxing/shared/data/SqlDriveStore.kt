@@ -3,6 +3,7 @@ package app.roadmaxxing.shared.data
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.coroutines.mapToOne
+import app.cash.sqldelight.coroutines.mapToOneOrNull
 import app.roadmaxxing.shared.db.Drive
 import app.roadmaxxing.shared.db.RoadmaxxingDatabase
 import app.roadmaxxing.shared.db.Trace_point
@@ -81,6 +82,15 @@ class SqlDriveStore(
     }
 
     override fun drivenSegmentIds(): Set<Long> = segments.selectAllIds().executeAsList().toSet()
+
+    override fun drivenSegmentFirstDrives(): Map<Long, Long> =
+        segments.selectAllWithFirstDrive().executeAsList().associate { it.segment_id to it.first_drive_id }
+
+    override fun segmentsFirstDrivenBy(driveId: Long): Set<Long> =
+        segments.selectFirstDrivenBy(driveId).executeAsList().toSet()
+
+    override fun observeLastProcessedDriveId(): Flow<Long?> =
+        drives.lastProcessedId().asFlow().mapToOneOrNull(ioDispatcher)
 
     override fun observeDrives(): Flow<List<DriveRecord>> =
         drives.selectAll().asFlow().mapToList(ioDispatcher).map { rows -> rows.map { it.toRecord() } }

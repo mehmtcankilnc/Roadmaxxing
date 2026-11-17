@@ -60,6 +60,7 @@ class MainViewModel(
             }
             MainIntent.ManualStart -> platform.manualStart()
             MainIntent.ManualStop -> platform.manualStop()
+            is MainIntent.SelectTab -> _state.update { it.copy(selectedTab = intent.tab) }
         }
     }
 

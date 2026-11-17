@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="map_attribution">OpenFreeMap © OpenMapTiles Data from OpenStreetMap</string>
+    <string name="map_content_description">Map of the roads you have explored</string>
+</resources>

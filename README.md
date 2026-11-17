@@ -16,10 +16,11 @@ complete, like the map-completion screen in a driving game. The main output is a
 
 The app keeps a "drive safely" message. It has no feature, badge or text that rewards speed.
 
-> **Status: Phase 0 (technical validation, pilot city Adana).** Steps 1–3 run end to end on the Android emulator.
-> Steps 4–5, the map screen and everything server- or account-related are **planned**. iOS has automatic drive
-> recording code that compiles and passes the shared tests on GitHub Actions, but it has **not been run on any
-> physical device**; Android has not been tried on a physical device either (see
+> **Status: Phase 0 (technical validation, pilot city Adana).** Steps 1–3 run end to end on the Android emulator,
+> and the exploration map (four-tab app shell: Map, Drives, Stats, Profile) draws the driven roads there. Steps 4–5
+> and everything server- or account-related are **planned**. iOS has automatic drive recording code and the map that
+> compile and pass the shared tests on GitHub Actions, but they have **not been run on any physical device**;
+> Android has not been tried on a physical device either (see
 > [Known limitations](#known-limitations)).
 
 ## MVP features
@@ -31,7 +32,7 @@ is in and what is not; everything else is "planned".
 | --- | --- | --- | --- |
 | 1 | Automatic drive detection and recording | partial (Phase 0) | Android: low-power idle triggers (Activity Recognition transitions + stationary geofence, no GPS while idle), short GPS probe, location foreground service, drive start/end state machine, walk/train rejection by speed and road-match filters, long traffic stops do not split a drive. Debug-build start/stop buttons. iOS: idle triggers (CoreLocation significant-location-change + 200 m region monitoring + CoreMotion), no continuous GPS while idle; detection and validation rules come from the shared code. The iOS code compiles and its shared tests pass in CI, but it has **not been verified on a physical device**. **Planned:** user-facing manual start/stop, plane filter beyond the 250 km/h speed cap. |
 | 2 | Road matching (map matching) | done (Phase 0) | Pure Kotlin matcher in `shared` against the offline Adana region pack; driven segments are stored in SQLite. |
-| 3 | Exploration map | planned | No map screen yet (MapLibre Compose / OpenFreeMap not added). |
+| 3 | Exploration map | partial | Map tab with MapLibre Compose and an app-embedded dark style derived from OpenFreeMap "Dark"; driven roads are thick Volt green, roads opened by the latest drive get a halo; the camera focuses on the driven roads on first open unless the user has moved the map. Verified on the Android emulator; the iOS build compiles in CI; **not tried on a physical device**. App shell with four tabs (Map, Drives, Stats, Profile): bottom bar on compact screens, side bar on medium and wide ones. **Planned:** undiscovered-roads layer, "burn-in" animation for newly driven roads. |
 | 4 | Completion percentages | partial (Phase 0) | Province and district percentages for Adana, split into major roads and local roads, shown on the Phase 0 screen. **Planned:** country level, other provinces. |
 | 5 | Drive summary | partial (Phase 0) | Per drive: distance, duration, new km, drive / not-a-drive verdict. **Planned:** average and max speed display, route view. |
 | 6 | Share card | planned | – |
@@ -59,6 +60,8 @@ and [tools/gpx/requirements.txt](tools/gpx/requirements.txt). All versions are p
 | Serialization / time | kotlinx-serialization-json / kotlinx-datetime | 1.13.0 / 0.8.0 |
 | DI | Koin | 4.2.2 |
 | Local database | SQLDelight | 2.4.1 |
+| Map | MapLibre Compose (pre-1.0, pinned exactly) + Android OpenGL runtime (`maplibre-compose-runtime-opengl-android`) | 0.20.0 |
+| Map tiles | OpenFreeMap vector tiles (no API key); style embedded in the app | – |
 | Android location | Google Play services location (fused location, activity transitions, geofencing) | 21.4.0 |
 | iOS location / motion | CoreLocation and CoreMotion through Kotlin/Native interop (system frameworks, no extra library) | – |
 | Android SDK | compileSdk / targetSdk / minSdk | 37 / 36 / 26 |
@@ -69,7 +72,7 @@ and [tools/gpx/requirements.txt](tools/gpx/requirements.txt). All versions are p
 ### Planned (not in the code yet)
 
 Firebase Auth (GitLive `firebase-kotlin-sdk`), Firestore (Spark plan) for user data, RevenueCat (`purchases-kmp`),
-PostHog (`posthog-kmp`), MapLibre Compose with OpenFreeMap tiles, Ktor client, region packs hosted on Cloudflare R2
+PostHog (`posthog-kmp`), Ktor client, region packs hosted on Cloudflare R2
 and built by GitHub Actions. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Repository layout
@@ -81,11 +84,13 @@ and built by GitHub Actions. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 ├── composeApp/            shared Compose UI, navigation, DI
 │   └── src/
 │       ├── commonMain/    UI (MVI), theme, strings (composeResources/values, values-tr)
+│       │   ├── kotlin/app/roadmaxxing/ui/   components, drives, explore, main, map, profile, shell (tabs), stats
+│       │   └── composeResources/files/map/  embedded map style (roadmaxxing_dark.json)
 │       ├── androidMain/   tracking: foreground service, idle triggers, debug emulator helper
 │       └── iosMain/       iOS entry point, bootstrap and automatic drive tracking (CoreLocation, CoreMotion); compiled in CI only
 ├── shared/                domain, data and the matching engine (pure Kotlin)
 │   └── src/
-│       ├── commonMain/    drive detection, matching, progress, region pack reader, SQLDelight schema
+│       ├── commonMain/    drive detection, matching, progress, region pack reader, driven roads for the map (`map/`), SQLDelight schema
 │       ├── commonTest/    unit tests (fixture region pack)
 │       ├── androidHostTest/  tests against the real Adana pack and GPX routes
 │       ├── androidMain/
@@ -113,7 +118,8 @@ You need:
   the SDK with the `ANDROID_HOME` environment variable or `sdk.dir` in `local.properties` (git-ignored).
 - **Python 3.12** for `tools/` (only needed for the tools and their tests).
 - Windows, Linux or macOS. iOS builds need macOS and are meant to run only on GitHub Actions (see
-  [CI and TestFlight](#ci-and-testflight)).
+  [CI and TestFlight](#ci-and-testflight)). The minimum iOS version is **15.5** (required by MapLibre Compose).
+- Internet access on the emulator or device: the map tiles are loaded from OpenFreeMap.
 
 Commands below use `./gradlew` (Git Bash, Linux, macOS). In PowerShell or cmd use `.\gradlew.bat` instead.
 
@@ -340,7 +346,14 @@ Locally, configuration files and keys live in git-ignored files (`local.properti
   Play services geofencing) do not behave like on a phone: GPS is not active without a request and geofence checks are
   throttled by the stationary detector. Emulator tests rely on the debug-only helpers above. Trigger latency, battery
   use and the "app closed" case must be checked on physical Android and iOS devices.
-- **No map screen.** Driven roads are not drawn yet; progress is shown as numbers on a Phase 0 status screen.
+- **Map needs internet.** The base map tiles come from OpenFreeMap; without a connection the base map is not
+  shown (apart from tiles MapLibre has cached). There is no undiscovered-roads layer and no "burn-in" animation
+  for new roads yet.
+- **Map performance and iOS map not measured on devices.** On the debug build on the emulator the green roads appear
+  after about 3 s on a cold start; this was not measured on a physical device. The iOS map has not been run on any
+  iPhone.
+- **Version label.** The app version shown on the Profile tab is the `APP_VERSION` constant in
+  [ProfileTab.kt](composeApp/src/commonMain/kotlin/app/roadmaxxing/ui/profile/ProfileTab.kt), kept in sync by hand.
 - **One region.** Only the Adana pack exists and it is embedded in the APK and the iOS app; downloadable packs (Cloudflare R2) are
   planned. No country-level percentage.
 - **No account, sync, subscription, analytics or share card.** All data is local.
@@ -371,3 +384,9 @@ Most documents under `docs/` are written in Turkish.
 Road data © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright), available under the
 [Open Database License (ODbL)](https://opendatacommons.org/licenses/odbl/). The region pack in
 `test-data/regions/adana/` and the GPX routes are derived from the Geofabrik Turkey extract of OpenStreetMap.
+
+Base map tiles are served by [OpenFreeMap](https://openfreemap.org) and use [OpenMapTiles](https://www.openmaptiles.org/)
+data (© OpenMapTiles) from [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors. The attribution is
+shown on the map screen. The embedded style
+([roadmaxxing_dark.json](composeApp/src/commonMain/composeResources/files/map/roadmaxxing_dark.json)) is derived from
+the OpenFreeMap "Dark" style.

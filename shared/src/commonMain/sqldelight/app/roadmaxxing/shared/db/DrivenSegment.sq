@@ -16,3 +16,9 @@ SELECT segment_id FROM driven_segment;
 
 countAll:
 SELECT count(*) FROM driven_segment;
+
+selectFirstDrivenBy:
+SELECT segment_id FROM driven_segment WHERE first_drive_id = ?;
+
+selectAllWithFirstDrive:
+SELECT segment_id, first_drive_id FROM driven_segment;

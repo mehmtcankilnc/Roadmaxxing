@@ -22,7 +22,10 @@ data class ProcessingTiming(
     val processingMs: Long,
 )
 
-/** Immutable screen state (MVI model). */
+/** The four tabs of the app shell. */
+enum class AppTab { Map, Drives, Stats, Profile }
+
+/** Immutable screen state (MVI model) shared by all tabs. */
 data class MainUiState(
     val setupStatus: SetupStatus? = null,
     val tracking: TrackingStatus = TrackingStatus.Idle,
@@ -31,6 +34,7 @@ data class MainUiState(
     val progress: ProgressState = ProgressState.Loading,
     val lastProcessing: ProcessingTiming? = null,
     val isDebugBuild: Boolean = false,
+    val selectedTab: AppTab = AppTab.Map,
 )
 
 /** Intents handled by [MainViewModel]. */
@@ -39,4 +43,5 @@ sealed interface MainIntent {
     data object PermissionsChanged : MainIntent
     data object ManualStart : MainIntent
     data object ManualStop : MainIntent
+    data class SelectTab(val tab: AppTab) : MainIntent
 }

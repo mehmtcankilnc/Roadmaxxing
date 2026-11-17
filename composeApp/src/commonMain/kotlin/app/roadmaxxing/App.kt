@@ -2,12 +2,12 @@ package app.roadmaxxing
 
 import androidx.compose.runtime.Composable
 import app.roadmaxxing.theme.RoadmaxxingTheme
-import app.roadmaxxing.ui.main.MainScreen
+import app.roadmaxxing.ui.shell.AppShell
 
 /** Root composable shared by Android and iOS. The platform must start Koin before this runs. */
 @Composable
 fun App() {
     RoadmaxxingTheme {
-        MainScreen()
+        AppShell()
     }
 }

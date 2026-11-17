@@ -1,13 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Roadmaxxing</string>
-    <string name="main_tagline">Sürdüğün her yol haritanda yeşile döner.</string>
-    <string name="main_phase_label">Faz 0 · teknik doğrulama</string>
-    <string name="main_status_title">Durum</string>
-    <string name="main_status_loading">Yerel depolama hazırlanıyor…</string>
-    <string name="main_status_ready">Yerel depolama hazır.</string>
-    <string name="main_status_first_launch">Yerel depolama ilk kez oluşturuldu.</string>
-    <string name="main_status_schema_mismatch">Yerel depolamanın güncellenmesi gerekiyor.</string>
     <string name="main_safe_drive">Güvenli sür. Sürerken uygulamayı kullanma.</string>
     <string name="decimal_separator">,</string>
     <string name="notification_channel_drive">Sürüş kaydı</string>
@@ -32,7 +25,6 @@
     <string name="permission_not_needed">Gerekmiyor</string>
     <string name="permission_allow">İzin ver</string>
     <string name="permission_background_hint">Sürüşlerin kendiliğinden kaydedilmesi için "Her zaman izin ver"i seç.</string>
-    <string name="progress_title">Keşfedilen</string>
     <string name="progress_province_line">Ana yollar %%1$s · Mahalle yolları %%2$s</string>
     <string name="progress_districts">İlçeler</string>
     <string name="progress_unavailable">Bölge paketi yüklenemedi.</string>
@@ -46,4 +38,15 @@
     <string name="drive_status_pending">Eşleştirme bekliyor</string>
     <string name="last_processing">Son güncelleme: sürüş bitiminden %1$s sn sonra (eşleştirme %2$s sn)</string>
     <string name="percent_value">%%1$s</string>
+    <string name="tab_map">Harita</string>
+    <string name="tab_drives">Sürüşler</string>
+    <string name="tab_stats">İstatistikler</string>
+    <string name="tab_profile">Profil</string>
+    <string name="chip_recording">Kaydediliyor</string>
+    <string name="chip_probing">Kontrol ediliyor</string>
+    <string name="chip_processing">Harita güncelleniyor</string>
+    <string name="invite_title">İlk yolunu aç</string>
+    <string name="invite_body">Sadece sür. Kayıt kendiliğinden başlar, sürdüğün yollar sürüş bittikten sonra yeşile döner.</string>
+    <string name="invite_permissions">İzinleri ayarla</string>
+    <string name="app_version">Sürüm %1$s</string>
 </resources>

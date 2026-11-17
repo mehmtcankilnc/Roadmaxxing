@@ -32,9 +32,18 @@ interface DriveStore {
 
     fun drivenSegmentIds(): Set<Long>
 
+    /** Every driven segment id mapped to the drive that first drove it. */
+    fun drivenSegmentFirstDrives(): Map<Long, Long>
+
+    /** Segments first driven by [driveId] (the "fresh" roads of that drive). */
+    fun segmentsFirstDrivenBy(driveId: Long): Set<Long>
+
     /** Emits the full drive list (newest first) whenever it changes. */
     fun observeDrives(): Flow<List<DriveRecord>>
 
     /** Emits a counter that changes whenever driven segments are added. */
     fun observeDrivenSegmentCount(): Flow<Long>
+
+    /** Emits the id of the most recently processed drive (null when none) whenever it changes. */
+    fun observeLastProcessedDriveId(): Flow<Long?>
 }
