@@ -45,7 +45,14 @@ class RegionPack(
     /** Insertion order = LRU order (re-inserted on every hit). */
     private val cache = LinkedHashMap<Long, DecodedTile>()
     private var cachedVertices = 0
-    private var segmentIndex: SegmentIndex? = null
+    private var summaryIndex: SegmentSummaryIndex? = null
+
+    /** Path of `segments.bin` from the manifest, or null for packs without a segment summary index. */
+    private val segmentIndexPath: String?
+
+    /** Whether the summary index came from `segments.bin` (true) or from scanning tiles (false); null before first use. */
+    var summaryFromFile: Boolean? = null
+        private set
 
     /** Number of tile decodes so far (diagnostics / tests). */
     var tileLoads: Int = 0
@@ -59,6 +66,7 @@ class RegionPack(
         tileZoom = manifest.requireLong("tile_zoom").toInt()
         if (tileZoom !in 0..22) throw RegionPackFormatException("tile_zoom $tileZoom out of range")
         segmentCount = manifest.requireLong("segment_count").toInt()
+        segmentIndexPath = (manifest["segment_index"] as? JsonObject)?.string("path")
         tilePathTemplate = manifest.string("tile_path") ?: "tiles/{z}/{x}/{y}.bin"
         val tiles = HashMap<Long, Int>()
         val tilesArr = manifest["tiles"] as? JsonArray ?: throw RegionPackFormatException("tiles missing")
@@ -137,24 +145,25 @@ class RegionPack(
         return out
     }
 
-    /** Segment by id (loads its tile; first call for an uncached id builds the id index), or null when not in the pack. */
+    /** Segment by id (loads its tile; an uncached id needs the tile locator, built by scanning every tile once), or null when not in the pack. */
     fun segment(id: Long): Segment? {
         for (t in cache.values) t.segments.binarySearchById(id)?.let { return it }
-        val idx = index()
-        val pos = idx.ids.indexOfSorted(id)
+        if (summaryIndex?.find(id) == -1) return null
+        val idx = scannedIndex()
+        val pos = idx.find(id)
         if (pos < 0) return null
-        val key = idx.tiles[pos]
+        val key = idx.tiles!![pos]
         return tile(tileXOf(key), tileYOf(key))?.segments?.binarySearchById(id)
     }
 
-    /** Geometry-free summary of a segment, or null when not in the pack. Builds the id index on first use. */
+    /** Geometry-free summary of a segment, or null when not in the pack. Reads `segments.bin` once (no tiles). */
     fun summary(id: Long): SegmentSummary? {
         val idx = index()
-        val pos = idx.ids.indexOfSorted(id)
-        return if (pos >= 0) idx.summaries[pos] else null
+        val pos = idx.find(id)
+        return if (pos >= 0) idx.summaryAt(pos) else null
     }
 
-    /** All distinct segment ids of the pack, ascending. Builds the id index on first use (reads every tile once). */
+    /** All distinct segment ids of the pack, ascending. Reads the summary index (no tiles when `segments.bin` exists). */
     fun allSegmentIds(): LongArray = index().ids.copyOf()
 
     /** Visits every distinct segment once, in tile order (reads every tile without filling the cache). */
@@ -166,12 +175,27 @@ class RegionPack(
         }
     }
 
+    /** Summary index of the whole pack: from `segments.bin` when the manifest lists it, else scanned from the tiles. */
+    private fun index(): SegmentSummaryIndex {
+        summaryIndex?.let { return it }
+        val path = segmentIndexPath
+        if (path != null) {
+            val bytes = source.read(path) ?: throw RegionPackFormatException("$path listed in manifest but missing")
+            val built = SegmentSummaryIndex.decode(bytes, segmentCount)
+            summaryIndex = built
+            summaryFromFile = true
+            return built
+        }
+        return scannedIndex()
+    }
+
     /**
-     * Id -> (summary, tile) index of the whole pack: ~92k segments for Adana -> about 4 MB.
-     * Built once by streaming every tile through the decoder without caching them.
+     * Summary index plus tile locator built by streaming every tile through the decoder without
+     * caching them (~92k segments for Adana, about 4 MB). Fallback for packs without `segments.bin`,
+     * and the only source of "which tile holds this id" for [segment].
      */
-    private fun index(): SegmentIndex {
-        segmentIndex?.let { return it }
+    private fun scannedIndex(): SegmentSummaryIndex {
+        summaryIndex?.takeIf { it.tiles != null }?.let { return it }
         val summaries = HashMap<Long, SegmentSummary>(segmentCount * 2)
         val tileOf = HashMap<Long, Long>(segmentCount * 2)
         for (key in tileIndex.keys.sorted()) {
@@ -183,12 +207,16 @@ class RegionPack(
             }
         }
         val ids = summaries.keys.toLongArray().also { it.sort() }
-        val built = SegmentIndex(
+        val built = SegmentSummaryIndex(
             ids = ids,
-            summaries = Array(ids.size) { summaries.getValue(ids[it]) },
+            lengthDm = LongArray(ids.size) { summaries.getValue(ids[it]).lengthDm },
+            roadClass = ByteArray(ids.size) { summaries.getValue(ids[it]).roadClass.toByte() },
+            provinceId = LongArray(ids.size) { summaries.getValue(ids[it]).provinceId },
+            districtId = LongArray(ids.size) { summaries.getValue(ids[it]).districtId },
             tiles = LongArray(ids.size) { tileOf.getValue(ids[it]) },
         )
-        segmentIndex = built
+        if (summaryIndex == null) summaryFromFile = false
+        summaryIndex = built
         return built
     }
 
@@ -266,24 +294,6 @@ data class SegmentSummary(
     val districtId: Long,
 ) {
     val layer: RoadLayer get() = if (roadClass < 10) RoadLayer.Major else RoadLayer.Local
-}
-
-private class SegmentIndex(val ids: LongArray, val summaries: Array<SegmentSummary>, val tiles: LongArray)
-
-/** Index of [key] in this ascending array, or -1 (own implementation: stays in common stdlib). */
-private fun LongArray.indexOfSorted(key: Long): Int {
-    var lo = 0
-    var hi = size - 1
-    while (lo <= hi) {
-        val mid = (lo + hi) ushr 1
-        val v = this[mid]
-        when {
-            v < key -> lo = mid + 1
-            v > key -> hi = mid - 1
-            else -> return mid
-        }
-    }
-    return -1
 }
 
 /** Tile segments are sorted by (wayId, ordinal), i.e. by id. */

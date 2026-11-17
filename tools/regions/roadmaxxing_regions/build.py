@@ -17,6 +17,7 @@ from . import osmread
 from .boundaries import assemble_polygon, simplified_rings
 from .geo import OSM_SCALE, length_dm, lonlat_to_tile, midpoint, tile_bounds
 from .rules import LAYER_NAMES, layer_of
+from .segindex import FILE_NAME as SEGMENT_INDEX_FILE, SegmentSummary, encode_index
 from .segments import resolve, split_ways
 from .tileformat import Tile, TileSegment, encode_tile, quantize, tile_to_json_obj
 
@@ -269,6 +270,9 @@ def write_pack(res: BuildResult, out_dir: Path, pack_id: str, source: dict,
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_bytes(data)
         tile_rows.append([x, y, len(tile.segments), len(data)])
+    seg_index = encode_index([SegmentSummary(s.way_id * 4096 + s.ordinal, s.length_dm, s.road_class,
+                                             s.province_id, s.district_id) for s in res.segments])
+    (out_dir / SEGMENT_INDEX_FILE).write_bytes(seg_index)
     regions = build_regions_json(res)
     _dump_json(regions, out_dir / "regions.json")
     manifest = {
@@ -283,6 +287,7 @@ def write_pack(res: BuildResult, out_dir: Path, pack_id: str, source: dict,
         "tile_columns": ["x", "y", "segment_count", "bytes"],
         "tiles": tile_rows,
         "segment_count": len(res.segments),
+        "segment_index": {"path": SEGMENT_INDEX_FILE, "bytes": len(seg_index)},
         "stats": dict(sorted(res.stats.items())),
     }
     _dump_json(manifest, out_dir / "manifest.json")

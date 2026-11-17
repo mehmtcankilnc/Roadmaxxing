@@ -1,0 +1,73 @@
+# Android CI: debug build + shared host tests on every PR and on main. No signing, no Play upload (not in scope yet).
+# Rules: change only with the owner's approval and batch changes to avoid commit churn.
+
+name: Android
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "composeApp/**"
+      - "androidApp/**"
+      - "shared/**"
+      - "gradle/**"
+      - "*.gradle.kts"
+      - "gradle.properties"
+      - "test-data/regions/**"
+      - ".github/workflows/android.yml"
+  pull_request:
+    paths:
+      - "composeApp/**"
+      - "androidApp/**"
+      - "shared/**"
+      - "gradle/**"
+      - "*.gradle.kts"
+      - "gradle.properties"
+      - "test-data/regions/**"
+      - ".github/workflows/android.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build debug APK and run shared tests
+    # Pinned image. It ships Android SDK platform 37.0 (compileSdk 37), so no SDK install step is needed.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      # JDK 21 (same as the iOS workflow): current LTS that AGP 9.3 / Gradle 9.7 support. The project still targets
+      # JVM 17 bytecode through jvmTarget / source+target compatibility, so 21 only runs the build.
+      - name: Set up JDK 21
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x gradlew
+
+      - name: Build debug APK and run shared host tests
+        run: ./gradlew :androidApp:assembleDebug :shared:testAndroidHostTest
+
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: android-test-reports
+          path: |
+            shared/build/reports/tests/
+            shared/build/test-results/
+          if-no-files-found: ignore
+          retention-days: 7

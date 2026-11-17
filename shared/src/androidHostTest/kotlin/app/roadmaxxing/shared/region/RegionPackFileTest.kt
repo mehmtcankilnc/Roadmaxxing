@@ -1,6 +1,7 @@
 package app.roadmaxxing.shared.region
 
 import app.roadmaxxing.shared.matching.RoadMatcher
+import app.roadmaxxing.shared.progress.ProgressCalculator
 import app.roadmaxxing.shared.testdata.TestData
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.int
@@ -175,6 +176,68 @@ print(json.dumps({
         assertEquals(py.coordSum, facts.coordSum)
         assertEquals(py.tileCounts, facts.tileCounts)
         println("Python reference reader: identical (count, id hash, per-region totals, vertices, node ids, coordinates, per-tile counts)")
+    }
+
+    /** Copy of the Adana pack source that hides segments.bin and its manifest entry (the pre-index layout). */
+    private fun legacyAdanaSource(): RegionPackSource {
+        val real = TestData.packSource(adanaDir)
+        return RegionPackSource { path ->
+            when (path) {
+                "segments.bin" -> null
+                "manifest.json" -> real.read(path)!!.decodeToString()
+                    .replace(Regex(""""segment_index":\{[^}]*\},"""), "").encodeToByteArray()
+                else -> real.read(path)
+            }
+        }
+    }
+
+    @Test
+    fun adanaSegmentIndexFileEqualsIndexBuiltFromTiles() {
+        val fromFile = RegionPack(TestData.packSource(adanaDir))
+        val t0 = System.nanoTime()
+        val ids = fromFile.allSegmentIds()
+        val fileMs = (System.nanoTime() - t0) / 1_000_000
+        assertEquals(true, fromFile.summaryFromFile)
+        assertEquals(0, fromFile.tileLoads)
+        assertEquals(92_597, ids.size)
+
+        val legacy = RegionPack(legacyAdanaSource())
+        val t1 = System.nanoTime()
+        val legacyIds = legacy.allSegmentIds()
+        val scanMs = (System.nanoTime() - t1) / 1_000_000
+        assertEquals(false, legacy.summaryFromFile)
+        assertEquals(857, legacy.tileLoads)
+        assertContentEquals(legacyIds, ids)
+        for (id in ids) assertEquals(legacy.summary(id), fromFile.summary(id), "segment $id")
+        println("Adana summary index: segments.bin ${fileMs} ms (0 tiles) vs tile scan $scanMs ms (857 tiles)")
+    }
+
+    @Test
+    fun adanaProgressIsIdenticalWithAndWithoutSegmentIndex() {
+        val ids = HashSet<Long>()
+        for (route in listOf("main-roads.noisy.gpx", "intercity.noisy.gpx")) {
+            ids += RoadMatcher(RegionPack(TestData.packSource(adanaDir))).match(TestData.readGpx(route)).driven.map { it.segmentId }
+        }
+        assertTrue(ids.isNotEmpty())
+        val withFile = ProgressCalculator(RegionPack(TestData.packSource(adanaDir))).compute(ids)
+        val legacy = ProgressCalculator(RegionPack(legacyAdanaSource())).compute(ids)
+        assertEquals(legacy, withFile)
+        println("Progress on ${ids.size} driven segments identical; province ${withFile.first().percent}%")
+    }
+
+    @Test
+    fun firstProgressIsFastWhenPackIsColdLoaded() {
+        val ids = RegionPack(TestData.packSource(adanaDir)).allSegmentIds().filterIndexed { i, _ -> i % 10 == 0 }.toSet()
+        fun cold(source: RegionPackSource): Pair<Long, Int> {
+            val t0 = System.nanoTime()
+            val pack = RegionPack(source)
+            ProgressCalculator(pack).compute(ids)
+            return (System.nanoTime() - t0) / 1_000_000 to pack.tileLoads
+        }
+        val (fileMs, fileTiles) = cold(TestData.packSource(adanaDir))
+        val (scanMs, scanTiles) = cold(legacyAdanaSource())
+        println("First progress, cold, pack load included: with segments.bin $fileMs ms ($fileTiles tiles); tile scan $scanMs ms ($scanTiles tiles)")
+        assertEquals(0, fileTiles)
     }
 
     @Test

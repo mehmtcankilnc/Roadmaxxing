@@ -160,4 +160,62 @@ class RegionPackTest {
         val extra = FixturePack.MANIFEST.replace("{\"coord_decimals\"", "{\"future_key\":{\"a\":[1,2]},\"coord_decimals\"")
         assertEquals("fixture", RegionPack(FixturePack.source(manifest = extra)).packId)
     }
+
+    @Test
+    fun summariesComeFromSegmentsBinWithoutReadingTiles() {
+        val pack = FixturePack.pack()
+        assertNotNull(pack.summary(FixturePack.id(1001, 0)))
+        assertEquals(7120L, pack.summary(FixturePack.id(1001, 1))!!.lengthDm)
+        assertNull(pack.summary(FixturePack.id(1005, 0)))
+        assertEquals(13, pack.allSegmentIds().size)
+        assertEquals(0, pack.tileLoads)
+        assertEquals(true, pack.summaryFromFile)
+    }
+
+    @Test
+    fun packWithoutSegmentsBinFallsBackToTileScanWithIdenticalSummaries() {
+        val withFile = FixturePack.pack()
+        val legacy = RegionPack(FixturePack.source(manifest = FixturePack.manifestWithoutSegmentIndex, segments = null))
+        assertContentEquals(withFile.allSegmentIds(), legacy.allSegmentIds())
+        assertEquals(false, legacy.summaryFromFile)
+        assertTrue(legacy.tileLoads > 0)
+        for (id in withFile.allSegmentIds()) assertEquals(withFile.summary(id), legacy.summary(id), "segment $id")
+    }
+
+    @Test
+    fun summaryIndexEqualsSummariesBuiltFromTiles() {
+        val pack = FixturePack.pack()
+        pack.forEachSegment { s ->
+            val sum = pack.summary(s.id)!!
+            assertEquals(SegmentSummary(s.id, s.lengthDm, s.roadClass, s.provinceId, s.districtId), sum)
+        }
+    }
+
+    @Test
+    fun segmentLookupStillWorksWhenSummariesCameFromFile() {
+        val pack = FixturePack.pack()
+        pack.summary(FixturePack.id(1001, 1))
+        assertEquals(0, pack.tileLoads)
+        assertNotNull(pack.segment(FixturePack.id(1001, 1)))
+        assertNull(pack.segment(FixturePack.id(1005, 0)))
+    }
+
+    @Test
+    fun brokenSegmentsBinIsRejected() {
+        val good = FixturePack.segments
+        assertFailsWith<RegionPackFormatException> {
+            RegionPack(FixturePack.source(segments = good.copyOf().also { it[0] = 0 })).summary(1)
+        }
+        assertFailsWith<RegionPackFormatException> {
+            RegionPack(FixturePack.source(segments = good + byteArrayOf(0))).summary(1)
+        }
+        assertFailsWith<RegionPackFormatException> {
+            RegionPack(FixturePack.source(segments = good.copyOf(good.size - 3))).summary(1)
+        }
+        // listed in the manifest but absent
+        assertFailsWith<RegionPackFormatException> { RegionPack(FixturePack.source(segments = null)).summary(1) }
+        // count disagreeing with the manifest
+        val wrongCount = FixturePack.MANIFEST.replace("\"segment_count\":13", "\"segment_count\":12")
+        assertFailsWith<RegionPackFormatException> { RegionPack(FixturePack.source(manifest = wrongCount)).summary(1) }
+    }
 }
