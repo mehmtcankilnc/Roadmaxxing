@@ -29,6 +29,7 @@ import platform.UIKit.UIActivityViewController
 import platform.UIKit.UIApplication
 import platform.UIKit.UIImage
 import platform.UIKit.UIViewController
+import platform.UIKit.popoverPresentationController
 
 @Composable
 actual fun rememberCardSharer(): CardSharer = remember { IosCardSharer() }
@@ -48,7 +49,7 @@ private class IosCardSharer : CardSharer {
             popover.sourceView = top.view
             val (w, h) = top.view.bounds.useContents { size.width to size.height }
             popover.sourceRect = CGRectMake(w / 2.0, h / 2.0, 1.0, 1.0)
-            popover.permittedArrowDirections = 0u
+            popover.permittedArrowDirections = 0uL
         }
         top.presentViewController(controller, animated = true, completion = null)
     }
