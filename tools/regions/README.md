@@ -6,7 +6,7 @@ province and district, plus per-region total road lengths. The app's matcher
 reads this pack to colour driven roads and compute completion percentages.
 
 - Format specification: [FORMAT.md](FORMAT.md)
-- Output: `test-data/regions/<pack-id>/` (`manifest.json`, `regions.json`, `tiles/{z}/{x}/{y}.bin`)
+- Output: `test-data/regions/<pack-id>/` (`manifest.json`, `regions.json`, `segments.bin`, `tiles/{z}/{x}/{y}.bin`)
 - Source: Geofabrik Turkey extract (downloaded once into `tools/regions/.cache/`, git-ignored)
 
 ## Setup (once)

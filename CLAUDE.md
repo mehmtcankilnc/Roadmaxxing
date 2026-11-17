@@ -48,7 +48,7 @@ Kullanıcı bu projede şu çalışma şeklini istiyor:
 
 1. Ana oturum takım lideridir, kodu kendisi yazmaz. Önce projeyi okur, sorunları kanıtıyla (dosya:satır veya komut çıktısı) listeler.
 2. İşi, dosyaları çakışmayan en fazla 4 pakete böler; her paketin kabul ölçütünü yazar. Planı kullanıcıya gösterir ve onay bekler.
-3. Onaydan sonra her paket için modeli Opus 5.5 olan ayrı bir alt oturum açar (`start_session`; araç listede yoksa ToolSearch ile `select:mcp__ccd_session__start_session`). Agent aracı kullanılmaz. Her brief'te paketin işi, dokunabileceği dosyalar, kabul ölçütü ve "bitince typecheck ve test çalıştır" yer alır.
+3. Onaydan sonra her paket için modeli Sonnet 5.5 (`claude-sonnet-5-5`) olan ayrı bir alt oturum açar (ana oturum, yani lider, Opus 5.5 ile çalışır; `start_session`; araç listede yoksa ToolSearch ile `select:mcp__ccd_session__start_session`). Agent aracı kullanılmaz. Her brief'te paketin işi, dokunabileceği dosyalar, kabul ölçütü ve "bitince typecheck ve test çalıştır" yer alır.
 4. Alt oturumları ana oturum yönetir: raporları okur, takılanı yönlendirir, hatalı işi aynı oturuma geri gönderir. Düzeltmeyi kendisi yapmaz.
 5. Hepsi bitince işleri birleştirir. Çalışanların raporuna güvenmez: değişiklikleri kendisi okur, testleri kendisi çalıştırır.
 

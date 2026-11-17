@@ -17,8 +17,10 @@ complete, like the map-completion screen in a driving game. The main output is a
 The app keeps a "drive safely" message. It has no feature, badge or text that rewards speed.
 
 > **Status: Phase 0 (technical validation, pilot city Adana).** Steps 1–3 run end to end on the Android emulator.
-> Steps 4–5, the map screen and everything server- or account-related are **planned**. iOS code has **never been
-> compiled** (see [Known limitations](#known-limitations)).
+> Steps 4–5, the map screen and everything server- or account-related are **planned**. iOS has automatic drive
+> recording code that compiles and passes the shared tests on GitHub Actions, but it has **not been run on any
+> physical device**; Android has not been tried on a physical device either (see
+> [Known limitations](#known-limitations)).
 
 ## MVP features
 
@@ -27,7 +29,7 @@ is in and what is not; everything else is "planned".
 
 | # | Feature | Status | What exists today |
 | --- | --- | --- | --- |
-| 1 | Automatic drive detection and recording | partial (Phase 0, Android only) | Android: low-power idle triggers (Activity Recognition transitions + stationary geofence, no GPS while idle), short GPS probe, location foreground service, drive start/end state machine, walk/train rejection by speed and road-match filters, long traffic stops do not split a drive. Debug-build start/stop buttons. **Planned:** iOS recording (only a placeholder that does nothing), user-facing manual start/stop, plane filter beyond the 250 km/h speed cap. |
+| 1 | Automatic drive detection and recording | partial (Phase 0) | Android: low-power idle triggers (Activity Recognition transitions + stationary geofence, no GPS while idle), short GPS probe, location foreground service, drive start/end state machine, walk/train rejection by speed and road-match filters, long traffic stops do not split a drive. Debug-build start/stop buttons. iOS: idle triggers (CoreLocation significant-location-change + 200 m region monitoring + CoreMotion), no continuous GPS while idle; detection and validation rules come from the shared code. The iOS code compiles and its shared tests pass in CI, but it has **not been verified on a physical device**. **Planned:** user-facing manual start/stop, plane filter beyond the 250 km/h speed cap. |
 | 2 | Road matching (map matching) | done (Phase 0) | Pure Kotlin matcher in `shared` against the offline Adana region pack; driven segments are stored in SQLite. |
 | 3 | Exploration map | planned | No map screen yet (MapLibre Compose / OpenFreeMap not added). |
 | 4 | Completion percentages | partial (Phase 0) | Province and district percentages for Adana, split into major roads and local roads, shown on the Phase 0 screen. **Planned:** country level, other provinces. |
@@ -58,6 +60,7 @@ and [tools/gpx/requirements.txt](tools/gpx/requirements.txt). All versions are p
 | DI | Koin | 4.2.2 |
 | Local database | SQLDelight | 2.4.1 |
 | Android location | Google Play services location (fused location, activity transitions, geofencing) | 21.4.0 |
+| iOS location / motion | CoreLocation and CoreMotion through Kotlin/Native interop (system frameworks, no extra library) | – |
 | Android SDK | compileSdk / targetSdk / minSdk | 37 / 36 / 26 |
 | JVM target | Java | 17 |
 | Region pack builder | Python, pyosmium (`osmium`), `shapely`, `pytest` | 3.12, 4.0.2, 2.1.2, 8.4.2 |
@@ -79,7 +82,7 @@ and built by GitHub Actions. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 │   └── src/
 │       ├── commonMain/    UI (MVI), theme, strings (composeResources/values, values-tr)
 │       ├── androidMain/   tracking: foreground service, idle triggers, debug emulator helper
-│       └── iosMain/       iOS entry point and placeholder platform code (never compiled)
+│       └── iosMain/       iOS entry point, bootstrap and automatic drive tracking (CoreLocation, CoreMotion); compiled in CI only
 ├── shared/                domain, data and the matching engine (pure Kotlin)
 │   └── src/
 │       ├── commonMain/    drive detection, matching, progress, region pack reader, SQLDelight schema
@@ -87,12 +90,13 @@ and built by GitHub Actions. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 │       ├── androidHostTest/  tests against the real Adana pack and GPX routes
 │       ├── androidMain/
 │       └── iosMain/
-├── iosApp/                Xcode project (SwiftUI host for the Compose UI)
+├── iosApp/                Xcode project (SwiftUI host for the Compose UI; "Copy Region Pack" build phase embeds the Adana pack)
+├── .github/workflows/     ios.yml, android.yml (CI)
 ├── tools/
 │   ├── regions/           region pack builder (Python, OSM → test-data/regions/<id>)
 │   └── gpx/               GPX route generator and emulator replay
 ├── test-data/
-│   ├── regions/adana/     Adana region pack (embedded in the Android APK at build time)
+│   ├── regions/adana/     Adana region pack (embedded in the Android APK and the iOS app at build time)
 │   ├── regions/fixture/   small fixture pack for unit tests
 │   ├── gpx/               Adana test routes (+ noisy variants, expected results)
 │   └── traces/            emulator-recorded trace used as a matcher regression fixture
@@ -108,7 +112,7 @@ You need:
 - **Android SDK** with platform **37** (`compileSdk = 37`), platform-tools (`adb`) and the emulator. Point Gradle at
   the SDK with the `ANDROID_HOME` environment variable or `sdk.dir` in `local.properties` (git-ignored).
 - **Python 3.12** for `tools/` (only needed for the tools and their tests).
-- Windows, Linux or macOS. iOS builds need macOS and are meant to run only on GitHub Actions (planned, see
+- Windows, Linux or macOS. iOS builds need macOS and are meant to run only on GitHub Actions (see
   [CI and TestFlight](#ci-and-testflight)).
 
 Commands below use `./gradlew` (Git Bash, Linux, macOS). In PowerShell or cmd use `.\gradlew.bat` instead.
@@ -236,12 +240,13 @@ Region pack builder tests (from `tools/regions/`, after the setup in the next se
 
 On Linux/macOS the interpreter is `.venv/bin/python`.
 
-iOS simulator tests of `shared` are planned for the CI `build` job; they cannot run on Windows/Linux.
+iOS simulator tests of `shared` (`:shared:iosSimulatorArm64Test`) run in the CI `build` job of the iOS workflow; they cannot run on Windows/Linux.
 
 ## Rebuilding the region pack
 
 The region pack is every drivable OSM road in one province, split into segments at junctions, with each segment
-assigned to its province and district, plus per-region road totals. Format: [tools/regions/FORMAT.md](tools/regions/FORMAT.md);
+assigned to its province and district, plus per-region road totals. A segment summary index (`segments.bin`) lets the
+app compute the first percentage without scanning all tiles. Format: [tools/regions/FORMAT.md](tools/regions/FORMAT.md);
 full guide: [tools/regions/README.md](tools/regions/README.md).
 
 Setup (once, from `tools/regions/`; Windows shown, use `python3.12` and `.venv/bin/python` on Linux/macOS):
@@ -281,44 +286,66 @@ see [test-data/gpx/README.md](test-data/gpx/README.md).
 
 ## CI and TestFlight
 
-**Planned. There is no `.github/workflows/` directory yet.**
+Two GitHub Actions workflows live in [.github/workflows/](.github/workflows/). Rules for changing them are in
+[docs/ci/README.md](docs/ci/README.md); the iOS one is derived from the reference [docs/ci/ios.yml](docs/ci/ios.yml).
+Both ran green on the pull request that introduced them.
 
-- The iOS workflow will be written once from the reference [docs/ci/ios.yml](docs/ci/ios.yml); rules are in
-  [docs/ci/README.md](docs/ci/README.md).
-- `build` job: `shared` tests on the iOS simulator and an unsigned simulator build.
-- `testflight` job: runs only on a `v*` tag or a manual run (`workflow_dispatch`), in the GitHub environment
-  `testflight`.
-- Android CI (build and unit tests on every PR, Play internal track from `main`) is not defined yet.
+| Workflow | Triggers | What it does |
+| --- | --- | --- |
+| [ios.yml](.github/workflows/ios.yml) | Push to `main` and pull requests that touch `composeApp/`, `shared/`, `iosApp/`, `gradle/`, `*.gradle.kts`, `gradle.properties`, `test-data/regions/` or the workflow file; push of a `v*` tag; manual (`workflow_dispatch`) | `build` job (`macos-15`): runs `:shared:iosSimulatorArm64Test` on the iOS simulator, then an unsigned simulator build with `xcodebuild`. `testflight` job: archive, export and upload to TestFlight. |
+| [android.yml](.github/workflows/android.yml) | Push to `main` and pull requests with changes under `composeApp/`, `androidApp/`, `shared/`, `gradle/`, `*.gradle.kts`, `gradle.properties`, `test-data/regions/` or the workflow file; manual | One job (`ubuntu-24.04`): `./gradlew :androidApp:assembleDebug :shared:testAndroidHostTest`. No signing, no Play upload. |
 
-Required GitHub Actions secrets (names only; values never go into the repository or any output):
+Details:
 
-| Secret | Job |
-| --- | --- |
-| `APPSTORE_KEY_ID` | testflight |
-| `APPSTORE_ISSUER_ID` | testflight |
-| `APPSTORE_API_KEY_P8` | testflight |
-| `APPLE_TEAM_ID` | testflight |
-| `GOOGLE_SERVICE_INFO_PLIST_BASE64` | build, testflight |
-| `REVENUECAT_IOS_API_KEY` | build, testflight |
-| `POSTHOG_API_KEY` | build, testflight |
+- **Xcode is pinned** to 26.3 (`DEVELOPER_DIR=/Applications/Xcode_26.3.app/Contents/Developer`) on the pinned
+  `macos-15` image, because the image default is Xcode 16.4 and Kotlin 2.4 is tested against the Xcode 26 line. Both
+  workflows run Gradle with JDK 21; the code is still compiled to JVM 17 bytecode.
+- **`testflight` job:** runs only after `build` succeeds, and only on a `v*` tag or a manual run, in the GitHub
+  environment `testflight` (create that environment in the repository settings first). **It has never run yet:**
+  on pull requests it is skipped and no tag or manual run has been made, so the signing and upload steps are
+  untested.
+- **Fork pull requests and unset secrets:** the `build` job reads three secrets into the environment and works when
+  they are empty. If `GOOGLE_SERVICE_INFO_PLIST_BASE64` is empty (Firebase is not set up yet, or a fork PR), the
+  workflow writes a valid empty placeholder `GoogleService-Info.plist` instead of failing, and removes the file at the
+  end of the job. The workflow already contains the Firebase, RevenueCat and PostHog steps so it does not have to be
+  touched again when those services are added; the app does not use them yet.
+- Failed test runs upload their reports as an artifact (7 days) in both workflows.
+- Play internal-track upload for Android is not set up.
+
+GitHub Actions secrets (names only; values never go into the repository or any output):
+
+| Secret | Job | Notes |
+| --- | --- | --- |
+| `APPSTORE_KEY_ID` | testflight | needed for upload |
+| `APPSTORE_ISSUER_ID` | testflight | needed for upload |
+| `APPSTORE_API_KEY_P8` | testflight | needed for upload |
+| `APPLE_TEAM_ID` | testflight | needed for upload |
+| `GOOGLE_SERVICE_INFO_PLIST_BASE64` | build, testflight | may be empty in `build` (placeholder plist is written) |
+| `REVENUECAT_IOS_API_KEY` | build, testflight | may be empty in `build` |
+| `POSTHOG_API_KEY` | build, testflight | may be empty in `build` |
 
 Locally, configuration files and keys live in git-ignored files (`local.properties`, `*.xcconfig`); see
 [.gitignore](.gitignore).
 
 ## Known limitations
 
-- **iOS is not verified.** `iosMain` code and the Xcode project have never been compiled (no Mac; CI not set up). iOS
-  drive recording is a placeholder that reports every permission as missing and does nothing.
+- **iOS is not verified on a device.** The `iosMain` tracking code and the Xcode project compile and the `shared`
+  tests pass on the CI simulator, but nothing has been run on a physical iPhone (no Mac). Android has not been tried
+  on a physical device either.
+- **iOS background limits.** CoreMotion does not wake a suspended app; wake-ups come only from the location triggers
+  (significant location change and 200 m region monitoring), so detection latency depends on them. If the user
+  force-quits the app by swiping it away, a relaunch is not guaranteed. There is no notification; while recording,
+  iOS shows its blue status-bar location indicator.
 - **Background triggers need a real device.** On the emulator the production idle triggers (Activity Recognition,
   Play services geofencing) do not behave like on a phone: GPS is not active without a request and geofence checks are
   throttled by the stationary detector. Emulator tests rely on the debug-only helpers above. Trigger latency, battery
   use and the "app closed" case must be checked on physical Android and iOS devices.
 - **No map screen.** Driven roads are not drawn yet; progress is shown as numbers on a Phase 0 status screen.
-- **One region.** Only the Adana pack exists and it is embedded in the APK; downloadable packs (Cloudflare R2) are
+- **One region.** Only the Adana pack exists and it is embedded in the APK and the iOS app; downloadable packs (Cloudflare R2) are
   planned. No country-level percentage.
 - **No account, sync, subscription, analytics or share card.** All data is local.
 - **Emulator timing.** The emulator GPS reports at 1 Hz with jitter; repeated replays of the same route can add a few
-  extra segments. The first progress computation on a cold emulator takes several seconds.
+  extra segments. With the segment summary index the first progress computation on a cold Pixel_8 emulator takes about 0.4–0.8 s.
 
 ## Documentation
 

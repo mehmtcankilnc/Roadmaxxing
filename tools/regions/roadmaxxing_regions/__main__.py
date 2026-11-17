@@ -54,6 +54,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--province", default="Adana",
                     help="admin_level=4 relation: name, name:tr, name:en, ISO3166-2 or r<relation id>")
     ap.add_argument("--input", type=Path, help="local .osm.pbf/.osm file (skips the download)")
+    ap.add_argument("--source-url", help="with --input: dated download URL to record in manifest.json (default null)")
     ap.add_argument("--url", default=DEFAULT_URL, help="extract to download when --input is not given")
     ap.add_argument("--cache", type=Path, default=DEFAULT_CACHE)
     ap.add_argument("--out", type=Path, help="output directory (default test-data/regions/<pack-id>)")
@@ -66,7 +67,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.input:
         src = args.input
-        source_url = None
+        source_url = args.source_url
     else:
         src, source_url = download(args.url, args.cache)
 

@@ -16,6 +16,7 @@ versions they do not know.
 <pack-id>/
   manifest.json            pack metadata and tile index
   regions.json             regions (province + districts): names, totals, boundaries
+  segments.bin             segment summary index (optional, section 6)
   tiles/<z>/<x>/<y>.bin    road segments, one binary file per map tile
 ```
 
@@ -158,6 +159,7 @@ tile header, not assume 6.
   "tile_columns": ["x", "y", "segment_count", "bytes"],
   "tiles": [[4887, 3178, 197, 9462], …],
   "segment_count": 92597,
+  "segment_index": { "path": "segments.bin", "bytes": 0 },
   "stats": { "district_gap_assigned": 0, "district_overlap": 0, "drivable_ways_read": 0, "segments_unresolved": 0 }
 }
 ```
@@ -169,6 +171,7 @@ tile header, not assume 6.
 | `tile_zoom` | Int | all tiles of the pack use this zoom |
 | `tiles` | array of `[x, y, segmentCount, bytes]` | sorted by x, then y. `segmentCount` counts segments stored in that tile (a segment may be in several tiles) |
 | `segment_count` | Int | distinct segments in the pack |
+| `segment_index` | object \| absent | optional (added within version 1): `path` of the segment summary index relative to the pack root, `bytes` its size. Absent in older packs: readers then build the same data by scanning all tiles |
 | `stats` | object | build diagnostics, informative only |
 
 ## 4. regions.json
@@ -282,7 +285,46 @@ class Cursor(private val b: ByteArray) {
 }
 ```
 
-## 6. Why this format and zoom
+## 6. segments.bin (segment summary index)
+
+Optional file, added within version 1 and announced by `manifest.json` →
+`segment_index.path`. It holds, for every distinct segment of the pack, the
+facts needed to compute completion percentages (driven `length_dm` per
+region and layer) **without opening any tile**. Without it a reader has to
+decode all tiles once (Adana: 857 files, seconds on a mid-range phone).
+Readers that find no `segment_index` in the manifest build the identical
+table from the tiles; the content must equal what the tiles say (tested).
+
+Encoding primitives as in section 5.2.
+
+```
+Index:
+  magic          4 bytes   ASCII "RMXS" (0x52 0x4D 0x58 0x53)
+  version        u8        1
+  regionCount    uvarint
+  regionIds      regionCount × uvarint     OSM relation ids, ascending
+  segmentCount   uvarint                   = manifest segment_count
+  segments       segmentCount × Record     sorted by segmentId, strictly ascending
+
+Record:
+  idDelta        uvarint   segmentId − previous record's segmentId (first record: − 0)
+  lengthDm       uvarint   same value as in the tile
+  roadClass      u8        road class code (section 2.3); layer = 0 if < 10 else 1
+  provinceIdx    uvarint   index into regionIds
+  districtIdx    uvarint   index into regionIds
+```
+
+`segmentId = wayId * 4096 + ordinal` (section 2.2). Because records are
+sorted by id, a reader decodes the file once into parallel arrays and then
+looks segments up by binary search. The file ends exactly after the last
+record; trailing bytes are an error. A reader rejects an index whose
+`segmentCount` differs from the manifest's `segment_count`.
+
+Size on Adana: 604 543 bytes (92 597 records, about 6.5 bytes each; +13 % on the 4.66 MB pack). Decoding it takes
+about 4 ms on a desktop JVM versus about 450 ms for the tile scan. The index has no geometry and no tile
+reference; reading geometry still goes through the tiles.
+
+## 7. Why this format and zoom
 
 Measured on the Adana pack (Geofabrik `turkey-261115.osm.pbf`, OSM data of
 2026-11-15T21:22:28Z, 92 597 segments, 14 210 km). Reproduce with
@@ -315,9 +357,9 @@ Measured on the Adana pack (Geofabrik `turkey-261115.osm.pbf`, OSM data of
   10 % for nothing. OSM node ids are kept for every vertex, so exact
   topology is never lost to rounding.
 
-## 7. Changing the format
+## 8. Changing the format
 
-- Additive JSON fields: allowed within version 1.
+- Additive JSON fields and additive optional files (like `segments.bin`, announced by a manifest field): allowed within version 1.
 - Anything else (tile layout, class or oneway codes, id rule, length unit,
   assignment rule): bump `format_version` and the tile version byte, update
   this document, the reference reader and the fixture pack together.
