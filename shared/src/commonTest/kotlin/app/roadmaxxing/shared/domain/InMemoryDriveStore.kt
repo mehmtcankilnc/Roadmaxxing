@@ -66,6 +66,9 @@ class InMemoryDriveStore : DriveStore {
     override fun segmentsFirstDrivenBy(driveId: Long): Set<Long> =
         segments.value.filterValues { it.second == driveId }.keys
 
+    override fun segmentsFirstDrivenSince(sinceMs: Long): Set<Long> =
+        segments.value.filterValues { it.first >= sinceMs }.keys
+
     override fun observeLastProcessedDriveId(): Flow<Long?> = drives.map { m ->
         m.values.filter { it.status == DriveStatus.Processed }
             .sortedWith(compareBy<DriveRecord>({ it.summary?.processedAtMs ?: 0L }, { it.id })).lastOrNull()?.id

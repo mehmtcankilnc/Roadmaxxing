@@ -38,6 +38,9 @@ interface DriveStore {
     /** Segments first driven by [driveId] (the "fresh" roads of that drive). */
     fun segmentsFirstDrivenBy(driveId: Long): Set<Long>
 
+    /** Segments whose first drive happened at or after [sinceMs] (epoch ms). */
+    fun segmentsFirstDrivenSince(sinceMs: Long): Set<Long>
+
     /** Emits the full drive list (newest first) whenever it changes. */
     fun observeDrives(): Flow<List<DriveRecord>>
 

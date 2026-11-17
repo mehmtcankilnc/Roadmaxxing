@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="card_unit_km">km</string>
+    <string name="card_unit_kmh">km/sa</string>
+    <string name="card_percent_symbol">%</string>
+    <!-- "1" when the percent sign goes before the number (Turkish), "0" after it. -->
+    <string name="card_percent_leading">1</string>
+    <string name="card_label_new_road">km yeni yol</string>
+    <string name="card_label_driven">km sürüş</string>
+    <string name="card_zero_new">Tanıdık yollar, keyifli sürüş</string>
+    <string name="card_stat_distance">Mesafe</string>
+    <string name="card_stat_duration">Süre</string>
+    <string name="card_stat_speed">Ort. / maks. km/sa</string>
+    <string name="card_stat_region">Bölge</string>
+    <string name="card_duration_hm">%1$s sa %2$s dk</string>
+    <string name="card_duration_m">%1$s dk</string>
+    <string name="card_city_explored">keşfedildi</string>
+    <string name="card_city_districts">Tamamlanan ilçe</string>
+    <string name="card_city_week">Bu hafta yeni</string>
+    <string name="card_city_major">Ana yollar</string>
+    <string name="card_debug_title">Kart önizleme</string>
+    <string name="card_debug_hide_speed">Hızı gizle</string>
+    <string name="card_debug_write">PNG\'leri önbelleğe yaz</string>
+    <string name="card_debug_close">Kapat</string>
+    <string name="card_debug_written">%1$s dosya yazıldı: %2$s</string>
+    <string name="card_debug_open">Kart önizleme (debug)</string>
+</resources>

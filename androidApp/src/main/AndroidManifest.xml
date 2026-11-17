@@ -17,6 +17,11 @@
     <!-- Re-arm the low-power triggers (activity transitions, geofence) after a reboot or an update. -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
+    <!-- Saving a share card to the gallery: only API 26-28 need a permission (API 29+ writes via MediaStore freely). -->
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+
     <application
         android:name=".RoadmaxxingApplication"
         android:allowBackup="false"
@@ -34,6 +39,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Share cards are written to the app cache and handed to the system share sheet through this provider. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
 
         <service
             android:name="app.roadmaxxing.tracking.DriveTrackingService"

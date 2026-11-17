@@ -1,6 +1,15 @@
 package app.roadmaxxing.ui.drives
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
+import app.roadmaxxing.theme.RoadmaxxingTheme
+import app.roadmaxxing.ui.main.DetailTarget
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -32,7 +41,7 @@ import org.jetbrains.compose.resources.stringResource
 
 /** Drives tab: every recorded drive with distance, duration and the km it newly explored. */
 @Composable
-fun DrivesTab(state: MainUiState) {
+fun DrivesTab(state: MainUiState, onOpenDrive: (Long) -> Unit) {
     Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         TabTitle(stringResource(Res.string.drives_title))
         if (state.drives.isEmpty()) {
@@ -40,13 +49,13 @@ fun DrivesTab(state: MainUiState) {
         }
         state.drives.forEachIndexed { i, drive ->
             if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outline)
-            DriveRow(drive)
+            DriveRow(drive, selected = state.detail == DetailTarget.Drive(drive.id), onClick = { onOpenDrive(drive.id) })
         }
     }
 }
 
 @Composable
-private fun DriveRow(drive: DriveRecord) {
+private fun DriveRow(drive: DriveRecord, selected: Boolean, onClick: () -> Unit) {
     val sep = stringResource(Res.string.decimal_separator)
     val summary = drive.summary
     val (label, isDrive) = when {
@@ -55,7 +64,15 @@ private fun DriveRow(drive: DriveRecord) {
         summary.verdict == DriveVerdict.Drive -> stringResource(Res.string.drive_verdict_drive) to true
         else -> stringResource(Res.string.drive_verdict_not_drive) to false
     }
-    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(if (selected) RoadmaxxingTheme.extraColors.surfaceRaised else Color.Transparent)
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(vertical = 8.dp, horizontal = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(
                 text = formatDateTime(drive.startMs),

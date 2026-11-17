@@ -10,6 +10,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -17,6 +21,7 @@ import app.roadmaxxing.platform.AppPermission
 import app.roadmaxxing.platform.PermissionState
 import app.roadmaxxing.resources.Res
 import app.roadmaxxing.resources.app_version
+import app.roadmaxxing.resources.card_debug_open
 import app.roadmaxxing.resources.decimal_separator
 import app.roadmaxxing.resources.last_processing
 import app.roadmaxxing.resources.main_safe_drive
@@ -39,6 +44,7 @@ import app.roadmaxxing.resources.tracking_recording
 import app.roadmaxxing.resources.tracking_title
 import app.roadmaxxing.shared.drive.TrackingStatus
 import app.roadmaxxing.theme.RoadmaxxingTheme
+import app.roadmaxxing.ui.card.debug.CardPreviewDialog
 import app.roadmaxxing.ui.components.InfoCard
 import app.roadmaxxing.ui.components.SecondaryText
 import app.roadmaxxing.ui.components.TabTitle
@@ -108,6 +114,9 @@ private fun RecordingCard(state: MainUiState, onIntent: (MainIntent) -> Unit) {
                     Text(stringResource(Res.string.manual_stop))
                 }
             }
+            var showCardPreview by remember { mutableStateOf(false) }
+            OutlinedButton(onClick = { showCardPreview = true }) { Text(stringResource(Res.string.card_debug_open)) }
+            if (showCardPreview) CardPreviewDialog(onClose = { showCardPreview = false })
         }
     }
 }

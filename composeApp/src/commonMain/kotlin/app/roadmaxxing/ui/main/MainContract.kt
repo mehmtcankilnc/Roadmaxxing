@@ -25,6 +25,12 @@ data class ProcessingTiming(
 /** The four tabs of the app shell. */
 enum class AppTab { Map, Drives, Stats, Profile }
 
+/** A detail screen opened on top of a tab (summary of one drive, or the city card). */
+sealed interface DetailTarget {
+    data class Drive(val driveId: Long) : DetailTarget
+    data object City : DetailTarget
+}
+
 /** Immutable screen state (MVI model) shared by all tabs. */
 data class MainUiState(
     val setupStatus: SetupStatus? = null,
@@ -35,6 +41,8 @@ data class MainUiState(
     val lastProcessing: ProcessingTiming? = null,
     val isDebugBuild: Boolean = false,
     val selectedTab: AppTab = AppTab.Map,
+    /** Open detail screen, or null. Back closes it before anything else. */
+    val detail: DetailTarget? = null,
 )
 
 /** Intents handled by [MainViewModel]. */
@@ -44,4 +52,6 @@ sealed interface MainIntent {
     data object ManualStart : MainIntent
     data object ManualStop : MainIntent
     data class SelectTab(val tab: AppTab) : MainIntent
+    data class OpenDetail(val target: DetailTarget) : MainIntent
+    data object CloseDetail : MainIntent
 }
