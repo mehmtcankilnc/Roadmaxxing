@@ -1,0 +1,27 @@
+-- Raw GPS fixes of a drive. Local only, never synced.
+CREATE TABLE trace_point (
+    drive_id INTEGER NOT NULL REFERENCES drive(id) ON DELETE CASCADE,
+    time_ms INTEGER NOT NULL,
+    lat REAL NOT NULL,
+    lon REAL NOT NULL,
+    speed_mps REAL,
+    bearing_deg REAL,
+    accuracy_m REAL,
+    PRIMARY KEY (drive_id, time_ms)
+);
+
+insertPoint:
+INSERT OR IGNORE INTO trace_point(drive_id, time_ms, lat, lon, speed_mps, bearing_deg, accuracy_m)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+selectForDrive:
+SELECT * FROM trace_point WHERE drive_id = ? ORDER BY time_ms;
+
+selectRange:
+SELECT * FROM trace_point WHERE drive_id = ? AND time_ms BETWEEN ? AND ? ORDER BY time_ms;
+
+lastForDrive:
+SELECT * FROM trace_point WHERE drive_id = ? ORDER BY time_ms DESC LIMIT 1;
+
+countForDrive:
+SELECT count(*) FROM trace_point WHERE drive_id = ?;

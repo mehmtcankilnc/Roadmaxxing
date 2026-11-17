@@ -1,0 +1,18 @@
+-- Every road segment the user has driven, once. Never deleted (driven roads stay on the map).
+CREATE TABLE driven_segment (
+    segment_id INTEGER NOT NULL PRIMARY KEY,
+    first_driven_ms INTEGER NOT NULL,
+    first_drive_id INTEGER NOT NULL
+);
+
+insertIfNew:
+INSERT OR IGNORE INTO driven_segment(segment_id, first_driven_ms, first_drive_id) VALUES (?, ?, ?);
+
+changes:
+SELECT changes();
+
+selectAllIds:
+SELECT segment_id FROM driven_segment;
+
+countAll:
+SELECT count(*) FROM driven_segment;

@@ -8,7 +8,11 @@ import org.koin.core.module.Module
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
+/** Platform bindings of the app layer (TrackingPlatform and the platform tracking engine). */
+internal expect val platformAppModule: Module
+
 val appModule: Module = module {
+    includes(platformAppModule)
     viewModelOf(::MainViewModel)
 }
 

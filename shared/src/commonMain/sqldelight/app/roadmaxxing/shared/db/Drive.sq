@@ -1,0 +1,54 @@
+-- One recorded drive (or a trace that turned out not to be a drive).
+-- status: RECORDING -> PENDING (ended, waiting for matching) -> PROCESSED.
+-- verdict (after processing): DRIVE, TOO_SHORT, TOO_SLOW, TOO_FAST, OFF_ROAD.
+CREATE TABLE drive (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    start_ms INTEGER NOT NULL,
+    start_reason TEXT NOT NULL,
+    status TEXT NOT NULL,
+    end_decision_ms INTEGER,
+    end_reason TEXT,
+    keep_from_ms INTEGER,
+    keep_to_ms INTEGER,
+    verdict TEXT,
+    distance_m REAL,
+    duration_ms INTEGER,
+    point_count INTEGER,
+    matched_point_fraction REAL,
+    driven_segment_count INTEGER,
+    new_length_dm INTEGER,
+    processing_ms INTEGER,
+    processed_at_ms INTEGER
+);
+
+CREATE INDEX drive_status ON drive(status);
+
+insertDrive:
+INSERT INTO drive(start_ms, start_reason, status) VALUES (?, ?, 'RECORDING');
+
+lastInsertedId:
+SELECT last_insert_rowid();
+
+selectRecording:
+SELECT * FROM drive WHERE status = 'RECORDING' ORDER BY id DESC LIMIT 1;
+
+selectPending:
+SELECT * FROM drive WHERE status = 'PENDING' ORDER BY id;
+
+selectById:
+SELECT * FROM drive WHERE id = ?;
+
+selectAll:
+SELECT * FROM drive ORDER BY start_ms DESC, id DESC;
+
+markEnded:
+UPDATE drive SET status = 'PENDING', end_decision_ms = ?, end_reason = ?, keep_from_ms = ?, keep_to_ms = ?
+WHERE id = ? AND status = 'RECORDING';
+
+markProcessed:
+UPDATE drive SET status = 'PROCESSED', verdict = ?, distance_m = ?, duration_ms = ?, point_count = ?,
+    matched_point_fraction = ?, driven_segment_count = ?, new_length_dm = ?, processing_ms = ?, processed_at_ms = ?
+WHERE id = ?;
+
+lastProcessed:
+SELECT * FROM drive WHERE status = 'PROCESSED' ORDER BY processed_at_ms DESC LIMIT 1;

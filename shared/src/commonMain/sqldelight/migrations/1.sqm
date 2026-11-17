@@ -1,0 +1,39 @@
+-- Version 1 -> 2: drive recording tables (Phase 0, stage B).
+CREATE TABLE drive (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    start_ms INTEGER NOT NULL,
+    start_reason TEXT NOT NULL,
+    status TEXT NOT NULL,
+    end_decision_ms INTEGER,
+    end_reason TEXT,
+    keep_from_ms INTEGER,
+    keep_to_ms INTEGER,
+    verdict TEXT,
+    distance_m REAL,
+    duration_ms INTEGER,
+    point_count INTEGER,
+    matched_point_fraction REAL,
+    driven_segment_count INTEGER,
+    new_length_dm INTEGER,
+    processing_ms INTEGER,
+    processed_at_ms INTEGER
+);
+
+CREATE INDEX drive_status ON drive(status);
+
+CREATE TABLE trace_point (
+    drive_id INTEGER NOT NULL REFERENCES drive(id) ON DELETE CASCADE,
+    time_ms INTEGER NOT NULL,
+    lat REAL NOT NULL,
+    lon REAL NOT NULL,
+    speed_mps REAL,
+    bearing_deg REAL,
+    accuracy_m REAL,
+    PRIMARY KEY (drive_id, time_ms)
+);
+
+CREATE TABLE driven_segment (
+    segment_id INTEGER NOT NULL PRIMARY KEY,
+    first_driven_ms INTEGER NOT NULL,
+    first_drive_id INTEGER NOT NULL
+);

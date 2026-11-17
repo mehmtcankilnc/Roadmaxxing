@@ -46,6 +46,13 @@ kotlin {
             implementation(project.dependencies.platform(libs.koin.bom))
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
+            implementation(libs.kotlinx.datetime)
+        }
+        androidMain.dependencies {
+            implementation(libs.play.services.location)
+            implementation(libs.androidx.activity.compose)
+            implementation(libs.koin.android)
+            implementation(libs.kotlinx.coroutines.android)
         }
     }
 }

@@ -61,7 +61,7 @@ sqldelight-coroutines = { module = "app.cash.sqldelight:coroutines-extensions", 
 sqldelight-android-driver = { module = "app.cash.sqldelight:android-driver", version.ref = "sqldelight" }
 sqldelight-native-driver = { module = "app.cash.sqldelight:native-driver", version.ref = "sqldelight" }
 
-# Google Play services (Android only; defined for Phase 0 location work, not used yet)
+# Google Play services (Android only): fused location, activity transitions, geofencing
 play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "play-services-location" }
 
 # Testing

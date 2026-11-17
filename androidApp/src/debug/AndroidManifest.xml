@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Debug builds only. Emulator test workaround, see DebugEmulatorGpsHolder.kt. Not part of release builds. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <receiver
+            android:name="app.roadmaxxing.tracking.DebugGpsHolderReceiver"
+            android:exported="true" />
+    </application>
+</manifest>

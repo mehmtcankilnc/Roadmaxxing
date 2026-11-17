@@ -44,6 +44,39 @@ kotlin {
     }
 }
 
+// Phase 0: the Adana region pack is embedded in the APK. It is copied from test-data/regions/adana at build
+// time into a generated asset directory (assets/regions/adana/...), so the files are not duplicated in the repo.
+abstract class CopyRegionPackTask : DefaultTask() {
+    @get:InputDirectory
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val packDir: DirectoryProperty
+
+    @get:OutputDirectory
+    abstract val outputDir: DirectoryProperty
+
+    @get:Inject
+    abstract val fs: FileSystemOperations
+
+    @TaskAction
+    fun copy() {
+        fs.sync {
+            from(packDir)
+            into(outputDir.dir("regions/adana"))
+        }
+    }
+}
+
+val copyRegionPack = tasks.register<CopyRegionPackTask>("copyRegionPack") {
+    packDir.set(rootProject.layout.projectDirectory.dir("test-data/regions/adana"))
+    outputDir.set(layout.buildDirectory.dir("generated/regionPackAssets"))
+}
+
+androidComponents {
+    onVariants { variant ->
+        variant.sources.assets?.addGeneratedSourceDirectory(copyRegionPack, CopyRegionPackTask::outputDir)
+    }
+}
+
 dependencies {
     implementation(projects.composeApp)
     implementation(libs.androidx.activity.compose)

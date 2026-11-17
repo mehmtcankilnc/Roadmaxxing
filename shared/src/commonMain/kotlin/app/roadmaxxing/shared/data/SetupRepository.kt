@@ -16,7 +16,8 @@ class SetupRepository(
         val queries = database.appMetaQueries
         val stored = queries.selectValue(KEY_SCHEMA_VERSION).executeAsOneOrNull()?.toLongOrNull()
         val status = SetupStatusResolver.resolve(stored, current)
-        if (status == SetupStatus.FirstLaunch) {
+        // The SQL driver has already migrated an older schema by the time this runs; record the new version.
+        if (status == SetupStatus.FirstLaunch || (stored != null && stored < current)) {
             queries.upsertValue(KEY_SCHEMA_VERSION, current.toString())
         }
         status
