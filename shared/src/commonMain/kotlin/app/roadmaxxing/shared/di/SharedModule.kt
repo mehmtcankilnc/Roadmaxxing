@@ -12,6 +12,7 @@ import app.roadmaxxing.shared.drive.DriveRecorder
 import app.roadmaxxing.shared.drive.TrackingStatusHolder
 import app.roadmaxxing.shared.map.DrivenRoadsProvider
 import app.roadmaxxing.shared.matching.RoadMatcher
+import app.roadmaxxing.shared.summary.SummaryRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import org.koin.core.module.Module
@@ -40,5 +41,13 @@ val sharedModule: Module = module {
     single { ProgressRepository(store = get(), packProvider = get(), cpuDispatcher = Dispatchers.Default) }
     single {
         DrivenRoadsProvider(packProvider = get(), store = get(), dispatcher = Dispatchers.Default)
+    }
+    single {
+        SummaryRepository(
+            packProvider = get(), store = get(),
+            clock = { kotlin.time.Clock.System.now().toEpochMilliseconds() },
+            dispatcher = Dispatchers.Default,
+            boundarySource = get(),
+        )
     }
 }

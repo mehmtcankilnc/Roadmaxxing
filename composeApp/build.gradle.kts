@@ -52,6 +52,7 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.play.services.location)
             implementation(libs.androidx.activity.compose)
+            implementation(libs.androidx.core.ktx)
             implementation(libs.koin.android)
             implementation(libs.kotlinx.coroutines.android)
             // Native map engine for Android (OpenGL ES; the Pixel emulators and older devices lack Vulkan guarantees).

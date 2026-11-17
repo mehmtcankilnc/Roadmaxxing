@@ -35,6 +35,8 @@
 	<string>Roadmaxxing records your drives in the background so every road you drive turns green on your map.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Roadmaxxing uses your location to match your drives to roads and show how much of your city you have explored.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Roadmaxxing saves your share cards to your photo library.</string>
 	<key>NSMotionUsageDescription</key>
 	<string>Roadmaxxing uses motion data to detect when you start driving, so GPS stays off when you are not driving and saves battery.</string>
 	<key>UIApplicationSceneManifest</key>

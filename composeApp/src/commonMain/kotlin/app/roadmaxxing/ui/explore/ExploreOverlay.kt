@@ -1,6 +1,9 @@
 package app.roadmaxxing.ui.explore
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -54,10 +57,11 @@ fun ExploreOverlay(
     state: MainUiState,
     explore: ExploreUiState,
     onOpenPermissions: () -> Unit,
+    onOpenCity: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        CityCard(state.progress)
+        CityCard(state.progress, onOpenCity)
         RecordingChip(state.tracking)
         if (explore.loaded && explore.segmentCount == 0) {
             FirstRoadInvite(state, onOpenPermissions)
@@ -66,9 +70,9 @@ fun ExploreOverlay(
 }
 
 @Composable
-private fun CityCard(progress: ProgressState) {
+private fun CityCard(progress: ProgressState, onClick: () -> Unit) {
     val sep = stringResource(Res.string.decimal_separator)
-    FloatingPanel(modifier = Modifier.fillMaxWidth()) {
+    FloatingPanel(modifier = Modifier.fillMaxWidth().clickable(role = Role.Button, onClick = onClick)) {
         Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             when (progress) {
                 ProgressState.Loading -> SecondaryText(stringResource(Res.string.progress_loading))

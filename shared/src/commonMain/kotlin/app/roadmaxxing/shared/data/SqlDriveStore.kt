@@ -89,6 +89,9 @@ class SqlDriveStore(
     override fun segmentsFirstDrivenBy(driveId: Long): Set<Long> =
         segments.selectFirstDrivenBy(driveId).executeAsList().toSet()
 
+    override fun segmentsFirstDrivenSince(sinceMs: Long): Set<Long> =
+        segments.selectFirstDrivenSince(sinceMs).executeAsList().toSet()
+
     override fun observeLastProcessedDriveId(): Flow<Long?> =
         drives.lastProcessedId().asFlow().mapToOneOrNull(ioDispatcher)
 

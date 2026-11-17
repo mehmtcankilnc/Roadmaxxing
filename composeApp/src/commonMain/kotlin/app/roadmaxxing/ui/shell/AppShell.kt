@@ -2,6 +2,7 @@ package app.roadmaxxing.ui.shell
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -21,6 +22,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
@@ -48,6 +50,10 @@ import app.roadmaxxing.ui.explore.ExploreOverlay
 import app.roadmaxxing.ui.explore.ExploreUiState
 import app.roadmaxxing.ui.explore.ExploreViewModel
 import app.roadmaxxing.ui.main.AppTab
+import app.roadmaxxing.ui.main.DetailTarget
+import app.roadmaxxing.ui.summary.CardLoad
+import app.roadmaxxing.ui.summary.SummaryScreen
+import app.roadmaxxing.ui.summary.SummaryViewModel
 import app.roadmaxxing.ui.main.MainIntent
 import app.roadmaxxing.ui.main.MainUiState
 import app.roadmaxxing.ui.main.MainViewModel
@@ -61,7 +67,11 @@ import org.koin.compose.viewmodel.koinViewModel
  * Compact widths get a floating bottom pill bar, wider ones a side rail with the panel next to the map.
  */
 @Composable
-fun AppShell(viewModel: MainViewModel = koinViewModel(), exploreViewModel: ExploreViewModel = koinViewModel()) {
+fun AppShell(
+    viewModel: MainViewModel = koinViewModel(),
+    exploreViewModel: ExploreViewModel = koinViewModel(),
+    summaryViewModel: SummaryViewModel = koinViewModel(),
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val explore by exploreViewModel.state.collectAsStateWithLifecycle()
     val requestPermission = rememberPermissionRequester { viewModel.onIntent(MainIntent.PermissionsChanged) }
@@ -71,7 +81,13 @@ fun AppShell(viewModel: MainViewModel = koinViewModel(), exploreViewModel: Explo
         onPauseOrDispose { }
     }
     // Back from any other tab returns to the map; on the map the system handles back as usual.
-    PlatformBackHandler(enabled = state.selectedTab != AppTab.Map) { viewModel.onIntent(MainIntent.SelectTab(AppTab.Map)) }
+    // An open detail screen closes first.
+    PlatformBackHandler(enabled = state.detail != null || state.selectedTab != AppTab.Map) {
+        if (state.detail != null) viewModel.onIntent(MainIntent.CloseDetail) else viewModel.onIntent(MainIntent.SelectTab(AppTab.Map))
+    }
+    val detail = state.detail
+    LaunchedEffect(detail) { if (detail != null) summaryViewModel.show(detail) else summaryViewModel.clear() }
+    val cardLoad by summaryViewModel.state.collectAsStateWithLifecycle()
     ShellContent(
         state = state,
         explore = explore,
@@ -79,6 +95,17 @@ fun AppShell(viewModel: MainViewModel = koinViewModel(), exploreViewModel: Explo
         onIntent = viewModel::onIntent,
         onRequestPermission = requestPermission,
         onMapTouched = exploreViewModel::onUserTouchedMap,
+        detailPane = { modifier ->
+            if (detail != null) {
+                SummaryScreen(
+                    target = detail,
+                    drive = (detail as? DetailTarget.Drive)?.let { t -> state.drives.firstOrNull { it.id == t.driveId } },
+                    load = cardLoad,
+                    onBack = { viewModel.onIntent(MainIntent.CloseDetail) },
+                    modifier = modifier,
+                )
+            }
+        },
     )
 }
 
@@ -90,12 +117,13 @@ internal fun ShellContent(
     onIntent: (MainIntent) -> Unit,
     onRequestPermission: (AppPermission) -> Unit,
     onMapTouched: () -> Unit,
+    detailPane: @Composable (Modifier) -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         when (screenClass) {
-            ScreenClass.Compact -> CompactShell(state, explore, onIntent, onRequestPermission, onMapTouched)
-            ScreenClass.Medium -> WideShell(state, explore, onIntent, onRequestPermission, panelWidth = MediumPanelWidth, onMapTouched = onMapTouched)
-            ScreenClass.Expanded -> WideShell(state, explore, onIntent, onRequestPermission, panelWidth = ExpandedPanelWidth, onMapTouched = onMapTouched)
+            ScreenClass.Compact -> CompactShell(state, explore, onIntent, onRequestPermission, onMapTouched, detailPane)
+            ScreenClass.Medium -> WideShell(state, explore, onIntent, onRequestPermission, panelWidth = MediumPanelWidth, onMapTouched = onMapTouched, detailPane = detailPane)
+            ScreenClass.Expanded -> WideShell(state, explore, onIntent, onRequestPermission, panelWidth = ExpandedPanelWidth, onMapTouched = onMapTouched, detailPane = detailPane)
         }
     }
 }
@@ -107,6 +135,7 @@ private fun CompactShell(
     onIntent: (MainIntent) -> Unit,
     onRequestPermission: (AppPermission) -> Unit,
     onMapTouched: () -> Unit,
+    detailPane: @Composable (Modifier) -> Unit,
 ) {
     val density = LocalDensity.current
     val insets = WindowInsets.safeDrawing.asPaddingValues()
@@ -125,11 +154,12 @@ private fun CompactShell(
             modifier = Modifier.fillMaxSize().reportMapTouch(onMapTouched),
             contentPadding = PaddingValues(top = topDp, bottom = bottomDp),
         )
-        if (onMapTab) {
+        if (onMapTab && state.detail == null) {
             ExploreOverlay(
                 state = state,
                 explore = explore,
                 onOpenPermissions = { onIntent(MainIntent.SelectTab(AppTab.Profile)) },
+                onOpenCity = { onIntent(MainIntent.OpenDetail(DetailTarget.City)) },
                 modifier = Modifier
                     .align(Alignment.TopCenter)
                     .onSizeChanged { topPx = it.height + with(density) { PanelGap.roundToPx() } }
@@ -147,7 +177,7 @@ private fun CompactShell(
                     .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
                     .padding(horizontal = PanelGap),
             ) {
-                TabScroll(state, onIntent, onRequestPermission)
+                if (state.detail != null) detailPane(Modifier.fillMaxSize()) else TabScroll(state, onIntent, onRequestPermission)
             }
         }
         BottomTabBar(
@@ -170,6 +200,7 @@ private fun WideShell(
     onRequestPermission: (AppPermission) -> Unit,
     panelWidth: Dp,
     onMapTouched: () -> Unit,
+    detailPane: @Composable (Modifier) -> Unit,
 ) {
     val density = LocalDensity.current
     val insets = WindowInsets.safeDrawing.asPaddingValues()
@@ -193,11 +224,11 @@ private fun WideShell(
                 PaddingValues(end = coveredStart, top = coveredTop, bottom = insets.calculateBottomPadding())
             },
         )
+        BoxWithConstraints(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).padding(PanelGap)) {
+        // When list and detail do not fit side by side (e.g. an unfolded foldable), the detail takes the list's place.
+        val detailOnly = state.detail != null && maxWidth < DetailSideBySideMinWidth
         Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .windowInsetsPadding(WindowInsets.safeDrawing)
-                .padding(PanelGap),
+            modifier = Modifier.fillMaxSize(),
             horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(PanelGap),
         ) {
             SideRail(
@@ -205,12 +236,13 @@ private fun WideShell(
                 onSelect = { onIntent(MainIntent.SelectTab(it)) },
                 modifier = Modifier.align(Alignment.CenterVertically),
             )
-            Box(Modifier.width(panelWidth).fillMaxHeight()) {
+            if (!detailOnly) Box(Modifier.width(panelWidth).fillMaxHeight()) {
                 if (state.selectedTab == AppTab.Map) {
                     ExploreOverlay(
                         state = state,
                         explore = explore,
                         onOpenPermissions = { onIntent(MainIntent.SelectTab(AppTab.Profile)) },
+                        onOpenCity = { onIntent(MainIntent.OpenDetail(DetailTarget.City)) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .onSizeChanged { overlayPx = it.height }
@@ -222,6 +254,17 @@ private fun WideShell(
                     }
                 }
             }
+            if (state.detail != null) {
+                // Detail pane beside the list / city card.
+                FloatingPanel(
+                    (if (detailOnly) Modifier.weight(1f) else Modifier.width(panelWidth + 60.dp))
+                        .fillMaxHeight()
+                        .padding(bottom = AttributionClearance - PanelGap),
+                ) {
+                    detailPane(Modifier.fillMaxSize())
+                }
+            }
+        }
         }
     }
 }
@@ -238,7 +281,7 @@ private fun TabScroll(state: MainUiState, onIntent: (MainIntent) -> Unit, onRequ
         ) {
             when (state.selectedTab) {
                 AppTab.Map -> Unit
-                AppTab.Drives -> DrivesTab(state)
+                AppTab.Drives -> DrivesTab(state) { onIntent(MainIntent.OpenDetail(DetailTarget.Drive(it))) }
                 AppTab.Stats -> StatsTab(state)
                 AppTab.Profile -> ProfileTab(state, onIntent, onRequestPermission)
             }
@@ -247,6 +290,9 @@ private fun TabScroll(state: MainUiState, onIntent: (MainIntent) -> Unit, onRequ
 }
 
 private val PanelGap = 12.dp
+
+/** Below this width the detail pane replaces the list instead of sitting beside it. */
+private val DetailSideBySideMinWidth = 900.dp
 
 /** Free strip under a full-height panel so the map attribution stays readable. */
 private val AttributionClearance = 32.dp
