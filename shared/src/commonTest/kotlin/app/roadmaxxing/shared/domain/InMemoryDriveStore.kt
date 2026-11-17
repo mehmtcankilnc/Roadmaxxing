@@ -60,4 +60,14 @@ class InMemoryDriveStore : DriveStore {
     override fun drivenSegmentIds(): Set<Long> = segments.value.keys
     override fun observeDrives(): Flow<List<DriveRecord>> = drives.map { m -> m.values.sortedByDescending { it.startMs } }
     override fun observeDrivenSegmentCount(): Flow<Long> = segments.map { it.size.toLong() }
+
+    override fun drivenSegmentFirstDrives(): Map<Long, Long> = segments.value.mapValues { it.value.second }
+
+    override fun segmentsFirstDrivenBy(driveId: Long): Set<Long> =
+        segments.value.filterValues { it.second == driveId }.keys
+
+    override fun observeLastProcessedDriveId(): Flow<Long?> = drives.map { m ->
+        m.values.filter { it.status == DriveStatus.Processed }
+            .sortedWith(compareBy<DriveRecord>({ it.summary?.processedAtMs ?: 0L }, { it.id })).lastOrNull()?.id
+    }
 }

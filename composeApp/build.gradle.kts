@@ -47,12 +47,15 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.kotlinx.datetime)
+            implementation(libs.maplibre.compose)
         }
         androidMain.dependencies {
             implementation(libs.play.services.location)
             implementation(libs.androidx.activity.compose)
             implementation(libs.koin.android)
             implementation(libs.kotlinx.coroutines.android)
+            // Native map engine for Android (OpenGL ES; the Pixel emulators and older devices lack Vulkan guarantees).
+            runtimeOnly(libs.maplibre.compose.runtime.opengl.android)
         }
     }
 }

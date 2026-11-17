@@ -2,11 +2,16 @@ package app.roadmaxxing.shared.region
 
 import app.roadmaxxing.shared.geo.Geo
 import kotlinx.serialization.json.Json
+import kotlin.concurrent.atomics.AtomicInt
+import kotlin.concurrent.atomics.AtomicReference
+import kotlin.concurrent.atomics.ExperimentalAtomicApi
+import kotlin.concurrent.atomics.incrementAndFetch
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.doubleOrNull
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
@@ -20,9 +25,15 @@ import kotlinx.serialization.json.longOrNull
  * LRU cache bounded by decoded vertex count ([maxCachedVertices], ~24 bytes per vertex).
  * Unknown format versions are rejected with [RegionPackFormatException].
  *
- * Not thread-safe: confine an instance to one thread / a single-parallelism dispatcher.
+ * Thread-safe. `commonMain` has no blocking lock and no new library may be added, so the mutable state is
+ * guarded like this: the tile cache (a [LinkedHashMap] plus its vertex counter) by a tiny spin lock that is only
+ * held for map operations, never while a tile is read or decoded (decoding is pure, so it runs outside the
+ * lock and a racing duplicate decode is simply discarded); the lazily built summary index, the diagnostics
+ * counters and [summaryFromFile] by atomics, with the immutable index published as a whole. Two threads that
+ * need the index at the same moment may both build it; the results are equal and the first published wins.
  * All calls are blocking and CPU/IO-bound; call them off the main thread.
  */
+@OptIn(ExperimentalAtomicApi::class)
 class RegionPack(
     private val source: RegionPackSource,
     private val maxCachedVertices: Int = DEFAULT_MAX_CACHED_VERTICES,
@@ -38,25 +49,28 @@ class RegionPack(
     val regions: List<Region>
 
     private val tilePathTemplate: String
+    private val regionBoxes: Map<Long, RegionBbox>
 
     /** Tile key ([tileKey]) -> segment count listed in the manifest. */
     private val tileIndex: Map<Long, Int>
 
-    /** Insertion order = LRU order (re-inserted on every hit). */
+    /** Insertion order = LRU order (re-inserted on every hit). Guarded by [cacheLock], with [cachedVertices]. */
     private val cache = LinkedHashMap<Long, DecodedTile>()
     private var cachedVertices = 0
-    private var summaryIndex: SegmentSummaryIndex? = null
+    private val cacheLock = SpinLock()
+    private val summaryIndexRef = AtomicReference<SegmentSummaryIndex?>(null)
 
     /** Path of `segments.bin` from the manifest, or null for packs without a segment summary index. */
     private val segmentIndexPath: String?
 
     /** Whether the summary index came from `segments.bin` (true) or from scanning tiles (false); null before first use. */
-    var summaryFromFile: Boolean? = null
-        private set
+    val summaryFromFile: Boolean? get() = summaryFromFileRef.load()
+    private val summaryFromFileRef = AtomicReference<Boolean?>(null)
+
+    private val tileLoadCount = AtomicInt(0)
 
     /** Number of tile decodes so far (diagnostics / tests). */
-    var tileLoads: Int = 0
-        private set
+    val tileLoads: Int get() = tileLoadCount.load()
 
     init {
         val manifest = parseJson(MANIFEST)
@@ -81,10 +95,15 @@ class RegionPack(
         val regionsJson = parseJson(REGIONS)
         checkFormat(regionsJson, "roadmaxxing-regions", REGIONS)
         val list = regionsJson["regions"] as? JsonArray ?: throw RegionPackFormatException("regions missing")
+        val boxes = HashMap<Long, RegionBbox>()
         regions = list.map { el ->
             val o = el.jsonObject
             val len = o["length_dm"] as? JsonObject ?: throw RegionPackFormatException("length_dm missing")
             val id = o.requireLong("id")
+            (o["bbox"] as? JsonArray)?.takeIf { it.size == 4 }?.let { b ->
+                val v = b.map { (it as? JsonPrimitive)?.doubleOrNull }
+                if (v.none { it == null }) boxes[id] = RegionBbox(v[0]!!, v[1]!!, v[2]!!, v[3]!!)
+            }
             Region(
                 id = id,
                 level = o.requireLong("level").toInt(),
@@ -96,6 +115,7 @@ class RegionPack(
                 lengthDmLocal = len.requireLong("local"),
             )
         }
+        regionBoxes = boxes
         if (regions.none { it.id == provinceId && it.level == 1 }) {
             throw RegionPackFormatException("province $provinceId not in $REGIONS")
         }
@@ -104,30 +124,43 @@ class RegionPack(
     val province: Region get() = regions.first { it.id == provinceId }
     val districts: List<Region> get() = regions.filter { it.level == 2 }
 
+    /** Bounding box of a region from `regions.json` (no boundary parsing needed), or null. */
+    fun regionBbox(id: Long): RegionBbox? = regionBoxes[id]
+
     fun region(id: Long): Region? = regions.firstOrNull { it.id == id }
 
     /** Whether the manifest lists tile (x, y). */
     fun hasTile(x: Int, y: Int): Boolean = tileKey(x, y) in tileIndex
 
     /** Number of tiles currently decoded in memory (diagnostics / tests). */
-    val cachedTileCount: Int get() = cache.size
+    val cachedTileCount: Int get() = cacheLock.withLock { cache.size }
 
     /** Decoded vertices currently held by the cache (diagnostics / tests). */
-    val cachedVertexCount: Int get() = cachedVertices
+    val cachedVertexCount: Int get() = cacheLock.withLock { cachedVertices }
 
     /** Decoded tile (x, y) at [tileZoom], or null when the pack has no such tile. Cached (LRU). */
     fun tile(x: Int, y: Int): DecodedTile? {
         val key = tileKey(x, y)
-        cache.remove(key)?.let {
-            cache[key] = it
-            return it
-        }
+        cachedTile(key, touch = true)?.let { return it }
         if (key !in tileIndex) return null
-        val decoded = decode(key)
-        cache[key] = decoded
-        cachedVertices += decoded.vertexCount
-        evict()
-        return decoded
+        val decoded = decode(key) // outside the lock: pure and slow
+        return cacheLock.withLock {
+            val raced = cache.remove(key)
+            if (raced != null) {
+                cache[key] = raced
+                raced
+            } else {
+                cache[key] = decoded
+                cachedVertices += decoded.vertexCount
+                evict()
+                decoded
+            }
+        }
+    }
+
+    /** Cached tile or null; [touch] moves it to the most recently used position. */
+    private fun cachedTile(key: Long, touch: Boolean): DecodedTile? = cacheLock.withLock {
+        if (touch) cache.remove(key)?.also { cache[key] = it } else cache[key]
     }
 
     /** Segments of all tiles intersecting the lat/lon box, de-duplicated by id. */
@@ -147,8 +180,9 @@ class RegionPack(
 
     /** Segment by id (loads its tile; an uncached id needs the tile locator, built by scanning every tile once), or null when not in the pack. */
     fun segment(id: Long): Segment? {
-        for (t in cache.values) t.segments.binarySearchById(id)?.let { return it }
-        if (summaryIndex?.find(id) == -1) return null
+        val cached = cacheLock.withLock { cache.values.toList() }
+        for (t in cached) t.segments.binarySearchById(id)?.let { return it }
+        if (summaryIndexRef.load()?.find(id) == -1) return null
         val idx = scannedIndex()
         val pos = idx.find(id)
         if (pos < 0) return null
@@ -170,21 +204,20 @@ class RegionPack(
     fun forEachSegment(action: (Segment) -> Unit) {
         val seen = HashSet<Long>()
         for (key in tileIndex.keys.sorted()) {
-            val t = cache[key] ?: decode(key)
+            val t = cachedTile(key, touch = false) ?: decode(key)
             for (s in t.segments) if (seen.add(s.id)) action(s)
         }
     }
 
     /** Summary index of the whole pack: from `segments.bin` when the manifest lists it, else scanned from the tiles. */
     private fun index(): SegmentSummaryIndex {
-        summaryIndex?.let { return it }
+        summaryIndexRef.load()?.let { return it }
         val path = segmentIndexPath
         if (path != null) {
             val bytes = source.read(path) ?: throw RegionPackFormatException("$path listed in manifest but missing")
             val built = SegmentSummaryIndex.decode(bytes, segmentCount)
-            summaryIndex = built
-            summaryFromFile = true
-            return built
+            if (summaryIndexRef.compareAndSet(null, built)) summaryFromFileRef.store(true)
+            return summaryIndexRef.load() ?: built
         }
         return scannedIndex()
     }
@@ -195,11 +228,11 @@ class RegionPack(
      * and the only source of "which tile holds this id" for [segment].
      */
     private fun scannedIndex(): SegmentSummaryIndex {
-        summaryIndex?.takeIf { it.tiles != null }?.let { return it }
+        summaryIndexRef.load()?.takeIf { it.tiles != null }?.let { return it }
         val summaries = HashMap<Long, SegmentSummary>(segmentCount * 2)
         val tileOf = HashMap<Long, Long>(segmentCount * 2)
         for (key in tileIndex.keys.sorted()) {
-            val t = cache[key] ?: decode(key)
+            val t = cachedTile(key, touch = false) ?: decode(key)
             for (s in t.segments) {
                 if (s.id in summaries) continue
                 summaries[s.id] = SegmentSummary(s.id, s.lengthDm, s.roadClass, s.provinceId, s.districtId)
@@ -215,9 +248,15 @@ class RegionPack(
             districtId = LongArray(ids.size) { summaries.getValue(ids[it]).districtId },
             tiles = LongArray(ids.size) { tileOf.getValue(ids[it]) },
         )
-        if (summaryIndex == null) summaryFromFile = false
-        summaryIndex = built
-        return built
+        // Publish: a file-based index (no tile locator) is replaced; a scanned one from a racing thread is kept.
+        while (true) {
+            val current = summaryIndexRef.load()
+            if (current?.tiles != null) return current
+            if (summaryIndexRef.compareAndSet(current, built)) {
+                if (current == null) summaryFromFileRef.store(false)
+                return built
+            }
+        }
     }
 
     private fun decode(key: Long): DecodedTile {
@@ -227,7 +266,7 @@ class RegionPack(
             .replace("{x}", x.toString()).replace("{y}", y.toString())
         val bytes = source.read(path) ?: throw RegionPackFormatException("tile $path listed in manifest but missing")
         val decoded = TileDecoder.decode(bytes)
-        tileLoads++
+        tileLoadCount.incrementAndFetch()
         if (decoded.zoom != tileZoom || decoded.x != x || decoded.y != y) {
             throw RegionPackFormatException("tile $path header says ${decoded.zoom}/${decoded.x}/${decoded.y}")
         }
@@ -285,6 +324,9 @@ class RegionPack(
     }
 }
 
+/** `[west, south, east, north]` of a region in degrees. */
+data class RegionBbox(val west: Double, val south: Double, val east: Double, val north: Double)
+
 /** Geometry-free facts about a segment, enough for progress computation. */
 data class SegmentSummary(
     val id: Long,
@@ -310,4 +352,22 @@ private fun List<Segment>.binarySearchById(id: Long): Segment? {
         }
     }
     return null
+}
+
+/**
+ * Minimal spin lock for very short critical sections (map bookkeeping, microseconds); `commonMain` offers no
+ * blocking lock. Never hold it across IO or decoding.
+ */
+@OptIn(ExperimentalAtomicApi::class)
+private class SpinLock {
+    private val state = AtomicInt(0)
+
+    inline fun <T> withLock(block: () -> T): T {
+        while (!state.compareAndSet(0, 1)) { /* spin */ }
+        try {
+            return block()
+        } finally {
+            state.store(0)
+        }
+    }
 }
