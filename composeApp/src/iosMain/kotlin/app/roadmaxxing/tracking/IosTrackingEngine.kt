@@ -26,7 +26,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import platform.CoreLocation.CLActivityTypeAutomotiveNavigation
-import platform.CoreLocation.CLAccuracyAuthorizationReducedAccuracy
+import platform.CoreLocation.CLAccuracyAuthorization
 import platform.CoreLocation.CLCircularRegion
 import platform.CoreLocation.CLLocation
 import platform.CoreLocation.CLLocationCoordinate2DMake
@@ -159,7 +159,7 @@ class IosTrackingEngine(
     fun permissionStates(): Map<AppPermission, PermissionState> {
         val auth = idleManager.authorizationStatus
         val whenInUse = auth == kCLAuthorizationStatusAuthorizedWhenInUse || auth == kCLAuthorizationStatusAuthorizedAlways
-        val precise = idleManager.accuracyAuthorization != CLAccuracyAuthorizationReducedAccuracy
+        val precise = idleManager.accuracyAuthorization != CLAccuracyAuthorization.CLAccuracyAuthorizationReducedAccuracy
         val motionState = when {
             !CMMotionActivityManager.isActivityAvailable() -> PermissionState.NotNeeded // simulator: speed path only
             CMMotionActivityManager.authorizationStatus() == CMAuthorizationStatusAuthorized -> PermissionState.Granted
