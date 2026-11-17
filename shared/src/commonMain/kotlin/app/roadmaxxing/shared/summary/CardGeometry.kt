@@ -92,19 +92,18 @@ internal object CardGeometry {
         if (total < 2 * trimM) return emptyList()
         val cell = 0.002
         val grid = HashMap<Long, MutableList<Int>>()
-        fun key(x: Long, y: Long) = (x shl 32) xor (y and 0xFFFFFFFFL)
         for (i in route.indices) {
-            grid.getOrPut(key(Math.floorDiv((route[i].lon / cell).toLong(), 1L), (route[i].lat / cell).toLong())) { ArrayList() }.add(i)
+            grid.getOrPut(cellKey(cellIndex(route[i].lon, cell), cellIndex(route[i].lat, cell))) { ArrayList() }.add(i)
         }
         val out = ArrayList<List<GeoPoint>>()
         var run = ArrayList<GeoPoint>()
         for (p in line) {
-            val cx = (p.lon / cell).toLong()
-            val cy = (p.lat / cell).toLong()
+            val cx = cellIndex(p.lon, cell)
+            val cy = cellIndex(p.lat, cell)
             var best = -1
             var bestD = Double.MAX_VALUE
             for (dx in -1L..1L) for (dy in -1L..1L) {
-                for (i in grid[key(cx + dx, cy + dy)] ?: continue) {
+                for (i in grid[cellKey(cx + dx, cy + dy)] ?: continue) {
                     val d = Geo.distanceM(p.lat, p.lon, route[i].lat, route[i].lon)
                     if (d < bestD) {
                         bestD = d
@@ -123,6 +122,11 @@ internal object CardGeometry {
         if (run.size >= 2) out.add(run)
         return out
     }
+
+    /** Grid cell of a coordinate: rounds down (also for negative values, unlike `toLong()` which truncates to zero). */
+    internal fun cellIndex(v: Double, cell: Double): Long = kotlin.math.floor(v / cell).toLong()
+
+    internal fun cellKey(x: Long, y: Long): Long = (x shl 32) xor (y and 0xFFFFFFFFL)
 
     private fun distToSegment(px: Double, py: Double, ax: Double, ay: Double, bx: Double, by: Double): Double {
         val dx = bx - ax

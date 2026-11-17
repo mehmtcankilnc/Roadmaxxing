@@ -297,4 +297,21 @@ class SummaryTest {
             "driven=${ids.size} fullScan: ${oldMs} ms, ${coldOld.tileLoads} tiles; tileLookup: ${newMs} ms, ${coldNew.tileLoads} tiles\n",
         )
     }
+
+    @Test
+    fun gridCellsRoundDownAlsoForNegativeCoordinates() {
+        assertEquals(-1L, CardGeometry.cellIndex(-0.001, 0.002))
+        assertEquals(0L, CardGeometry.cellIndex(0.001, 0.002))
+        assertEquals(-2L, CardGeometry.cellIndex(-0.002001, 0.002))
+        assertTrue(CardGeometry.cellKey(-1, -1) != CardGeometry.cellKey(0, 0))
+    }
+
+    @Test
+    fun clipByRoutePositionWorksWithNegativeCoordinates() {
+        // Route in the western/southern hemisphere (negative lon and lat), ~1.1 km straight.
+        val line = (0..100).map { GeoPoint(-34.0 - it * 0.0001, -58.0) }
+        val clipped = CardGeometry.clipByRoutePosition(line, line, 300.0)
+        assertEquals(1, clipped.size)
+        assertTrue(clipped[0].size in 44..49, "kept ${clipped[0].size}")
+    }
 }
