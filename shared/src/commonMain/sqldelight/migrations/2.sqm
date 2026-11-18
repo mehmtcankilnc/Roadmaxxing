@@ -1,0 +1,10 @@
+-- Version 2 -> 3: privacy zones (Stage H).
+CREATE TABLE privacy_zone (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    kind TEXT NOT NULL,
+    name TEXT,
+    lat REAL NOT NULL,
+    lon REAL NOT NULL,
+    radius_m INTEGER NOT NULL,
+    created_at INTEGER NOT NULL
+);

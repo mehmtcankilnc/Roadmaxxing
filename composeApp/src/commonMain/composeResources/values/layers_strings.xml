@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="layers_button">Map layers</string>
+    <string name="layers_title">Map layers</string>
+    <string name="layers_undiscovered">Undiscovered roads</string>
+    <string name="layers_undiscovered_hint">Shows the roads you have not driven yet, in grey.</string>
+    <string name="layers_privacy_zones">Privacy zones</string>
+    <string name="layers_privacy_zones_hint">Shows your privacy zones as faint circles on this map.</string>
+</resources>

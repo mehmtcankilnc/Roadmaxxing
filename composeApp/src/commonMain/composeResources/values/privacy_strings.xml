@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="privacy_zones_row">Privacy zones</string>
+    <string name="privacy_zones_row_hint">Hide places like home or work from shared cards</string>
+    <string name="privacy_zones_title">Privacy zones</string>
+    <string name="privacy_zones_explainer">Roads inside a privacy zone are cut from the cards you share. Your own map and your percentages stay exactly the same.</string>
+    <string name="privacy_zones_empty">No zones yet. Add your home or work so they never show on shared cards.</string>
+    <string name="privacy_zones_add">Add zone</string>
+    <string name="privacy_zone_kind_home">Home</string>
+    <string name="privacy_zone_kind_work">Work</string>
+    <string name="privacy_zone_kind_custom">Custom</string>
+    <string name="privacy_zone_radius_value">%1$s m</string>
+    <string name="privacy_zone_edit">Edit</string>
+    <string name="privacy_zone_delete">Delete</string>
+    <string name="privacy_zone_delete_title">Delete this zone?</string>
+    <string name="privacy_zone_delete_message">Roads here can show on shared cards again.</string>
+    <string name="privacy_zone_cancel">Cancel</string>
+    <string name="privacy_zone_save">Save</string>
+    <string name="privacy_zone_editor_title_add">New zone</string>
+    <string name="privacy_zone_editor_title_edit">Edit zone</string>
+    <string name="privacy_zone_editor_hint">Move the map so the pin sits at the centre of the zone.</string>
+    <string name="privacy_zone_name_label">Name</string>
+    <string name="privacy_zone_radius_label">Radius: %1$s m</string>
+    <string name="privacy_zone_map_description">Map for choosing the zone centre</string>
+    <string name="privacy_zone_pin_description">Zone centre</string>
+    <string name="privacy_zone_suggestion_title">Add a zone here?</string>
+    <string name="privacy_zone_suggestion_body">You often start or end drives here. Add it as a privacy zone?</string>
+    <string name="privacy_zone_suggestion_add">Add</string>
+    <string name="privacy_zone_suggestion_dismiss">Not now</string>
+    <string name="privacy_zone_back">Back</string>
+</resources>

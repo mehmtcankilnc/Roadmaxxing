@@ -18,6 +18,10 @@ import app.roadmaxxing.resources.profile_privacy_policy
 import app.roadmaxxing.resources.profile_terms_of_use
 import app.roadmaxxing.ui.legal.LegalDocument
 import app.roadmaxxing.ui.legal.LegalScreen
+import app.roadmaxxing.ui.privacy.PrivacyZonesOverlay
+import app.roadmaxxing.resources.privacy_zones_row
+import app.roadmaxxing.resources.privacy_zones_row_hint
+import app.roadmaxxing.resources.privacy_zones_title
 import org.koin.compose.koinInject
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -76,10 +80,12 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun ProfileTab(state: MainUiState, onIntent: (MainIntent) -> Unit, onRequestPermission: (AppPermission) -> Unit) {
     var legalDocument by remember { mutableStateOf<LegalDocument?>(null) }
+    var showPrivacyZones by remember { mutableStateOf(false) }
     Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         TabTitle(stringResource(Res.string.tab_profile))
         PermissionsCard(onRequestPermission)
         RecordingCard(state, onIntent)
+        PrivacyZonesCard { showPrivacyZones = true }
         LegalCard { legalDocument = it }
         Text(
             text = stringResource(Res.string.main_safe_drive),
@@ -92,6 +98,7 @@ fun ProfileTab(state: MainUiState, onIntent: (MainIntent) -> Unit, onRequestPerm
             color = RoadmaxxingTheme.extraColors.textSecondary,
         )
     }
+    if (showPrivacyZones) PrivacyZonesOverlay(onClose = { showPrivacyZones = false })
     legalDocument?.let { doc ->
         // Full-screen overlay held in local state; system back closes it.
         Dialog(
@@ -210,6 +217,14 @@ private fun PermissionButton(text: String, enabled: Boolean, onClick: () -> Unit
             contentColor = MaterialTheme.colorScheme.onPrimary,
         ),
     ) { Text(text) }
+}
+
+@Composable
+private fun PrivacyZonesCard(onOpen: () -> Unit) {
+    InfoCard(stringResource(Res.string.privacy_zones_row)) {
+        SecondaryText(stringResource(Res.string.privacy_zones_row_hint))
+        LegalRow(stringResource(Res.string.privacy_zones_title), onOpen)
+    }
 }
 
 @Composable

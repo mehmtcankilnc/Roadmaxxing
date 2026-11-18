@@ -35,6 +35,10 @@ kotlin {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
         }
+        // Test-only: real SQLite (JDBC) for migration and repository tests on the host JVM.
+        getByName("androidHostTest").dependencies {
+            implementation(libs.sqldelight.sqlite.driver)
+        }
         androidMain.dependencies {
             implementation(libs.koin.android)
             implementation(libs.kotlinx.coroutines.android)

@@ -13,9 +13,12 @@ import app.roadmaxxing.shared.drive.TrackingStatusHolder
 import app.roadmaxxing.shared.map.DrivenRoadsProvider
 import app.roadmaxxing.shared.matching.RoadMatcher
 import app.roadmaxxing.shared.map.burn.BurnRepository
+import app.roadmaxxing.shared.map.layers.MapLayerPreferences
+import app.roadmaxxing.shared.map.undiscovered.UndiscoveredRoadsProvider
 import app.roadmaxxing.shared.onboarding.IntroRoadsProvider
 import app.roadmaxxing.shared.onboarding.SqlAppMetaStore
 import app.roadmaxxing.shared.onboarding.OnboardingRepository
+import app.roadmaxxing.shared.privacy.PrivacyZoneRepository
 import app.roadmaxxing.shared.summary.SummaryRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -48,6 +51,10 @@ val sharedModule: Module = module {
     single {
         DrivenRoadsProvider(packProvider = get(), store = get(), dispatcher = Dispatchers.Default)
     }
+    single { MapLayerPreferences(store = SqlAppMetaStore(get())) }
+    single {
+        UndiscoveredRoadsProvider(packProvider = get(), store = get(), dispatcher = Dispatchers.Default)
+    }
     single {
         BurnRepository(
             store = get(), packProvider = get(),
@@ -56,11 +63,18 @@ val sharedModule: Module = module {
         )
     }
     single {
+        PrivacyZoneRepository(
+            database = get(), store = get(), appMeta = SqlAppMetaStore(get()), dispatcher = Dispatchers.Default,
+        )
+    }
+    single {
+        val zoneRepository: PrivacyZoneRepository = get()
         SummaryRepository(
             packProvider = get(), store = get(),
             clock = { kotlin.time.Clock.System.now().toEpochMilliseconds() },
             dispatcher = Dispatchers.Default,
             boundarySource = get(),
+            privacyZones = { zoneRepository.zones.value },
         )
     }
 }

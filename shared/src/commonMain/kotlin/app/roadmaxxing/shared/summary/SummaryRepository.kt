@@ -4,6 +4,8 @@ import app.roadmaxxing.shared.data.DriveStore
 import app.roadmaxxing.shared.domain.DriveStatus
 import app.roadmaxxing.shared.domain.RegionPackProvider
 import app.roadmaxxing.shared.drive.DriveVerdict
+import app.roadmaxxing.shared.privacy.PrivacyClipper
+import app.roadmaxxing.shared.privacy.PrivacyZone
 import app.roadmaxxing.shared.progress.ProgressCalculator
 import app.roadmaxxing.shared.region.Region
 import app.roadmaxxing.shared.region.RegionPackSource
@@ -35,6 +37,8 @@ class SummaryRepository(
     private val clock: () -> Long,
     private val dispatcher: CoroutineDispatcher,
     private val boundarySource: RegionPackSource? = null,
+    /** Privacy zones cut out of every card geometry (after the fixed end trim). Read per card, so edits apply at once. */
+    private val privacyZones: () -> List<PrivacyZone> = { emptyList() },
 ) {
     suspend fun driveCard(driveId: Long, languageCode: String): DriveCardData? = withContext(dispatcher) {
         val record = store.drive(driveId) ?: return@withContext null
@@ -48,14 +52,19 @@ class SummaryRepository(
         val speeds = SpeedStats.compute(points)
         val raw = points.map { GeoPoint(it.lat, it.lon) }
 
+        val zones = privacyZones()
         val route = ArrayList<CardPolyline>()
         val trimmed = CardGeometry.trimEnds(raw, PRIVACY_TRIM_M)
         if (trimmed.size >= 2) {
-            route.add(CardPolyline(CardGeometry.simplify(trimmed, ROUTE_TOLERANCE_M), fresh = false))
+            for (piece in PrivacyClipper.clip(trimmed, zones)) {
+                route.add(CardPolyline(CardGeometry.simplify(piece, ROUTE_TOLERANCE_M), fresh = false))
+            }
             for (line in freshLines(driveId)) {
-                for (piece in CardGeometry.clipByRoutePosition(line, raw, PRIVACY_TRIM_M)) {
-                    val simple = CardGeometry.simplify(piece, FRESH_TOLERANCE_M)
-                    if (simple.size >= 2) route.add(CardPolyline(simple, fresh = true))
+                for (trimmedPiece in CardGeometry.clipByRoutePosition(line, raw, PRIVACY_TRIM_M)) {
+                    for (piece in PrivacyClipper.clip(trimmedPiece, zones)) {
+                        val simple = CardGeometry.simplify(piece, FRESH_TOLERANCE_M)
+                        if (simple.size >= 2) route.add(CardPolyline(simple, fresh = true))
+                    }
                 }
             }
         }
@@ -84,11 +93,14 @@ class SummaryRepository(
         var weekDm = 0L
         for (id in store.segmentsFirstDrivenSince(weekSince)) weekDm += pack.summary(id)?.lengthDm ?: 0L
 
+        val zones = privacyZones()
         val driven = ArrayList<List<GeoPoint>>()
         if (drivenIds.isNotEmpty()) {
             for (seg in SegmentResolver(pack, store).resolve(drivenIds, store.drivenSegmentFirstDrives(), scanForMissing = false)) {
-                val simple = CardGeometry.simplify(seg.toPoints(), CITY_TOLERANCE_M)
-                if (simple.size >= 2) driven.add(simple)
+                for (piece in PrivacyClipper.clip(seg.toPoints(), zones)) {
+                    val simple = CardGeometry.simplify(piece, CITY_TOLERANCE_M)
+                    if (simple.size >= 2) driven.add(simple)
+                }
             }
         }
         CityCardData(
