@@ -102,7 +102,7 @@ fun ProfileTab(state: MainUiState, onIntent: (MainIntent) -> Unit, onRequestPerm
         // Full-screen overlay held in local state; system back closes it.
         Dialog(
             onDismissRequest = { legalDocument = null },
-            properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
+            properties = DialogProperties(usePlatformDefaultWidth = false),
         ) {
             Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                 LegalScreen(document = doc, onBack = { legalDocument = null })
