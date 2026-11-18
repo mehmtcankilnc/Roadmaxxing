@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="privacy_zones_row">Gizlilik bölgeleri</string>
+    <string name="privacy_zones_row_hint">Ev ya da iş gibi yerleri paylaşım kartlarından gizle</string>
+    <string name="privacy_zones_title">Gizlilik bölgeleri</string>
+    <string name="privacy_zones_explainer">Gizlilik bölgesinin içindeki yollar paylaştığın kartlardan kesilir. Kendi haritan ve yüzdelerin aynen kalır.</string>
+    <string name="privacy_zones_empty">Henüz bölge yok. Evini ya da iş yerini ekle, paylaşım kartlarında hiç görünmesin.</string>
+    <string name="privacy_zones_add">Bölge ekle</string>
+    <string name="privacy_zone_kind_home">Ev</string>
+    <string name="privacy_zone_kind_work">İş</string>
+    <string name="privacy_zone_kind_custom">Özel</string>
+    <string name="privacy_zone_radius_value">%1$s m</string>
+    <string name="privacy_zone_edit">Düzenle</string>
+    <string name="privacy_zone_delete">Sil</string>
+    <string name="privacy_zone_delete_title">Bu bölge silinsin mi?</string>
+    <string name="privacy_zone_delete_message">Buradaki yollar paylaşım kartlarında yeniden görünebilir.</string>
+    <string name="privacy_zone_cancel">Vazgeç</string>
+    <string name="privacy_zone_save">Kaydet</string>
+    <string name="privacy_zone_editor_title_add">Yeni bölge</string>
+    <string name="privacy_zone_editor_title_edit">Bölgeyi düzenle</string>
+    <string name="privacy_zone_editor_hint">İğne bölgenin merkezine gelecek şekilde haritayı kaydır.</string>
+    <string name="privacy_zone_name_label">Ad</string>
+    <string name="privacy_zone_radius_label">Yarıçap: %1$s m</string>
+    <string name="privacy_zone_map_description">Bölge merkezini seçmek için harita</string>
+    <string name="privacy_zone_pin_description">Bölge merkezi</string>
+    <string name="privacy_zone_suggestion_title">Buraya bölge eklensin mi?</string>
+    <string name="privacy_zone_suggestion_body">Sürüşlerine sık sık buradan başlıyor ya da burada bitiriyorsun. Gizlilik bölgesi olarak ekleyelim mi?</string>
+    <string name="privacy_zone_suggestion_add">Ekle</string>
+    <string name="privacy_zone_suggestion_dismiss">Şimdi değil</string>
+    <string name="privacy_zone_back">Geri</string>
+</resources>

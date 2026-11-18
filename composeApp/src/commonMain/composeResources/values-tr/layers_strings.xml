@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="layers_button">Harita katmanları</string>
+    <string name="layers_title">Harita katmanları</string>
+    <string name="layers_undiscovered">Keşfedilmemiş yollar</string>
+    <string name="layers_undiscovered_hint">Henüz sürmediğin yolları gri olarak gösterir.</string>
+    <string name="layers_privacy_zones">Gizlilik bölgeleri</string>
+    <string name="layers_privacy_zones_hint">Gizlilik bölgelerini bu haritada soluk daireler olarak gösterir.</string>
+</resources>

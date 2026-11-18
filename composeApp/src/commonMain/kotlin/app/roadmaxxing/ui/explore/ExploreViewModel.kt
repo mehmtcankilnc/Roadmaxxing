@@ -6,12 +6,19 @@ import app.roadmaxxing.shared.map.DrivenRoadsProvider
 import app.roadmaxxing.shared.map.GeoBounds
 import app.roadmaxxing.shared.map.burn.BurnRepository
 import app.roadmaxxing.shared.map.burn.BurnTimeline
+import app.roadmaxxing.shared.map.layers.MapLayerPreferences
+import app.roadmaxxing.shared.map.undiscovered.UndiscoveredRoadsProvider
+import app.roadmaxxing.shared.privacy.PrivacyZoneRepository
+import app.roadmaxxing.ui.map.zoneCirclesGeoJson
 import app.roadmaxxing.ui.map.MapFocus
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -25,6 +32,12 @@ data class ExploreUiState(
     val loaded: Boolean = false,
     /** The new-road burn to play on the map right now; null when nothing is pending or it already finished. */
     val burn: BurnPlayback? = null,
+    /** GeoJSON of undriven roads in the current view (empty while the layer is off). */
+    val undiscoveredGeoJson: String = EMPTY_GEOJSON,
+    /** GeoJSON polygons of the privacy zones (empty while the layer is off). */
+    val zoneCirclesGeoJson: String = EMPTY_GEOJSON,
+    val showUndiscovered: Boolean = true,
+    val showPrivacyZones: Boolean = true,
 )
 
 /**
@@ -44,6 +57,9 @@ class BurnPlayback(
 class ExploreViewModel(
     private val provider: DrivenRoadsProvider,
     private val burns: BurnRepository,
+    private val undiscovered: UndiscoveredRoadsProvider,
+    private val layerPrefs: MapLayerPreferences,
+    private val zoneRepository: PrivacyZoneRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ExploreUiState())
@@ -54,6 +70,39 @@ class ExploreViewModel(
 
     fun onUserTouchedMap() {
         userTouchedMap = true
+    }
+
+    private var lastView: Pair<GeoBounds, Double>? = null
+    private var undiscoveredJob: Job? = null
+
+    /** Called once the camera has been still for a moment; loads the undriven roads of the visible area. */
+    fun onCameraIdle(bounds: GeoBounds, zoom: Double) {
+        lastView = bounds to zoom
+        loadUndiscovered()
+    }
+
+    fun setShowUndiscovered(value: Boolean) = layerPrefs.setShowUndiscovered(value)
+
+    fun setShowPrivacyZones(value: Boolean) = layerPrefs.setShowPrivacyZones(value)
+
+    /** Loads (or clears) the undiscovered layer for the last idle view; a newer request cancels the older one. */
+    private fun loadUndiscovered() {
+        undiscoveredJob?.cancel()
+        val view = lastView
+        if (view == null || !layerPrefs.showUndiscovered.value) {
+            _state.update { it.copy(undiscoveredGeoJson = EMPTY_GEOJSON) }
+            return
+        }
+        undiscoveredJob = viewModelScope.launch {
+            try {
+                val json = withContext(Dispatchers.Default) { undiscovered.roadsIn(view.first, view.second) }
+                _state.update { it.copy(undiscoveredGeoJson = json) }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                // Keep the previous layer; it is purely visual.
+            }
+        }
     }
 
     private var mapVisible = false
@@ -92,6 +141,19 @@ class ExploreViewModel(
 
     init {
         viewModelScope.launch {
+            layerPrefs.showUndiscovered.collect { on ->
+                _state.update { it.copy(showUndiscovered = on) }
+                loadUndiscovered()
+            }
+        }
+        viewModelScope.launch {
+            combine(layerPrefs.showPrivacyZones, zoneRepository.zones) { on, zones -> on to zones }
+                .collect { (on, zones) ->
+                    val json = if (on) withContext(Dispatchers.Default) { zoneCirclesGeoJson(zones) } else EMPTY_GEOJSON
+                    _state.update { it.copy(showPrivacyZones = on, zoneCirclesGeoJson = json) }
+                }
+        }
+        viewModelScope.launch {
             provider.observe()
                 .catch { /* keep the last map; progress cards report their own errors */ }
                 .collect { snapshot ->
@@ -106,6 +168,8 @@ class ExploreViewModel(
                             loaded = true,
                         )
                     }
+                    // A new drive removes roads from the undiscovered layer.
+                    loadUndiscovered()
                     checkBurn()
                 }
         }

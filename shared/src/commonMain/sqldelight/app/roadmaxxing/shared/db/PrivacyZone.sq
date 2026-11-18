@@ -1,0 +1,26 @@
+-- User-defined privacy zones: circles that are cut out of shared images (never out of the in-app map).
+-- kind: HOME, WORK or CUSTOM.
+CREATE TABLE privacy_zone (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    kind TEXT NOT NULL,
+    name TEXT,
+    lat REAL NOT NULL,
+    lon REAL NOT NULL,
+    radius_m INTEGER NOT NULL,
+    created_at INTEGER NOT NULL
+);
+
+selectAll:
+SELECT id, kind, name, lat, lon, radius_m FROM privacy_zone ORDER BY id;
+
+insertZone:
+INSERT INTO privacy_zone(kind, name, lat, lon, radius_m, created_at) VALUES (?, ?, ?, ?, ?, ?);
+
+updateZone:
+UPDATE privacy_zone SET kind = ?, name = ?, lat = ?, lon = ?, radius_m = ? WHERE id = ?;
+
+deleteZone:
+DELETE FROM privacy_zone WHERE id = ?;
+
+lastInsertedId:
+SELECT last_insert_rowid();
