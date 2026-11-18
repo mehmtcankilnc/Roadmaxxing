@@ -11,16 +11,20 @@ complete, like the map-completion screen in a driving game. The main output is a
 1. **Record automatically:** the phone detects a drive in the background and records it, no button needed.
 2. **Paint the roads:** the GPS trace is matched on the device to OpenStreetMap road segments; driven segments turn green.
 3. **Percentage:** completion is computed per province and district (and per road class).
-4. **Card:** a card shows the percentage and the drive.
-5. **Share:** the card goes to a story or post.
+4. **Card:** after a drive, a drive card (route, distance, duration, speed, new km) and a city card (province
+   percentage, major / local road split, completed districts, this week's new km) are rendered on the device as a PNG,
+   in 9:16 and 4:5.
+5. **Share:** the card goes through the system share sheet (to a story or post from there) or is saved to the gallery.
+   There is no direct Instagram Story button yet.
 
 The app keeps a "drive safely" message. It has no feature, badge or text that rewards speed.
 
-> **Status: Phase 0 (technical validation, pilot city Adana).** Steps 1–3 run end to end on the Android emulator,
-> and the exploration map (four-tab app shell: Map, Drives, Stats, Profile) draws the driven roads there. Steps 4–5
-> and everything server- or account-related are **planned**. iOS has automatic drive recording code and the map that
-> compile and pass the shared tests on GitHub Actions, but they have **not been run on any physical device**;
-> Android has not been tried on a physical device either (see
+> **Status: Phase 0 (technical validation, pilot city Adana).** Steps 1–5 are in the code. Steps 1–3 run end to end
+> on the Android emulator, the exploration map (four-tab app shell: Map, Drives, Stats, Profile) draws the driven
+> roads there, and the drive summary, the drive and city cards and sharing (system share sheet, save to gallery) were
+> verified on the emulator too. Everything server- or account-related is **planned**. iOS has automatic drive
+> recording code, the map and the card sharing code that compile and pass the shared tests on GitHub Actions, but they
+> have **not been run on any physical device**; Android has not been tried on a physical device either (see
 > [Known limitations](#known-limitations)).
 
 ## MVP features
@@ -34,9 +38,9 @@ is in and what is not; everything else is "planned".
 | 2 | Road matching (map matching) | done (Phase 0) | Pure Kotlin matcher in `shared` against the offline Adana region pack; driven segments are stored in SQLite. |
 | 3 | Exploration map | partial | Map tab with MapLibre Compose and an app-embedded dark style derived from OpenFreeMap "Dark"; driven roads are thick Volt green, roads opened by the latest drive get a halo; the camera focuses on the driven roads on first open unless the user has moved the map. Verified on the Android emulator; the iOS build compiles in CI; **not tried on a physical device**. App shell with four tabs (Map, Drives, Stats, Profile): bottom bar on compact screens, side bar on medium and wide ones. **Planned:** undiscovered-roads layer, "burn-in" animation for newly driven roads. |
 | 4 | Completion percentages | partial (Phase 0) | Province and district percentages for Adana, split into major roads and local roads, shown on the Phase 0 screen. **Planned:** country level, other provinces. |
-| 5 | Drive summary | partial (Phase 0) | Per drive: distance, duration, new km, drive / not-a-drive verdict. **Planned:** average and max speed display, route view. |
-| 6 | Share card | planned | – |
-| 7 | Onboarding and permissions | partial (Phase 0) | Permission rows (location, background location, physical activity, notifications) on the Phase 0 screen. **Planned:** value onboarding, safe-driving consent, card-by-card permission flow. |
+| 5 | Drive summary | done (Phase 0) | Summary screen per drive: distance, duration, average and max speed, new km, simplified route. Speed comes from the platform's reported speed when plausible, else it is derived from positions (median + acceleration filter; average = average while moving, never above max). City card data: province percentage, major / local road split, completed districts X/Y (a district counts as complete at 95 %), this week's new km, simplified province outline and driven lines. Verified on the Android emulator; the iOS build compiles in CI; **not tried on a physical device**. |
+| 6 | Share card | partial (Phase 0) | Drive card and city card, 9:16 (1080×1920) and 4:5 (1080×1350), rendered on the device as PNG; "Hide speed" switch (speed is shown by default). Share through the system share sheet and save to the gallery (Android FileProvider + MediaStore; iOS `UIActivityViewController` + add-only photo library access). The route on the card omits the first and last 300 m along the road, and is empty for drives shorter than 600 m. The logo on the card is a text wordmark (no real logo yet). Verified on the Android emulator; the iOS build compiles in CI; **not tried on a physical device**. **Planned:** direct Instagram Story sharing, Pro card styles, new city card, privacy zones (see [Known limitations](#known-limitations)), notification when a drive ends. |
+| 7 | Onboarding and permissions | done (Phase 0) | First-launch gate: intro (animated Adana roads drawn from the region pack) → safe-driving consent (two checkboxes; stored locally in `app_meta` with a consent version) → one permission card at a time (location, background location with a Google Play prominent disclosure first, physical activity, notifications) → map. Notifications are optional and advance automatically; required permissions stay on their card when denied, and everything can be skipped. Permission states include `Blocked` (only system Settings can grant) and `Approximate` (coarse / reduced location), with an "open settings" route; the Profile tab shows the states and lets the user fix them later. Privacy policy and Terms are readable in the app (Profile) in Turkish and English, but they are **drafts**: contact, data controller and jurisdiction are placeholders and they need owner or lawyer review before launch. No paywall in onboarding (no RevenueCat yet). Not tried on a physical device; the iOS code compiles in CI only. |
 | 8 | Account and sync | planned | No Firebase. Data stays in the local database. |
 | 9 | Subscription and paywall | planned | No RevenueCat. |
 | 10 | Settings | planned | – |
@@ -56,6 +60,8 @@ and [tools/gpx/requirements.txt](tools/gpx/requirements.txt). All versions are p
 | UI | Compose Material 3 / Material 3 Adaptive | 1.12.0-alpha03 / 1.3.0 |
 | Architecture | JetBrains Lifecycle (ViewModel, MVI with StateFlow) | 2.11.0 |
 | Android host | androidx.activity:activity-compose | 1.13.0 |
+| Android host | androidx.core:core-ktx (FileProvider for sharing card images) | 1.18.0 |
+| Typeface | Inter (static 400 / 500 / 600 / 700, bundled font asset, SIL OFL 1.1) | 4.1 |
 | Concurrency | kotlinx-coroutines | 1.11.0 |
 | Serialization / time | kotlinx-serialization-json / kotlinx-datetime | 1.13.0 / 0.8.0 |
 | DI | Koin | 4.2.2 |
@@ -84,13 +90,14 @@ and built by GitHub Actions. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 ├── composeApp/            shared Compose UI, navigation, DI
 │   └── src/
 │       ├── commonMain/    UI (MVI), theme, strings (composeResources/values, values-tr)
-│       │   ├── kotlin/app/roadmaxxing/ui/   components, drives, explore, main, map, profile, shell (tabs), stats
-│       │   └── composeResources/files/map/  embedded map style (roadmaxxing_dark.json)
-│       ├── androidMain/   tracking: foreground service, idle triggers, debug emulator helper
-│       └── iosMain/       iOS entry point, bootstrap and automatic drive tracking (CoreLocation, CoreMotion); compiled in CI only
+│       │   ├── kotlin/app/roadmaxxing/ui/   card (drive and city cards), components, drives, explore, main, map, profile, shell (tabs), stats, summary
+│       │   ├── kotlin/app/roadmaxxing/share/  card sharing (`CardSharer`, expect/actual)
+│       │   └── composeResources/   font/ (Inter), files/map/ (embedded map style), files/licenses/ (Inter OFL)
+│       ├── androidMain/   tracking: foreground service, idle triggers, debug emulator helper; card sharing (FileProvider, MediaStore)
+│       └── iosMain/       iOS entry point, bootstrap, automatic drive tracking (CoreLocation, CoreMotion), card sharing (share sheet, Photos); compiled in CI only
 ├── shared/                domain, data and the matching engine (pure Kotlin)
 │   └── src/
-│       ├── commonMain/    drive detection, matching, progress, region pack reader, driven roads for the map (`map/`), SQLDelight schema
+│       ├── commonMain/    drive detection, matching, progress, region pack reader, driven roads for the map (`map/`), drive and city summary data (`summary/`), SQLDelight schema
 │       ├── commonTest/    unit tests (fixture region pack)
 │       ├── androidHostTest/  tests against the real Adana pack and GPX routes
 │       ├── androidMain/
@@ -356,7 +363,16 @@ Locally, configuration files and keys live in git-ignored files (`local.properti
   [ProfileTab.kt](composeApp/src/commonMain/kotlin/app/roadmaxxing/ui/profile/ProfileTab.kt), kept in sync by hand.
 - **One region.** Only the Adana pack exists and it is embedded in the APK and the iOS app; downloadable packs (Cloudflare R2) are
   planned. No country-level percentage.
-- **No account, sync, subscription, analytics or share card.** All data is local.
+- **Cards and sharing not tried on a device.** The drive and city cards, the PNG export, the share sheet and save to
+  gallery were verified on the Android emulator only; the iOS code compiles in CI but has not run on an iPhone. The
+  PNG export waits 600 ms for the fonts to load before it renders. On a closed Pixel Fold the card is scrolled to be
+  seen in full.
+- **Text wordmark, no real logo.** The cards show the name as styled text from a single component; a real logo does
+  not exist yet.
+- **No privacy zones.** The card route only omits the first and last 300 m along the road (nothing is drawn for
+  drives shorter than 600 m). User-defined home / work zones do not exist, and the route in the app itself is not
+  trimmed. There is no direct Instagram Story share (it needs a Meta app ID); use the system share sheet.
+- **No account, sync, subscription or analytics.** All data is local.
 - **Emulator timing.** The emulator GPS reports at 1 Hz with jitter; repeated replays of the same route can add a few
   extra segments. With the segment summary index the first progress computation on a cold Pixel_8 emulator takes about 0.4–0.8 s.
 
@@ -390,3 +406,9 @@ data (© OpenMapTiles) from [OpenStreetMap](https://www.openstreetmap.org/copyri
 shown on the map screen. The embedded style
 ([roadmaxxing_dark.json](composeApp/src/commonMain/composeResources/files/map/roadmaxxing_dark.json)) is derived from
 the OpenFreeMap "Dark" style.
+
+## Fonts
+
+The app uses [Inter](https://rsms.me/inter/) v4.1 (static weights 400, 500, 600, 700) by The Inter Project Authors,
+under the SIL Open Font License 1.1. License text:
+[Inter-OFL.txt](composeApp/src/commonMain/composeResources/files/licenses/Inter-OFL.txt).
