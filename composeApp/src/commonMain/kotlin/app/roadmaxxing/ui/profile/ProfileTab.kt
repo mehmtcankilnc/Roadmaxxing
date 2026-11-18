@@ -1,6 +1,24 @@
 package app.roadmaxxing.ui.profile
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Surface
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import app.roadmaxxing.platform.TrackingPlatform
+import app.roadmaxxing.platform.rememberPermissionStates
+import app.roadmaxxing.resources.legal_card_title
+import app.roadmaxxing.resources.permission_approximate
+import app.roadmaxxing.resources.permission_approximate_hint
+import app.roadmaxxing.resources.permission_blocked_hint
+import app.roadmaxxing.resources.permission_open_settings
+import app.roadmaxxing.resources.profile_privacy_policy
+import app.roadmaxxing.resources.profile_terms_of_use
+import app.roadmaxxing.ui.legal.LegalDocument
+import app.roadmaxxing.ui.legal.LegalScreen
+import org.koin.compose.koinInject
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -63,10 +81,12 @@ internal const val APP_VERSION = "0.1.0"
 /** Profile tab: permissions, recording status (debug start/stop), safe-drive note and version. */
 @Composable
 fun ProfileTab(state: MainUiState, onIntent: (MainIntent) -> Unit, onRequestPermission: (AppPermission) -> Unit) {
+    var legalDocument by remember { mutableStateOf<LegalDocument?>(null) }
     Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         TabTitle(stringResource(Res.string.tab_profile))
-        PermissionsCard(state, onRequestPermission)
+        PermissionsCard(onRequestPermission)
         RecordingCard(state, onIntent)
+        LegalCard { legalDocument = it }
         Text(
             text = stringResource(Res.string.main_safe_drive),
             style = MaterialTheme.typography.labelLarge,
@@ -77,6 +97,17 @@ fun ProfileTab(state: MainUiState, onIntent: (MainIntent) -> Unit, onRequestPerm
             style = MaterialTheme.typography.labelLarge,
             color = RoadmaxxingTheme.extraColors.textSecondary,
         )
+    }
+    legalDocument?.let { doc ->
+        // Full-screen overlay held in local state; system back closes it.
+        Dialog(
+            onDismissRequest = { legalDocument = null },
+            properties = DialogProperties(usePlatformDefaultWidth = false),
+        ) {
+            Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+                LegalScreen(document = doc, onBack = { legalDocument = null })
+            }
+        }
     }
 }
 
@@ -122,13 +153,16 @@ private fun RecordingCard(state: MainUiState, onIntent: (MainIntent) -> Unit) {
 }
 
 @Composable
-private fun PermissionsCard(state: MainUiState, onRequestPermission: (AppPermission) -> Unit) {
+private fun PermissionsCard(onRequestPermission: (AppPermission) -> Unit) {
+    val platform = koinInject<TrackingPlatform>()
+    val permissions by rememberPermissionStates()
     InfoCard(stringResource(Res.string.permissions_title)) {
         AppPermission.entries.forEach { permission ->
-            val st = state.permissions[permission] ?: PermissionState.Denied
-            // Background location can only be asked once foreground location is granted.
+            val st = permissions[permission] ?: PermissionState.Denied
+            // Background location can only be asked once foreground location is granted (precise or approximate).
+            val locationState = permissions[AppPermission.Location]
             val askable = permission != AppPermission.BackgroundLocation ||
-                state.permissions[AppPermission.Location] == PermissionState.Granted
+                locationState == PermissionState.Granted || locationState == PermissionState.Approximate
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
                     text = stringResource(permission.label()),
@@ -143,20 +177,68 @@ private fun PermissionsCard(state: MainUiState, onRequestPermission: (AppPermiss
                         color = MaterialTheme.colorScheme.primary,
                     )
                     PermissionState.NotNeeded -> SecondaryText(stringResource(Res.string.permission_not_needed))
-                    PermissionState.Denied -> Button(
-                        onClick = { onRequestPermission(permission) },
+                    PermissionState.Denied -> PermissionButton(
+                        text = stringResource(Res.string.permission_allow),
                         enabled = askable,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary,
-                        ),
-                    ) { Text(stringResource(Res.string.permission_allow)) }
+                        onClick = { onRequestPermission(permission) },
+                    )
+                    PermissionState.Blocked, PermissionState.Approximate -> PermissionButton(
+                        text = stringResource(Res.string.permission_open_settings),
+                        enabled = true,
+                        onClick = { platform.openAppSettings() },
+                    )
                 }
             }
-            if (permission == AppPermission.BackgroundLocation && st == PermissionState.Denied) {
-                SecondaryText(stringResource(Res.string.permission_background_hint))
+            when {
+                st == PermissionState.Approximate -> {
+                    Text(
+                        stringResource(Res.string.permission_approximate),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                    SecondaryText(stringResource(Res.string.permission_approximate_hint))
+                }
+                st == PermissionState.Blocked -> SecondaryText(stringResource(Res.string.permission_blocked_hint))
+                permission == AppPermission.BackgroundLocation && st == PermissionState.Denied ->
+                    SecondaryText(stringResource(Res.string.permission_background_hint))
             }
         }
+    }
+}
+
+@Composable
+private fun PermissionButton(text: String, enabled: Boolean, onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        enabled = enabled,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
+        ),
+    ) { Text(text) }
+}
+
+@Composable
+private fun LegalCard(onOpen: (LegalDocument) -> Unit) {
+    InfoCard(stringResource(Res.string.legal_card_title)) {
+        LegalRow(stringResource(Res.string.profile_privacy_policy)) { onOpen(LegalDocument.Privacy) }
+        LegalRow(stringResource(Res.string.profile_terms_of_use)) { onOpen(LegalDocument.Terms) }
+    }
+}
+
+@Composable
+private fun LegalRow(text: String, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.weight(1f),
+        )
+        Text(text = ">", style = MaterialTheme.typography.bodyLarge, color = RoadmaxxingTheme.extraColors.textSecondary)
     }
 }
 

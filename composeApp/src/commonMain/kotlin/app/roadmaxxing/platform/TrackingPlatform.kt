@@ -17,7 +17,15 @@ enum class AppPermission {
     Notifications,
 }
 
-enum class PermissionState { Granted, Denied, NotNeeded }
+/**
+ * State of one permission.
+ *
+ * - [Blocked]: can only be granted from system Settings (Android "don't ask again" / permanently denied, iOS
+ *   denied or restricted).
+ * - [Approximate]: location is granted but only coarse (Android) or reduced accuracy (iOS). Only used for
+ *   [AppPermission.Location].
+ */
+enum class PermissionState { Granted, Denied, Blocked, Approximate, NotNeeded }
 
 /** Platform side of drive tracking as the UI sees it. */
 interface TrackingPlatform {
@@ -28,6 +36,9 @@ interface TrackingPlatform {
 
     /** Called after permissions changed: (re)arms the background triggers. */
     fun onPermissionsChanged()
+
+    /** Opens the system settings page of this app. */
+    fun openAppSettings()
 
     fun manualStart()
     fun manualStop()

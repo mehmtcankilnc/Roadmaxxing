@@ -6,7 +6,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import app.roadmaxxing.tracking.IosTrackingEngine
-import org.koin.mp.KoinPlatform
 import kotlin.experimental.ExperimentalNativeApi
 import kotlin.native.Platform
 
@@ -16,8 +15,9 @@ class IosTrackingPlatform(private val engine: IosTrackingEngine) : TrackingPlatf
     @OptIn(ExperimentalNativeApi::class)
     override val isDebugBuild: Boolean = Platform.isDebugBinary
 
-    override fun permissionStates(): Map<AppPermission, PermissionState> = engine.permissionStates()
+    override fun permissionStates(): Map<AppPermission, PermissionState> = IosPermissions.states()
     override fun onPermissionsChanged() = engine.onPermissionsChanged()
+    override fun openAppSettings() = IosPermissions.openSettings()
     override fun manualStart() = engine.manualStart()
     override fun manualStop() = engine.manualStop()
 }
@@ -25,6 +25,12 @@ class IosTrackingPlatform(private val engine: IosTrackingEngine) : TrackingPlatf
 @Composable
 actual fun rememberPermissionRequester(onResult: () -> Unit): (AppPermission) -> Unit {
     val current = rememberUpdatedState(onResult)
-    val engine = remember { KoinPlatform.getKoin().get<IosTrackingEngine>() }
-    return remember(engine) { { permission -> engine.request(permission) { current.value() } } }
+    return remember {
+        { permission ->
+            IosPermissions.request(permission) {
+                PermissionRefreshObserver.notifyChanged()
+                current.value()
+            }
+        }
+    }
 }
