@@ -1,5 +1,8 @@
 package app.roadmaxxing.ui.summary
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,6 +24,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -59,10 +63,12 @@ import app.roadmaxxing.resources.summary_share
 import app.roadmaxxing.resources.summary_title
 import app.roadmaxxing.resources.summary_unavailable
 import app.roadmaxxing.resources.summary_working
+import app.roadmaxxing.platform.rememberReduceMotion
 import app.roadmaxxing.share.CardSharer
 import app.roadmaxxing.share.SaveFailure
 import app.roadmaxxing.share.rememberCardSharer
 import app.roadmaxxing.shared.domain.DriveRecord
+import app.roadmaxxing.shared.map.burn.burnDurationMs
 import app.roadmaxxing.shared.domain.DriveStatus
 import app.roadmaxxing.shared.drive.DriveVerdict
 import app.roadmaxxing.shared.summary.CityCardData
@@ -136,11 +142,23 @@ private fun CardActions(drive: DriveCardData?, city: CityCardData?) {
     var message by remember { mutableStateOf<StringResource?>(null) }
     val format = if (story) CardFormat.Story else CardFormat.Post
 
+    // Route draw-on: plays once per drive per app session; format/hide-speed changes never restart it.
+    val reduceMotion = rememberReduceMotion()
+    val progress = remember(drive?.driveId, reduceMotion) {
+        Animatable(if (drive == null || reduceMotion || !SummaryAnimationLog.shouldPlay(drive.driveId)) 1f else 0f)
+    }
+    LaunchedEffect(progress) {
+        if (progress.value < 1f) {
+            progress.animateTo(1f, tween(burnDurationMs(drive?.distanceM ?: 0.0).toInt(), easing = LinearEasing))
+        }
+    }
+    val p = progress.value
+
     if (drive != null) {
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             StatLine(stringResource(Res.string.summary_distance), stringResource(Res.string.summary_km, formatDecimal(drive.distanceM / 1000.0, 2, sep)))
             StatLine(stringResource(Res.string.summary_duration), stringResource(Res.string.summary_min, formatDecimal(drive.durationMs / 60_000.0, 1, sep)))
-            StatLine(stringResource(Res.string.summary_new_roads), stringResource(Res.string.summary_km, formatDecimal(drive.newLengthM / 1000.0, 2, sep)))
+            StatLine(stringResource(Res.string.summary_new_roads), stringResource(Res.string.summary_km, formatDecimal(drive.newLengthM * p / 1000.0, 2, sep)))
             drive.regionName?.let { StatLine(stringResource(Res.string.summary_region), it) }
             // Speed is shown but deliberately plain: no emphasis, no ranking.
             drive.avgSpeedMps?.let { StatLine(stringResource(Res.string.summary_avg_speed), stringResource(Res.string.summary_kmh, formatDecimal(it * 3.6, 0, sep))) }
@@ -150,7 +168,7 @@ private fun CardActions(drive: DriveCardData?, city: CityCardData?) {
 
     Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
         Box(Modifier.widthIn(max = 320.dp).fillMaxWidth()) {
-            if (drive != null) DriveCard(drive, format, hideSpeed = hideSpeed) else if (city != null) CityCard(city, format)
+            if (drive != null) DriveCard(drive, format, hideSpeed = hideSpeed, routeProgress = p) else if (city != null) CityCard(city, format)
         }
     }
 

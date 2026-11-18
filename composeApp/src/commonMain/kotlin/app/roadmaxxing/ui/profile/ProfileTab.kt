@@ -72,12 +72,6 @@ import app.roadmaxxing.ui.main.formatDecimal
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
-/**
- * Version shown in Profile. Keep in sync with `versionName` in androidApp/build.gradle.kts: common code has no
- * build-config access and `platform/` is off limits for this change.
- */
-internal const val APP_VERSION = "0.1.0"
-
 /** Profile tab: permissions, recording status (debug start/stop), safe-drive note and version. */
 @Composable
 fun ProfileTab(state: MainUiState, onIntent: (MainIntent) -> Unit, onRequestPermission: (AppPermission) -> Unit) {

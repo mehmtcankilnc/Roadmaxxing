@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.roadmaxxing.notify.PendingDriveNavigation
 import app.roadmaxxing.platform.AppPermission
 import app.roadmaxxing.platform.rememberPermissionRequester
 import app.roadmaxxing.ui.ScreenClass
@@ -60,6 +61,7 @@ import app.roadmaxxing.ui.main.MainViewModel
 import app.roadmaxxing.ui.map.ExplorationMap
 import app.roadmaxxing.ui.profile.ProfileTab
 import app.roadmaxxing.ui.stats.StatsTab
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -85,7 +87,18 @@ fun AppShell(
     PlatformBackHandler(enabled = state.detail != null || state.selectedTab != AppTab.Map) {
         if (state.detail != null) viewModel.onIntent(MainIntent.CloseDetail) else viewModel.onIntent(MainIntent.SelectTab(AppTab.Map))
     }
+    // A tapped end-of-drive notification asks for that drive's summary: same path as tapping it in the Drives list.
+    val pendingNavigation = koinInject<PendingDriveNavigation>()
+    val pendingDriveId by pendingNavigation.driveId.collectAsStateWithLifecycle()
+    LaunchedEffect(pendingDriveId) {
+        val id = pendingDriveId ?: return@LaunchedEffect
+        viewModel.onIntent(MainIntent.OpenDetail(DetailTarget.Drive(id)))
+        pendingNavigation.consume(id)
+    }
     val detail = state.detail
+    // The new-road burn plays only while the map itself is what the user sees.
+    val mapVisible = state.selectedTab == AppTab.Map && detail == null
+    LaunchedEffect(mapVisible) { exploreViewModel.onMapVisible(mapVisible) }
     LaunchedEffect(detail) { if (detail != null) summaryViewModel.show(detail) else summaryViewModel.clear() }
     val cardLoad by summaryViewModel.state.collectAsStateWithLifecycle()
     ShellContent(
@@ -151,6 +164,7 @@ private fun CompactShell(
         ExplorationMap(
             drivenRoadsGeoJson = explore.drivenRoadsGeoJson,
             focus = explore.focus,
+            burn = explore.burn,
             modifier = Modifier.fillMaxSize().reportMapTouch(onMapTouched),
             contentPadding = PaddingValues(top = topDp, bottom = bottomDp),
         )
@@ -217,6 +231,7 @@ private fun WideShell(
         ExplorationMap(
             drivenRoadsGeoJson = explore.drivenRoadsGeoJson,
             focus = explore.focus,
+            burn = explore.burn,
             modifier = Modifier.fillMaxSize().reportMapTouch(onMapTouched),
             contentPadding = if (layoutDirection == LayoutDirection.Ltr) {
                 PaddingValues(start = coveredStart, top = coveredTop, bottom = insets.calculateBottomPadding())

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notification_result_channel">Sürüş sonuçları</string>
+    <string name="notification_result_title">Sürüşün kaydedildi</string>
+    <!-- %1$s = km cinsinden mesafe, %2$s = km cinsinden yeni yol uzunluğu (ikisi de yerel biçimde) -->
+    <string name="notification_result_body_new">%1$s km · %2$s km yeni yol</string>
+    <string name="notification_result_body_none">%1$s km · Bu sefer yeni yol yok</string>
+</resources>

@@ -3,6 +3,7 @@ package app.roadmaxxing.tracking
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import app.roadmaxxing.notify.DriveResultNotifier
 import app.roadmaxxing.shared.domain.DriveProcessor
 import app.roadmaxxing.shared.drive.ActivityType
 import app.roadmaxxing.shared.drive.DriveRecorder
@@ -24,6 +25,7 @@ class TrackingEngine(
     val recorder: DriveRecorder,
     val processor: DriveProcessor,
     val status: TrackingStatusHolder,
+    private val notifier: DriveResultNotifier,
 ) {
     private val app = context.applicationContext
     val triggers = IdleTriggers(app)
@@ -61,7 +63,10 @@ class TrackingEngine(
         val processed = runCatching { processor.processPending() }
             .onFailure { Log.e(TAG, "processing failed; drives stay PENDING and are retried", it) }
             .getOrDefault(emptyList())
-        if (processed.isNotEmpty()) Log.i(TAG, "processed drives $processed")
+        if (processed.isNotEmpty()) {
+            Log.i(TAG, "processed drives $processed")
+            notifier.onDrivesProcessed(processed)
+        }
     }
 
     /** Activity transition from Play services. Starts recording on IN_VEHICLE. */
