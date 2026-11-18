@@ -34,8 +34,8 @@
     <string name="onboarding_perm_background_hint">Next, choose “Allow all the time” in the system dialog or settings.</string>
     <string name="onboarding_perm_activity_title">Notice when you drive</string>
     <string name="onboarding_perm_activity_body">Motion and activity access lets Roadmaxxing tell when you are in a vehicle, so recording starts without draining your battery.</string>
-    <string name="onboarding_perm_notifications_title">Recording notification</string>
-    <string name="onboarding_perm_notifications_body">A quiet notification shows while a drive is being recorded. It is optional, and recording works without it.</string>
+    <string name="onboarding_perm_notifications_title">Drive notifications</string>
+    <string name="onboarding_perm_notifications_body">A quiet notification shows while a drive is being recorded, and a short summary appears after each drive. They are optional, and recording works without them.</string>
 
     <string name="onboarding_perm_counter">%1$d of %2$d</string>
     <string name="onboarding_perm_location_p1">Matches each drive to the right road</string>
@@ -45,8 +45,8 @@
     <string name="onboarding_perm_background_p2">Never sold or shared</string>
     <string name="onboarding_perm_activity_p1">Used only to tell when you are driving</string>
     <string name="onboarding_perm_activity_p2">Stays on your phone</string>
-    <string name="onboarding_perm_notifications_p1">Shown only while a drive is recorded</string>
-    <string name="onboarding_perm_notifications_p2">No promotions, ever</string>
+    <string name="onboarding_perm_notifications_p1">While recording and after each drive</string>
+    <string name="onboarding_perm_notifications_p2">Never promotions</string>
 
     <string name="onboarding_done_title">You are all set</string>
     <string name="onboarding_done_body">Start driving and watch your map turn green. Drive safely.</string>

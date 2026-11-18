@@ -34,8 +34,8 @@
     <string name="onboarding_perm_background_hint">Sonraki adımda sistem penceresinde ya da ayarlarda “Her zaman izin ver” seçeneğini seç.</string>
     <string name="onboarding_perm_activity_title">Sürdüğünü fark etsin</string>
     <string name="onboarding_perm_activity_body">Hareket ve aktivite izni, bir araçta olduğunu anlamamızı sağlar; böylece kayıt pili tüketmeden başlar.</string>
-    <string name="onboarding_perm_notifications_title">Kayıt bildirimi</string>
-    <string name="onboarding_perm_notifications_body">Sürüş kaydedilirken sessiz bir bildirim görünür. İsteğe bağlıdır, bildirim olmadan da kayıt çalışır.</string>
+    <string name="onboarding_perm_notifications_title">Sürüş bildirimleri</string>
+    <string name="onboarding_perm_notifications_body">Sürüş kaydedilirken sessiz bir bildirim, her sürüşten sonra da kısa bir özet görünür. İsteğe bağlıdır, bildirim olmadan da kayıt çalışır.</string>
 
     <string name="onboarding_perm_counter">%1$d / %2$d</string>
     <string name="onboarding_perm_location_p1">Her sürüşü doğru yolla eşleştirir</string>
@@ -45,8 +45,8 @@
     <string name="onboarding_perm_background_p2">Asla satılmaz ya da paylaşılmaz</string>
     <string name="onboarding_perm_activity_p1">Yalnızca sürdüğünü anlamak için kullanılır</string>
     <string name="onboarding_perm_activity_p2">Telefonunda kalır</string>
-    <string name="onboarding_perm_notifications_p1">Yalnızca sürüş kaydedilirken görünür</string>
-    <string name="onboarding_perm_notifications_p2">Reklam ya da kampanya bildirimi yok</string>
+    <string name="onboarding_perm_notifications_p1">Kayıt sırasında ve her sürüşten sonra</string>
+    <string name="onboarding_perm_notifications_p2">Asla reklam ya da kampanya yok</string>
 
     <string name="onboarding_done_title">Her şey hazır</string>
     <string name="onboarding_done_body">Sürmeye başla ve haritanın yeşile dönüşünü izle. Güvenli sür.</string>

@@ -12,8 +12,9 @@ android {
         applicationId = "app.roadmaxxing"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "0.1.0"
+        // Single version source: gradle.properties (roadmaxxing.versionName / roadmaxxing.versionCode).
+        versionCode = providers.gradleProperty("roadmaxxing.versionCode").get().toInt()
+        versionName = providers.gradleProperty("roadmaxxing.versionName").get()
     }
 
     buildTypes {

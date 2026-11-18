@@ -12,7 +12,9 @@ import app.roadmaxxing.shared.drive.DriveRecorder
 import app.roadmaxxing.shared.drive.TrackingStatusHolder
 import app.roadmaxxing.shared.map.DrivenRoadsProvider
 import app.roadmaxxing.shared.matching.RoadMatcher
+import app.roadmaxxing.shared.map.burn.BurnRepository
 import app.roadmaxxing.shared.onboarding.IntroRoadsProvider
+import app.roadmaxxing.shared.onboarding.SqlAppMetaStore
 import app.roadmaxxing.shared.onboarding.OnboardingRepository
 import app.roadmaxxing.shared.summary.SummaryRepository
 import kotlinx.coroutines.Dispatchers
@@ -45,6 +47,13 @@ val sharedModule: Module = module {
     single { ProgressRepository(store = get(), packProvider = get(), cpuDispatcher = Dispatchers.Default) }
     single {
         DrivenRoadsProvider(packProvider = get(), store = get(), dispatcher = Dispatchers.Default)
+    }
+    single {
+        BurnRepository(
+            store = get(), packProvider = get(),
+            appMeta = SqlAppMetaStore(get()),
+            dispatcher = Dispatchers.Default,
+        )
     }
     single {
         SummaryRepository(

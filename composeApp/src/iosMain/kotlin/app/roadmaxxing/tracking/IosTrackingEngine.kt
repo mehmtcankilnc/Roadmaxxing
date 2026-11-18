@@ -3,6 +3,7 @@ package app.roadmaxxing.tracking
 // NOT VERIFIED on CI yet: iosMain cannot be compiled on the developer's Windows machine. First CI run may need
 // small fixes to CoreLocation / CoreMotion / UIKit interop signatures (see the report's risk list).
 
+import app.roadmaxxing.notify.DriveResultNotifier
 import app.roadmaxxing.shared.domain.DriveProcessor
 import app.roadmaxxing.shared.domain.currentTimeMs
 import app.roadmaxxing.shared.drive.ActivityType
@@ -68,6 +69,7 @@ class IosTrackingEngine(
     private val recorder: DriveRecorder,
     private val processor: DriveProcessor,
     private val status: TrackingStatusHolder,
+    private val notifier: DriveResultNotifier,
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default.limitedParallelism(1))
 
@@ -104,6 +106,8 @@ class IosTrackingEngine(
     fun start() {
         if (started) return
         started = true
+        // Notification delegate must be in place before iOS delivers a tap on a drive-result notification.
+        notifier.install()
         startMotionUpdates()
         scope.launch {
             val open = recorder.restore()
@@ -309,7 +313,10 @@ class IosTrackingEngine(
         val processed = runCatching { processor.processPending() }
             .onFailure { println("$TAG processing failed; drives stay PENDING and are retried: $it") }
             .getOrDefault(emptyList())
-        if (processed.isNotEmpty()) println("$TAG processed drives $processed")
+        if (processed.isNotEmpty()) {
+            println("$TAG processed drives $processed")
+            notifier.onDrivesProcessed(processed)
+        }
     }
 
     // ------------------------------------------------------------------ GPS and idle triggers

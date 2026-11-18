@@ -36,11 +36,12 @@ is in and what is not; everything else is "planned".
 | --- | --- | --- | --- |
 | 1 | Automatic drive detection and recording | partial (Phase 0) | Android: low-power idle triggers (Activity Recognition transitions + stationary geofence, no GPS while idle), short GPS probe, location foreground service, drive start/end state machine, walk/train rejection by speed and road-match filters, long traffic stops do not split a drive. Debug-build start/stop buttons. iOS: idle triggers (CoreLocation significant-location-change + 200 m region monitoring + CoreMotion), no continuous GPS while idle; detection and validation rules come from the shared code. The iOS code compiles and its shared tests pass in CI, but it has **not been verified on a physical device**. **Planned:** user-facing manual start/stop, plane filter beyond the 250 km/h speed cap. |
 | 2 | Road matching (map matching) | done (Phase 0) | Pure Kotlin matcher in `shared` against the offline Adana region pack; driven segments are stored in SQLite. |
-| 3 | Exploration map | partial | Map tab with MapLibre Compose and an app-embedded dark style derived from OpenFreeMap "Dark"; driven roads are thick Volt green, roads opened by the latest drive get a halo; the camera focuses on the driven roads on first open unless the user has moved the map. Verified on the Android emulator; the iOS build compiles in CI; **not tried on a physical device**. App shell with four tabs (Map, Drives, Stats, Profile): bottom bar on compact screens, side bar on medium and wide ones. **Planned:** undiscovered-roads layer, "burn-in" animation for newly driven roads. |
+| 3 | Exploration map | partial | Map tab with MapLibre Compose and an app-embedded dark style derived from OpenFreeMap "Dark"; driven roads are thick Volt green, roads opened by the latest drive get a halo; the camera focuses on the driven roads on first open unless the user has moved the map. Verified on the Android emulator; the iOS build compiles in CI; **not tried on a physical device**. App shell with four tabs (Map, Drives, Stats, Profile): bottom bar on compact screens, side bar on medium and wide ones. Burn-in animation: the roads of the latest drive light up as one front travelling in drive order (duration 0.6–2 s by distance), once per drive the first time the map is visible after it; the camera fits the new roads first (unless the user moved the map), and it is skipped when the system "reduce motion" setting is on. **Planned:** undiscovered-roads layer. |
 | 4 | Completion percentages | partial (Phase 0) | Province and district percentages for Adana, split into major roads and local roads, shown on the Phase 0 screen. **Planned:** country level, other provinces. |
-| 5 | Drive summary | done (Phase 0) | Summary screen per drive: distance, duration, average and max speed, new km, simplified route. Speed comes from the platform's reported speed when plausible, else it is derived from positions (median + acceleration filter; average = average while moving, never above max). City card data: province percentage, major / local road split, completed districts X/Y (a district counts as complete at 95 %), this week's new km, simplified province outline and driven lines. Verified on the Android emulator; the iOS build compiles in CI; **not tried on a physical device**. |
-| 6 | Share card | partial (Phase 0) | Drive card and city card, 9:16 (1080×1920) and 4:5 (1080×1350), rendered on the device as PNG; "Hide speed" switch (speed is shown by default). Share through the system share sheet and save to the gallery (Android FileProvider + MediaStore; iOS `UIActivityViewController` + add-only photo library access). The route on the card omits the first and last 300 m along the road, and is empty for drives shorter than 600 m. The logo on the card is a text wordmark (no real logo yet). Verified on the Android emulator; the iOS build compiles in CI; **not tried on a physical device**. **Planned:** direct Instagram Story sharing, Pro card styles, new city card, privacy zones (see [Known limitations](#known-limitations)), notification when a drive ends. |
+| 5 | Drive summary | done (Phase 0) | Summary screen per drive: distance, duration, average and max speed, new km, simplified route; the route draws in once and the new-km number counts up (same duration as the map burn-in, skipped with "reduce motion"; the exported PNG is not animated). Speed comes from the platform's reported speed when plausible, else it is derived from positions (median + acceleration filter; average = average while moving, never above max). City card data: province percentage, major / local road split, completed districts X/Y (a district counts as complete at 95 %), this week's new km, simplified province outline and driven lines. Verified on the Android emulator; the iOS build compiles in CI; **not tried on a physical device**. |
+| 6 | Share card | partial (Phase 0) | Drive card and city card, 9:16 (1080×1920) and 4:5 (1080×1350), rendered on the device as PNG; "Hide speed" switch (speed is shown by default). Share through the system share sheet and save to the gallery (Android FileProvider + MediaStore; iOS `UIActivityViewController` + add-only photo library access). The route on the card omits the first and last 300 m along the road, and is empty for drives shorter than 600 m. The logo on the card is a text wordmark (no real logo yet). Verified on the Android emulator; the iOS build compiles in CI; **not tried on a physical device**. **Planned:** direct Instagram Story sharing, Pro card styles, new city card, privacy zones (see [Known limitations](#known-limitations)). |
 | 7 | Onboarding and permissions | done (Phase 0) | First-launch gate: intro (animated Adana roads drawn from the region pack) → safe-driving consent (two checkboxes; stored locally in `app_meta` with a consent version) → one permission card at a time (location, background location with a Google Play prominent disclosure first, physical activity, notifications) → map. Notifications are optional and advance automatically; required permissions stay on their card when denied, and everything can be skipped. Permission states include `Blocked` (only system Settings can grant) and `Approximate` (coarse / reduced location), with an "open settings" route; the Profile tab shows the states and lets the user fix them later. Privacy policy and Terms are readable in the app (Profile) in Turkish and English, but they are **drafts**: contact, data controller and jurisdiction are placeholders and they need owner or lawyer review before launch. No paywall in onboarding (no RevenueCat yet). Not tried on a physical device; the iOS code compiles in CI only. |
+| 7b | End-of-drive notification | done (Phase 0) | One local notification per drive that counted, only when the notification permission is granted; text carries distance and new km, never speed. Tapping it opens that drive's summary. Android: own "Drive results" channel. iOS: `UNUserNotificationCenter`. Not tried on a physical device; the iOS code compiles in CI only. |
 | 8 | Account and sync | planned | No Firebase. Data stays in the local database. |
 | 9 | Subscription and paywall | planned | No RevenueCat. |
 | 10 | Settings | planned | – |
@@ -225,6 +226,14 @@ adb shell settings put global location_background_throttle_package_whitelist app
 
 The debug build also shows **Start (debug)** / **Stop (debug)** buttons for manual recording.
 
+### Bumping the app version
+
+The single source is [gradle.properties](gradle.properties): `roadmaxxing.versionName` and `roadmaxxing.versionCode`.
+`androidApp` reads them, and `composeApp` generates `AppVersion.kt` (shown on the Profile tab) from them. To bump the
+version, change `roadmaxxing.versionName` / `versionCode` there and `MARKETING_VERSION` in
+`iosApp/iosApp.xcodeproj/project.pbxproj` to the same value. The `checkIosVersion` Gradle task fails the build when
+the two differ.
+
 ## Running tests
 
 Kotlin tests of the `shared` module on the JVM (unit tests with the fixture pack, plus accuracy and pipeline tests
@@ -347,20 +356,23 @@ Locally, configuration files and keys live in git-ignored files (`local.properti
   on a physical device either.
 - **iOS background limits.** CoreMotion does not wake a suspended app; wake-ups come only from the location triggers
   (significant location change and 200 m region monitoring), so detection latency depends on them. If the user
-  force-quits the app by swiping it away, a relaunch is not guaranteed. There is no notification; while recording,
-  iOS shows its blue status-bar location indicator.
+  force-quits the app by swiping it away, a relaunch is not guaranteed. While recording, iOS shows its blue
+  status-bar location indicator.
 - **Background triggers need a real device.** On the emulator the production idle triggers (Activity Recognition,
   Play services geofencing) do not behave like on a phone: GPS is not active without a request and geofence checks are
   throttled by the stationary detector. Emulator tests rely on the debug-only helpers above. Trigger latency, battery
   use and the "app closed" case must be checked on physical Android and iOS devices.
 - **Map needs internet.** The base map tiles come from OpenFreeMap; without a connection the base map is not
-  shown (apart from tiles MapLibre has cached). There is no undiscovered-roads layer and no "burn-in" animation
-  for new roads yet.
+  shown (apart from tiles MapLibre has cached). There is no undiscovered-roads layer yet.
+- **Animations and iOS notification not verified on a device.** The map burn-in and the summary draw-in run, but their
+  smoothness could not be measured on the emulator and has not been seen on any physical device. The iOS end-of-drive
+  notification (`UNUserNotificationCenter`) compiles in CI only and has not run on an iPhone.
 - **Map performance and iOS map not measured on devices.** On the debug build on the emulator the green roads appear
   after about 3 s on a cold start; this was not measured on a physical device. The iOS map has not been run on any
   iPhone.
-- **Version label.** The app version shown on the Profile tab is the `APP_VERSION` constant in
-  [ProfileTab.kt](composeApp/src/commonMain/kotlin/app/roadmaxxing/ui/profile/ProfileTab.kt), kept in sync by hand.
+- **iOS version is edited by hand.** The Android version and the label on the Profile tab come from
+  [gradle.properties](gradle.properties), but the iOS `MARKETING_VERSION` lives in the Xcode project, so it is changed
+  together with it (see [Bumping the app version](#bumping-the-app-version)); the build fails if they differ.
 - **One region.** Only the Adana pack exists and it is embedded in the APK and the iOS app; downloadable packs (Cloudflare R2) are
   planned. No country-level percentage.
 - **Cards and sharing not tried on a device.** The drive and city cards, the PNG export, the share sheet and save to
