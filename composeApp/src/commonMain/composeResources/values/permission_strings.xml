@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="permission_open_settings">Open settings</string>
+    <string name="permission_blocked_hint">This can only be turned on in system settings.</string>
+    <string name="permission_approximate">Precise location is off</string>
+    <string name="permission_approximate_hint">Drives are matched to roads only with precise location. Turn it on in settings.</string>
+    <string name="profile_privacy_policy">Privacy policy</string>
+    <string name="profile_terms_of_use">Terms of use</string>
+    <string name="legal_card_title">Legal</string>
+</resources>

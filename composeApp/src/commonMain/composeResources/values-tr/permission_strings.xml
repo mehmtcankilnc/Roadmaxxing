@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="permission_open_settings">Ayarları aç</string>
+    <string name="permission_blocked_hint">Bu izin yalnızca sistem ayarlarından açılabilir.</string>
+    <string name="permission_approximate">Hassas konum kapalı</string>
+    <string name="permission_approximate_hint">Sürüşler yollara yalnızca hassas konumla eşleşir. Ayarlardan aç.</string>
+    <string name="profile_privacy_policy">Gizlilik politikası</string>
+    <string name="profile_terms_of_use">Kullanım koşulları</string>
+    <string name="legal_card_title">Yasal</string>
+</resources>

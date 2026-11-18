@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="onboarding_intro_description">Gray roads turning green as they are driven</string>
+    <string name="onboarding_step_description">Step %1$d of %2$d</string>
+    <string name="onboarding_continue">Continue</string>
+    <string name="onboarding_get_started">Get started</string>
+
+    <string name="onboarding_intro1_title">Every road you drive turns green</string>
+    <string name="onboarding_intro1_body">Roadmaxxing maps the roads you drive and shows how much of your city you have discovered.</string>
+    <string name="onboarding_intro2_title">Just drive. We keep track.</string>
+    <string name="onboarding_intro2_body">Drives are recorded automatically and matched to roads right on your phone. Then you get a percentage you can share.</string>
+
+    <string name="onboarding_consent_title">Drive safely</string>
+    <string name="onboarding_consent_body">Roadmaxxing never asks you to go faster or farther. The goal is to know your roads, not to rush.</string>
+    <string name="onboarding_consent_point_phone">Do not touch your phone while you drive.</string>
+    <string name="onboarding_consent_point_rules">Follow the traffic rules and the speed limits, always.</string>
+    <string name="onboarding_consent_check_safe">I will drive safely and not use the phone while driving</string>
+    <string name="onboarding_consent_check_terms">I accept the %1$s and the %2$s</string>
+    <string name="onboarding_terms_link">Terms of use</string>
+    <string name="onboarding_privacy_link">Privacy policy</string>
+
+    <string name="onboarding_allow">Allow</string>
+    <string name="onboarding_not_now">Not now</string>
+    <string name="onboarding_open_settings">Open settings</string>
+
+    <string name="onboarding_perm_location_title">Allow your location</string>
+    <string name="onboarding_perm_location_body">Roadmaxxing uses your precise location to match your drive to the road you are on.</string>
+    <string name="onboarding_perm_approximate_title">Turn on precise location</string>
+    <string name="onboarding_perm_approximate_body">You only allowed approximate location. Matching a drive to the right road needs precise location.</string>
+    <string name="onboarding_perm_blocked_body">This permission is turned off. You can turn it on in the system settings.</string>
+    <string name="onboarding_perm_background_title">Location in the background</string>
+    <string name="onboarding_perm_background_body">Roadmaxxing collects location data in the background to detect and record your drives automatically, even when the app is closed or not in use.</string>
+    <string name="onboarding_perm_background_use">The location is used only to match your drives to roads and to work out your progress. It stays on your device.</string>
+    <string name="onboarding_perm_background_hint">Next, choose “Allow all the time” in the system dialog or settings.</string>
+    <string name="onboarding_perm_activity_title">Notice when you drive</string>
+    <string name="onboarding_perm_activity_body">Motion and activity access lets Roadmaxxing tell when you are in a vehicle, so recording starts without draining your battery.</string>
+    <string name="onboarding_perm_notifications_title">Recording notification</string>
+    <string name="onboarding_perm_notifications_body">A quiet notification shows while a drive is being recorded. It is optional, and recording works without it.</string>
+
+    <string name="onboarding_perm_counter">%1$d of %2$d</string>
+    <string name="onboarding_perm_location_p1">Matches each drive to the right road</string>
+    <string name="onboarding_perm_location_p2">Stays on your phone</string>
+    <string name="onboarding_perm_location_p3">Never sold</string>
+    <string name="onboarding_perm_background_p1">Only records while you drive</string>
+    <string name="onboarding_perm_background_p2">Never sold or shared</string>
+    <string name="onboarding_perm_activity_p1">Used only to tell when you are driving</string>
+    <string name="onboarding_perm_activity_p2">Stays on your phone</string>
+    <string name="onboarding_perm_notifications_p1">Shown only while a drive is recorded</string>
+    <string name="onboarding_perm_notifications_p2">No promotions, ever</string>
+
+    <string name="onboarding_done_title">You are all set</string>
+    <string name="onboarding_done_body">Start driving and watch your map turn green. Drive safely.</string>
+    <string name="onboarding_done_skipped">You can change permissions any time in Profile.</string>
+    <string name="onboarding_done_button">Open the map</string>
+</resources>

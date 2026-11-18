@@ -12,6 +12,8 @@ import app.roadmaxxing.shared.drive.DriveRecorder
 import app.roadmaxxing.shared.drive.TrackingStatusHolder
 import app.roadmaxxing.shared.map.DrivenRoadsProvider
 import app.roadmaxxing.shared.matching.RoadMatcher
+import app.roadmaxxing.shared.onboarding.IntroRoadsProvider
+import app.roadmaxxing.shared.onboarding.OnboardingRepository
 import app.roadmaxxing.shared.summary.SummaryRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -27,6 +29,8 @@ val sharedModule: Module = module {
     single { SetupRepository(database = get(), ioDispatcher = Dispatchers.IO) }
     single<DriveStore> { SqlDriveStore(database = get(), ioDispatcher = Dispatchers.IO) }
     single { RegionPackProvider(source = get()) }
+    single { OnboardingRepository(database = get()) }
+    single { IntroRoadsProvider(packProvider = get()) }
     single { DriveRecorder(store = get()) }
     single { TrackingStatusHolder() }
     single {

@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import app.roadmaxxing.platform.AppPermission
 import app.roadmaxxing.platform.PermissionState
 import app.roadmaxxing.resources.Res
 import app.roadmaxxing.resources.chip_probing
@@ -136,7 +137,10 @@ private fun RecordingChip(tracking: TrackingStatus) {
 /** Before the first drive: invites the user to drive (not to invite friends). */
 @Composable
 private fun FirstRoadInvite(state: MainUiState, onOpenPermissions: () -> Unit) {
-    val permissionsMissing = state.permissions.values.any { it == PermissionState.Denied }
+    val permissionsMissing = state.permissions.any { (permission, st) ->
+        st == PermissionState.Denied || st == PermissionState.Blocked ||
+            (permission == AppPermission.Location && st == PermissionState.Approximate)
+    }
     FloatingPanel(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(

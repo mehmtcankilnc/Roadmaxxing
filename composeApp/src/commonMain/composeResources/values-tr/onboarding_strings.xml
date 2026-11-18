@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="onboarding_intro_description">Sürüldükçe yeşile dönen gri yollar</string>
+    <string name="onboarding_step_description">Adım %1$d / %2$d</string>
+    <string name="onboarding_continue">Devam</string>
+    <string name="onboarding_get_started">Başlayalım</string>
+
+    <string name="onboarding_intro1_title">Sürdüğün her yol yeşile döner</string>
+    <string name="onboarding_intro1_body">Roadmaxxing sürdüğün yolları haritaya işler ve şehrinin ne kadarını keşfettiğini gösterir.</string>
+    <string name="onboarding_intro2_title">Sen sür, takibi biz yaparız</string>
+    <string name="onboarding_intro2_body">Sürüşlerin otomatik kaydedilir ve yollarla eşleştirme doğrudan telefonunda yapılır. Sonunda paylaşabileceğin bir yüzde elde edersin.</string>
+
+    <string name="onboarding_consent_title">Güvenli sür</string>
+    <string name="onboarding_consent_body">Roadmaxxing hiçbir zaman daha hızlı ya da daha uzun sürmeni istemez. Amaç acele etmek değil, yollarını tanımak.</string>
+    <string name="onboarding_consent_point_phone">Araç kullanırken telefonuna dokunma.</string>
+    <string name="onboarding_consent_point_rules">Trafik kurallarına ve hız sınırlarına her zaman uy.</string>
+    <string name="onboarding_consent_check_safe">Güvenli süreceğim ve araç kullanırken telefonu kullanmayacağım</string>
+    <string name="onboarding_consent_check_terms">%1$s ve %2$s metinlerini kabul ediyorum</string>
+    <string name="onboarding_terms_link">Kullanım şartları</string>
+    <string name="onboarding_privacy_link">Gizlilik politikası</string>
+
+    <string name="onboarding_allow">İzin ver</string>
+    <string name="onboarding_not_now">Şimdi değil</string>
+    <string name="onboarding_open_settings">Ayarları aç</string>
+
+    <string name="onboarding_perm_location_title">Konumuna izin ver</string>
+    <string name="onboarding_perm_location_body">Roadmaxxing, sürüşünü bulunduğun yolla eşleştirmek için kesin konumunu kullanır.</string>
+    <string name="onboarding_perm_approximate_title">Kesin konumu aç</string>
+    <string name="onboarding_perm_approximate_body">Yalnızca yaklaşık konuma izin verdin. Sürüşü doğru yolla eşleştirmek için kesin konum gerekir.</string>
+    <string name="onboarding_perm_blocked_body">Bu izin kapalı. Sistem ayarlarından açabilirsin.</string>
+    <string name="onboarding_perm_background_title">Arka planda konum</string>
+    <string name="onboarding_perm_background_body">Roadmaxxing, sürüşlerini otomatik algılayıp kaydetmek için uygulama kapalıyken ya da kullanılmıyorken bile arka planda konum verisi toplar.</string>
+    <string name="onboarding_perm_background_use">Konum yalnızca sürüşlerini yollarla eşleştirmek ve ilerlemeni hesaplamak için kullanılır. Cihazında kalır.</string>
+    <string name="onboarding_perm_background_hint">Sonraki adımda sistem penceresinde ya da ayarlarda “Her zaman izin ver” seçeneğini seç.</string>
+    <string name="onboarding_perm_activity_title">Sürdüğünü fark etsin</string>
+    <string name="onboarding_perm_activity_body">Hareket ve aktivite izni, bir araçta olduğunu anlamamızı sağlar; böylece kayıt pili tüketmeden başlar.</string>
+    <string name="onboarding_perm_notifications_title">Kayıt bildirimi</string>
+    <string name="onboarding_perm_notifications_body">Sürüş kaydedilirken sessiz bir bildirim görünür. İsteğe bağlıdır, bildirim olmadan da kayıt çalışır.</string>
+
+    <string name="onboarding_perm_counter">%1$d / %2$d</string>
+    <string name="onboarding_perm_location_p1">Her sürüşü doğru yolla eşleştirir</string>
+    <string name="onboarding_perm_location_p2">Telefonunda kalır</string>
+    <string name="onboarding_perm_location_p3">Asla satılmaz</string>
+    <string name="onboarding_perm_background_p1">Yalnızca sürerken kayıt yapar</string>
+    <string name="onboarding_perm_background_p2">Asla satılmaz ya da paylaşılmaz</string>
+    <string name="onboarding_perm_activity_p1">Yalnızca sürdüğünü anlamak için kullanılır</string>
+    <string name="onboarding_perm_activity_p2">Telefonunda kalır</string>
+    <string name="onboarding_perm_notifications_p1">Yalnızca sürüş kaydedilirken görünür</string>
+    <string name="onboarding_perm_notifications_p2">Reklam ya da kampanya bildirimi yok</string>
+
+    <string name="onboarding_done_title">Her şey hazır</string>
+    <string name="onboarding_done_body">Sürmeye başla ve haritanın yeşile dönüşünü izle. Güvenli sür.</string>
+    <string name="onboarding_done_skipped">İzinleri istediğin zaman Profil sekmesinden değiştirebilirsin.</string>
+    <string name="onboarding_done_button">Haritayı aç</string>
+</resources>

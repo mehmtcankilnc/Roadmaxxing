@@ -3,8 +3,6 @@ package app.roadmaxxing.tracking
 // NOT VERIFIED on CI yet: iosMain cannot be compiled on the developer's Windows machine. First CI run may need
 // small fixes to CoreLocation / CoreMotion / UIKit interop signatures (see the report's risk list).
 
-import app.roadmaxxing.platform.AppPermission
-import app.roadmaxxing.platform.PermissionState
 import app.roadmaxxing.shared.domain.DriveProcessor
 import app.roadmaxxing.shared.domain.currentTimeMs
 import app.roadmaxxing.shared.drive.ActivityType
@@ -26,31 +24,22 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import platform.CoreLocation.CLActivityTypeAutomotiveNavigation
-import platform.CoreLocation.CLAccuracyAuthorization
 import platform.CoreLocation.CLCircularRegion
 import platform.CoreLocation.CLLocation
 import platform.CoreLocation.CLLocationCoordinate2DMake
 import platform.CoreLocation.CLLocationManager
 import platform.CoreLocation.kCLAuthorizationStatusAuthorizedAlways
-import platform.CoreLocation.kCLAuthorizationStatusAuthorizedWhenInUse
-import platform.CoreLocation.kCLAuthorizationStatusNotDetermined
 import platform.CoreLocation.kCLDistanceFilterNone
 import platform.CoreLocation.kCLLocationAccuracyBestForNavigation
 import platform.CoreMotion.CMAuthorizationStatusAuthorized
-import platform.CoreMotion.CMAuthorizationStatusNotDetermined
 import platform.CoreMotion.CMMotionActivity
 import platform.CoreMotion.CMMotionActivityConfidenceLow
 import platform.CoreMotion.CMMotionActivityManager
 import platform.Foundation.NSDate
-import platform.Foundation.NSNotificationCenter
 import platform.Foundation.NSOperationQueue
-import platform.Foundation.NSURL
-import platform.Foundation.NSUserDefaults
 import platform.Foundation.dateWithTimeIntervalSince1970
 import platform.Foundation.timeIntervalSince1970
 import platform.UIKit.UIApplication
-import platform.UIKit.UIApplicationDidBecomeActiveNotification
-import platform.UIKit.UIApplicationOpenSettingsURLString
 import platform.UIKit.UIBackgroundTaskIdentifier
 import platform.UIKit.UIBackgroundTaskInvalid
 import platform.darwin.dispatch_async
@@ -93,9 +82,6 @@ class IosTrackingEngine(
     private var motionRunning = false
     private var updatesOn = false
     private var bgTask: UIBackgroundTaskIdentifier = UIBackgroundTaskInvalid
-    private val authCallbacks = mutableListOf<() -> Unit>()
-    private val resumeCallbacks = mutableListOf<() -> Unit>()
-    private var activeObserver: Any? = null
 
     // ---- tracking scope only ----
     private var lastActivity: Pair<ActivityType, Long>? = null
@@ -118,15 +104,6 @@ class IosTrackingEngine(
     fun start() {
         if (started) return
         started = true
-        activeObserver = NSNotificationCenter.defaultCenter.addObserverForName(
-            UIApplicationDidBecomeActiveNotification,
-            null,
-            NSOperationQueue.mainQueue,
-        ) { _ ->
-            val pending = resumeCallbacks.toList()
-            resumeCallbacks.clear()
-            pending.forEach { it() }
-        }
         startMotionUpdates()
         scope.launch {
             val open = recorder.restore()
@@ -154,86 +131,14 @@ class IosTrackingEngine(
         scope.launch { handle(recorder.manualStop(currentTimeMs())) }
     }
 
-    // ------------------------------------------------------------------ permissions (main thread)
-
-    fun permissionStates(): Map<AppPermission, PermissionState> {
-        val auth = idleManager.authorizationStatus
-        val whenInUse = auth == kCLAuthorizationStatusAuthorizedWhenInUse || auth == kCLAuthorizationStatusAuthorizedAlways
-        val precise = idleManager.accuracyAuthorization != CLAccuracyAuthorization.CLAccuracyAuthorizationReducedAccuracy
-        val motionState = when {
-            !CMMotionActivityManager.isActivityAvailable() -> PermissionState.NotNeeded // simulator: speed path only
-            CMMotionActivityManager.authorizationStatus() == CMAuthorizationStatusAuthorized -> PermissionState.Granted
-            else -> PermissionState.Denied
-        }
-        return mapOf(
-            AppPermission.Location to if (whenInUse && precise) PermissionState.Granted else PermissionState.Denied,
-            AppPermission.BackgroundLocation to
-                if (auth == kCLAuthorizationStatusAuthorizedAlways) PermissionState.Granted else PermissionState.Denied,
-            AppPermission.ActivityRecognition to motionState,
-            AppPermission.Notifications to PermissionState.NotNeeded, // no notifications on iOS in Phase 0
-        )
-    }
-
-    /** Asks for one permission; [onResult] runs when the system dialog closed or the user came back from Settings. */
-    fun request(permission: AppPermission, onResult: () -> Unit) {
-        val auth = idleManager.authorizationStatus
-        when (permission) {
-            AppPermission.Location ->
-                if (auth == kCLAuthorizationStatusNotDetermined) {
-                    authCallbacks += onResult
-                    idleManager.requestWhenInUseAuthorization()
-                } else {
-                    openSettings(onResult)
-                }
-            AppPermission.BackgroundLocation -> when {
-                auth == kCLAuthorizationStatusNotDetermined -> {
-                    // iOS asks in two steps: "While Using" first; "Always" can only be requested afterwards.
-                    authCallbacks += onResult
-                    idleManager.requestWhenInUseAuthorization()
-                }
-                auth == kCLAuthorizationStatusAuthorizedWhenInUse && !askedAlwaysBefore() -> {
-                    // iOS shows the upgrade prompt only once per install; later calls do nothing, so go to Settings.
-                    markAskedAlways()
-                    authCallbacks += onResult
-                    idleManager.requestAlwaysAuthorization()
-                }
-                else -> openSettings(onResult)
-            }
-            AppPermission.ActivityRecognition ->
-                if (CMMotionActivityManager.authorizationStatus() == CMAuthorizationStatusNotDetermined) {
-                    // There is no request API: the first query shows the Motion & Fitness prompt.
-                    val now = NSDate()
-                    motion.queryActivityStartingFromDate(now, now, NSOperationQueue.mainQueue) { _, _ -> onResult() }
-                } else {
-                    openSettings(onResult)
-                }
-            AppPermission.Notifications -> onResult()
-        }
-    }
-
+    // Permission reading and requesting live in app.roadmaxxing.platform.IosPermissions.
     internal fun onAuthorizationChanged() {
-        val pending = authCallbacks.toList()
-        authCallbacks.clear()
-        pending.forEach { it() }
         onPermissionsChangedFromSystem()
     }
 
     private fun onPermissionsChangedFromSystem() {
         scope.launch { if (!sessionActive) armIdle(null, null, keepExistingRegion = true) }
     }
-
-    private fun openSettings(onResult: () -> Unit) {
-        val url = NSURL.URLWithString(UIApplicationOpenSettingsURLString)
-        if (url == null) {
-            onResult()
-            return
-        }
-        resumeCallbacks += onResult
-        UIApplication.sharedApplication.openURL(url, emptyMap<Any?, Any>(), null)
-    }
-
-    private fun askedAlwaysBefore() = NSUserDefaults.standardUserDefaults.boolForKey(KEY_ASKED_ALWAYS)
-    private fun markAskedAlways() = NSUserDefaults.standardUserDefaults.setBool(true, forKey = KEY_ASKED_ALWAYS)
 
     // ------------------------------------------------------------------ inputs from the delegate / CoreMotion (main thread)
 
@@ -548,7 +453,6 @@ class IosTrackingEngine(
     companion object {
         private const val TAG = "[RmxTracking]"
         private const val REGION_ID = "stationary"
-        private const val KEY_ASKED_ALWAYS = "rmx.askedAlwaysAuthorization"
 
         /** Same as Android's stationary geofence (iOS ignores region radii below ~100 m anyway). */
         const val REGION_RADIUS_M = 200.0
