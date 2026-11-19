@@ -60,3 +60,19 @@ internal val sampleCityEdge = CityCardData(
     boundary = listOf(blob(2.2, 0.22, 0.34)),
     driven = listOf(wavy(8, LON - 0.02, LAT, 0.03, 0.01)),
 )
+
+private fun province(percent: Int) = app.roadmaxxing.shared.milestones.MilestoneEvent.ProvinceThreshold("p$percent", 1, "Adana", percent)
+private fun district(name: String) = app.roadmaxxing.shared.milestones.MilestoneEvent.DistrictCompleted("d$name", 2, name)
+
+internal val sampleMilestoneProvince = app.roadmaxxing.ui.card.MilestoneCardData(
+    sampleCityNormal,
+    app.roadmaxxing.shared.milestones.Celebration(1, province(5), emptyList()),
+)
+internal val sampleMilestoneDistrict = app.roadmaxxing.ui.card.MilestoneCardData(
+    sampleCityNormal,
+    app.roadmaxxing.shared.milestones.Celebration(1, null, listOf(district("Seyhan"))),
+)
+internal val sampleMilestoneBoth = app.roadmaxxing.ui.card.MilestoneCardData(
+    sampleCityNormal,
+    app.roadmaxxing.shared.milestones.Celebration(1, province(10), listOf(district("Seyhan"), district("Çukurova"))),
+)

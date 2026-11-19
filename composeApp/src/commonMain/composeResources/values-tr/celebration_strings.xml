@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="celebration_label">Dönüm noktası</string>
+    <string name="celebration_province_title">%2$s · %1$s keşfedildi</string>
+    <string name="celebration_district_done">%1$s tamamlandı</string>
+    <string name="celebration_districts_many">%1$d ilçe tamamlandı</string>
+    <string name="celebration_close">Kapat</string>
+    <string name="celebration_drive_safe">Güvenli sür.</string>
+</resources>

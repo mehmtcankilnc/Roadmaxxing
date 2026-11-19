@@ -5,4 +5,12 @@
     <!-- %1$s = mesafe, %2$s = yeni yol uzunluğu (ikisi de yerel biçimde), %3$s = birim -->
     <string name="notification_result_body_new">%1$s %3$s · %2$s %3$s yeni yol</string>
     <string name="notification_result_body_none">%1$s %2$s · Bu sefer yeni yol yok</string>
+    <!-- %1$s = yüzde (ör. %5), %2$s = il adı -->
+    <string name="notification_milestone_province">%2$s: %1$s keşfedildi</string>
+    <!-- %1$s = ilçe adı -->
+    <string name="notification_milestone_district">%1$s tamamlandı</string>
+    <!-- %1$s = ilçe sayısı -->
+    <string name="notification_milestone_districts">%1$s ilçe tamamlandı</string>
+    <!-- %1$s = kilometre taşı metni, %2$s = yeni yol uzunluğu, %3$s = birim -->
+    <string name="notification_milestone_with_new">%1$s · %2$s %3$s yeni yol</string>
 </resources>

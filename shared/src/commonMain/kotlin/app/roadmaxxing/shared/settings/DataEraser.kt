@@ -3,6 +3,7 @@ package app.roadmaxxing.shared.settings
 import app.roadmaxxing.shared.db.RoadmaxxingDatabase
 import app.roadmaxxing.shared.map.DrivenRoadsProvider
 import app.roadmaxxing.shared.map.layers.MapLayerPreferences
+import app.roadmaxxing.shared.milestones.MilestoneRepository
 import app.roadmaxxing.shared.onboarding.OnboardingRepository
 import app.roadmaxxing.shared.privacy.PrivacyZoneRepository
 import kotlinx.coroutines.CoroutineDispatcher
@@ -17,6 +18,7 @@ class DataEraser(
     private val settings: SettingsRepository,
     private val drivenRoads: DrivenRoadsProvider,
     private val dispatcher: CoroutineDispatcher,
+    private val milestones: MilestoneRepository? = null,
 ) {
     /** Deletes all user data in one transaction and resets in-memory state; afterwards onboarding is not completed. */
     suspend fun eraseAll() {
@@ -34,6 +36,7 @@ class DataEraser(
             layerPreferences.reload()
             settings.reload()
             drivenRoads.reset()
+            milestones?.reload()
         }
     }
 

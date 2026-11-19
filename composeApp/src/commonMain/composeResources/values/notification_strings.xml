@@ -5,4 +5,12 @@
     <!-- %1$s = distance, %2$s = new road length (both formatted for the locale), %3$s = unit label -->
     <string name="notification_result_body_new">%1$s %3$s · %2$s %3$s new roads</string>
     <string name="notification_result_body_none">%1$s %2$s · No new roads this time</string>
+    <!-- %1$s = percent (e.g. 5%), %2$s = province name -->
+    <string name="notification_milestone_province">You reached %1$s of %2$s</string>
+    <!-- %1$s = district name -->
+    <string name="notification_milestone_district">%1$s completed</string>
+    <!-- %1$s = number of districts -->
+    <string name="notification_milestone_districts">%1$s districts completed</string>
+    <!-- %1$s = milestone text, %2$s = new road length, %3$s = unit label -->
+    <string name="notification_milestone_with_new">%1$s · %2$s %3$s new roads</string>
 </resources>

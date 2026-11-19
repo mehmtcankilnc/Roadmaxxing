@@ -12,6 +12,7 @@ import app.roadmaxxing.shared.drive.DriveRecorder
 import app.roadmaxxing.shared.drive.TrackingStatusHolder
 import app.roadmaxxing.shared.map.DrivenRoadsProvider
 import app.roadmaxxing.shared.matching.RoadMatcher
+import app.roadmaxxing.shared.milestones.MilestoneRepository
 import app.roadmaxxing.shared.map.burn.BurnRepository
 import app.roadmaxxing.shared.map.layers.MapLayerPreferences
 import app.roadmaxxing.shared.map.undiscovered.UndiscoveredRoadsProvider
@@ -62,6 +63,12 @@ val sharedModule: Module = module {
         DataEraser(
             database = get(), onboarding = get(), privacyZones = get(), layerPreferences = get(),
             settings = get(), drivenRoads = get(), dispatcher = Dispatchers.Default,
+            milestones = get(),
+        )
+    }
+    single {
+        MilestoneRepository(
+            store = get(), packProvider = get(), appMeta = SqlAppMetaStore(get()), dispatcher = Dispatchers.Default,
         )
     }
     single { MapLayerPreferences(store = SqlAppMetaStore(get())) }
