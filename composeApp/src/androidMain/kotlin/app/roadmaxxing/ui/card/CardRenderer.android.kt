@@ -47,6 +47,9 @@ private class AndroidCardRenderer(private val anchor: View) : CardRenderer {
     override suspend fun renderCityCard(data: CityCardData, format: CardFormat): ByteArray =
         render(format) { CityCard(data, format, Modifier.fillMaxSize()) }
 
+    override suspend fun renderMilestoneCard(data: MilestoneCardData, format: CardFormat): ByteArray =
+        render(format) { MilestoneCard(data, format, Modifier.fillMaxSize()) }
+
     private suspend fun render(format: CardFormat, content: @Composable () -> Unit): ByteArray =
         withContext(Dispatchers.Main) {
             val host = anchor.rootView as ViewGroup

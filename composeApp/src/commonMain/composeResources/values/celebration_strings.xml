@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="celebration_label">Milestone</string>
+    <string name="celebration_province_title">%1$s of %2$s explored</string>
+    <string name="celebration_district_done">%1$s completed</string>
+    <string name="celebration_districts_many">%1$d districts completed</string>
+    <string name="celebration_close">Close</string>
+    <string name="celebration_drive_safe">Drive safe.</string>
+</resources>

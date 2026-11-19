@@ -34,6 +34,7 @@ import app.roadmaxxing.theme.RoadmaxxingPalette
 import app.roadmaxxing.ui.card.CardFormat
 import app.roadmaxxing.ui.card.CityCard
 import app.roadmaxxing.ui.card.DriveCard
+import app.roadmaxxing.ui.card.MilestoneCard
 import app.roadmaxxing.ui.card.rememberCardPngWriter
 import app.roadmaxxing.ui.card.rememberCardRenderer
 import kotlinx.coroutines.launch
@@ -78,6 +79,9 @@ private fun CardPreviewContent(onClose: () -> Unit) {
                         writer("drive_edge_$tag.png", renderer.renderDriveCard(sampleDriveEdge, format, hideSpeed))?.let(paths::add)
                         writer("city_normal_$tag.png", renderer.renderCityCard(sampleCityNormal, format))?.let(paths::add)
                         writer("city_edge_$tag.png", renderer.renderCityCard(sampleCityEdge, format))?.let(paths::add)
+                        writer("milestone_province_$tag.png", renderer.renderMilestoneCard(sampleMilestoneProvince, format))?.let(paths::add)
+                        writer("milestone_district_$tag.png", renderer.renderMilestoneCard(sampleMilestoneDistrict, format))?.let(paths::add)
+                        writer("milestone_both_$tag.png", renderer.renderMilestoneCard(sampleMilestoneBoth, format))?.let(paths::add)
                     }
                     status = getString(Res.string.card_debug_written, paths.size.toString(), paths.firstOrNull()?.substringBeforeLast('/') ?: "-")
                 }
@@ -93,6 +97,11 @@ private fun CardPreviewContent(onClose: () -> Unit) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 CityCard(sampleCityNormal, format, Modifier.weight(1f))
                 CityCard(sampleCityEdge, format, Modifier.weight(1f))
+            }
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                MilestoneCard(sampleMilestoneProvince, format, Modifier.weight(1f))
+                MilestoneCard(sampleMilestoneDistrict, format, Modifier.weight(1f))
+                MilestoneCard(sampleMilestoneBoth, format, Modifier.weight(1f))
             }
         }
     }

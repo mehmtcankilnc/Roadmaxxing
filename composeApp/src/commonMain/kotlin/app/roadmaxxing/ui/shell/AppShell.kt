@@ -45,6 +45,7 @@ import app.roadmaxxing.platform.AppPermission
 import app.roadmaxxing.platform.rememberPermissionRequester
 import app.roadmaxxing.ui.ScreenClass
 import app.roadmaxxing.ui.components.FloatingPanel
+import app.roadmaxxing.ui.celebration.CelebrationHost
 import app.roadmaxxing.ui.currentScreenClass
 import app.roadmaxxing.ui.drives.DrivesTab
 import app.roadmaxxing.ui.explore.ExploreOverlay
@@ -102,6 +103,7 @@ fun AppShell(
     LaunchedEffect(detail) { if (detail != null) summaryViewModel.show(detail) else summaryViewModel.clear() }
     val cardLoad by summaryViewModel.state.collectAsStateWithLifecycle()
     val screenClass = currentScreenClass()
+    Box(Modifier.fillMaxSize()) {
     ShellContent(
         state = state,
         explore = explore,
@@ -126,6 +128,9 @@ fun AppShell(
             }
         },
     )
+    // Milestone celebration: only on the plain map and after the burn finished (K3).
+    CelebrationHost(canShow = mapVisible && explore.burn == null)
+    }
 }
 
 @Composable

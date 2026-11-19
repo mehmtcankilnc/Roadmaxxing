@@ -22,4 +22,12 @@
     <string name="card_debug_close">Close</string>
     <string name="card_debug_written">Wrote %1$s files to %2$s</string>
     <string name="card_debug_open">Card preview (debug)</string>
+    <!-- %1$s = province name -->
+    <string name="card_milestone_province">of %1$s explored</string>
+    <string name="card_milestone_district_done">completed</string>
+    <string name="card_milestone_districts_done">districts completed</string>
+    <!-- %1$s = district name -->
+    <string name="card_milestone_plus_district">+ %1$s completed</string>
+    <!-- %1$s = number of districts -->
+    <string name="card_milestone_plus_districts">+ %1$s districts completed</string>
 </resources>

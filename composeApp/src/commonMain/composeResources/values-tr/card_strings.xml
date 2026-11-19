@@ -22,4 +22,10 @@
     <string name="card_debug_close">Kapat</string>
     <string name="card_debug_written">%1$s dosya yazıldı: %2$s</string>
     <string name="card_debug_open">Kart önizleme (debug)</string>
+    <!-- %1$s = il adı (başlıkta zaten görünür; Türkçe ek uyumu için cümlede kullanılmaz) -->
+    <string name="card_milestone_province">keşfedildi</string>
+    <string name="card_milestone_district_done">tamamlandı</string>
+    <string name="card_milestone_districts_done">ilçe tamamlandı</string>
+    <string name="card_milestone_plus_district">+ %1$s tamamlandı</string>
+    <string name="card_milestone_plus_districts">+ %1$s ilçe tamamlandı</string>
 </resources>

@@ -3,6 +3,7 @@ package app.roadmaxxing.ui.card
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -37,6 +38,29 @@ internal fun percentDigits(percent: Double, sep: String): String =
 
 @Composable
 fun CityCard(data: CityCardData, format: CardFormat, modifier: Modifier = Modifier) {
+    CityCardScaffold(data, format, modifier) { pct, story ->
+        Row(verticalAlignment = Alignment.Bottom) {
+            GiantNumber(pct(data.percent), if (story) 260f else 200f, 936f, RoadmaxxingPalette.Primary)
+        }
+        Text(
+            stringResource(Res.string.card_city_explored),
+            style = cardStyle(if (story) 44f else 38f, FontWeight.SemiBold, RoadmaxxingPalette.TextPrimary),
+            maxLines = 1,
+        )
+    }
+}
+
+/**
+ * Shared layout of the city card and the milestone card: wordmark, province name, silhouette, a headline block
+ * ([headline] gets the percent formatter and whether the format is Story) and the stats row.
+ */
+@Composable
+internal fun CityCardScaffold(
+    data: CityCardData,
+    format: CardFormat,
+    modifier: Modifier,
+    headline: @Composable ColumnScope.(pct: (Double) -> String, story: Boolean) -> Unit,
+) {
     val story = format == CardFormat.Story
     val sep = stringResource(Res.string.decimal_separator)
     val unit = rememberDistanceUnit()
@@ -68,14 +92,7 @@ fun CityCard(data: CityCardData, format: CardFormat, modifier: Modifier = Modifi
                 overflow = TextOverflow.Ellipsis,
             )
             CitySilhouette(data, Modifier.weight(1f).fillMaxWidth().padding(vertical = 16.dp))
-            Row(verticalAlignment = Alignment.Bottom) {
-                GiantNumber(pct(data.percent), if (story) 260f else 200f, 936f, RoadmaxxingPalette.Primary)
-            }
-            Text(
-                stringResource(Res.string.card_city_explored),
-                style = cardStyle(if (story) 44f else 38f, FontWeight.SemiBold, RoadmaxxingPalette.TextPrimary),
-                maxLines = 1,
-            )
+            headline({ pct(it) }, story)
             Spacer(Modifier.height(if (story) 48.dp else 28.dp))
             StatsRow(stats, Modifier.fillMaxWidth())
         }
@@ -84,7 +101,7 @@ fun CityCard(data: CityCardData, format: CardFormat, modifier: Modifier = Modifi
 
 /** Province outline as a thin line; driven roads inside it in Volt green. Every city has its own shape. */
 @Composable
-private fun CitySilhouette(data: CityCardData, modifier: Modifier) {
+internal fun CitySilhouette(data: CityCardData, modifier: Modifier) {
     Canvas(modifier) {
         val boundaryPts = data.boundary.flatten()
         val projector = GeoProjector(boundaryPts.ifEmpty { data.driven.flatten() }, size, padding = 32f)

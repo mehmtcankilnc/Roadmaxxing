@@ -14,6 +14,7 @@ enum class CardFormat(val widthPx: Int, val heightPx: Int) {
 interface CardRenderer {
     suspend fun renderDriveCard(data: DriveCardData, format: CardFormat, hideSpeed: Boolean): ByteArray
     suspend fun renderCityCard(data: CityCardData, format: CardFormat): ByteArray
+    suspend fun renderMilestoneCard(data: MilestoneCardData, format: CardFormat): ByteArray
 }
 
 /** Platform renderer. Android needs a window (it hosts an off-screen ComposeView); iOS uses ImageComposeScene. */
