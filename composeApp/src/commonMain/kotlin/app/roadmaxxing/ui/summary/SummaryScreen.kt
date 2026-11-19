@@ -44,11 +44,10 @@ import app.roadmaxxing.resources.summary_duration
 import app.roadmaxxing.resources.summary_format_post
 import app.roadmaxxing.resources.summary_format_story
 import app.roadmaxxing.resources.summary_hide_speed
-import app.roadmaxxing.resources.summary_km
-import app.roadmaxxing.resources.summary_kmh
 import app.roadmaxxing.resources.summary_loading
 import app.roadmaxxing.resources.summary_max_speed
 import app.roadmaxxing.resources.summary_min
+import app.roadmaxxing.resources.summary_value_unit
 import app.roadmaxxing.resources.summary_new_roads
 import app.roadmaxxing.resources.summary_not_drive
 import app.roadmaxxing.resources.summary_pending
@@ -82,7 +81,12 @@ import app.roadmaxxing.ui.components.SecondaryText
 import app.roadmaxxing.ui.components.TabTitle
 import app.roadmaxxing.ui.main.DetailTarget
 import app.roadmaxxing.ui.main.formatDateTime
+import app.roadmaxxing.ui.main.distanceUnitLabel
 import app.roadmaxxing.ui.main.formatDecimal
+import app.roadmaxxing.ui.main.formatDistanceValue
+import app.roadmaxxing.ui.main.formatSpeedValue
+import app.roadmaxxing.ui.main.rememberDistanceUnit
+import app.roadmaxxing.ui.main.speedUnitLabel
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -133,6 +137,9 @@ private fun CardBody(load: CardLoad, isDrive: Boolean) {
 @Composable
 private fun CardActions(drive: DriveCardData?, city: CityCardData?) {
     val sep = stringResource(Res.string.decimal_separator)
+    val unit = rememberDistanceUnit()
+    val distLabel = distanceUnitLabel(unit)
+    val speedLabel = speedUnitLabel(unit)
     val renderer = rememberCardRenderer()
     val sharer: CardSharer = rememberCardSharer()
     val scope = rememberCoroutineScope()
@@ -156,13 +163,13 @@ private fun CardActions(drive: DriveCardData?, city: CityCardData?) {
 
     if (drive != null) {
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            StatLine(stringResource(Res.string.summary_distance), stringResource(Res.string.summary_km, formatDecimal(drive.distanceM / 1000.0, 2, sep)))
+            StatLine(stringResource(Res.string.summary_distance), stringResource(Res.string.summary_value_unit, formatDistanceValue(drive.distanceM, unit, 2, sep), distLabel))
             StatLine(stringResource(Res.string.summary_duration), stringResource(Res.string.summary_min, formatDecimal(drive.durationMs / 60_000.0, 1, sep)))
-            StatLine(stringResource(Res.string.summary_new_roads), stringResource(Res.string.summary_km, formatDecimal(drive.newLengthM * p / 1000.0, 2, sep)))
+            StatLine(stringResource(Res.string.summary_new_roads), stringResource(Res.string.summary_value_unit, formatDistanceValue(drive.newLengthM * p, unit, 2, sep), distLabel))
             drive.regionName?.let { StatLine(stringResource(Res.string.summary_region), it) }
             // Speed is shown but deliberately plain: no emphasis, no ranking.
-            drive.avgSpeedMps?.let { StatLine(stringResource(Res.string.summary_avg_speed), stringResource(Res.string.summary_kmh, formatDecimal(it * 3.6, 0, sep))) }
-            drive.maxSpeedMps?.let { StatLine(stringResource(Res.string.summary_max_speed), stringResource(Res.string.summary_kmh, formatDecimal(it * 3.6, 0, sep))) }
+            drive.avgSpeedMps?.let { StatLine(stringResource(Res.string.summary_avg_speed), stringResource(Res.string.summary_value_unit, formatSpeedValue(it, unit, 0, sep), speedLabel)) }
+            drive.maxSpeedMps?.let { StatLine(stringResource(Res.string.summary_max_speed), stringResource(Res.string.summary_value_unit, formatSpeedValue(it, unit, 0, sep), speedLabel)) }
         }
     }
 

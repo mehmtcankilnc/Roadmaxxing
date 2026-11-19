@@ -23,11 +23,12 @@ import app.roadmaxxing.resources.card_city_major
 import app.roadmaxxing.resources.card_city_week
 import app.roadmaxxing.resources.card_percent_leading
 import app.roadmaxxing.resources.card_percent_symbol
-import app.roadmaxxing.resources.card_unit_km
 import app.roadmaxxing.resources.decimal_separator
 import app.roadmaxxing.shared.summary.CityCardData
 import app.roadmaxxing.theme.RoadmaxxingPalette
+import app.roadmaxxing.ui.main.distanceUnitLabel
 import app.roadmaxxing.ui.main.formatDecimal
+import app.roadmaxxing.ui.main.rememberDistanceUnit
 import org.jetbrains.compose.resources.stringResource
 
 /** Percent digits: two decimals below 1 % so small progress is visible, one decimal otherwise. */
@@ -38,13 +39,15 @@ internal fun percentDigits(percent: Double, sep: String): String =
 fun CityCard(data: CityCardData, format: CardFormat, modifier: Modifier = Modifier) {
     val story = format == CardFormat.Story
     val sep = stringResource(Res.string.decimal_separator)
+    val unit = rememberDistanceUnit()
+    val unitLabel = distanceUnitLabel(unit)
     val symbol = stringResource(Res.string.card_percent_symbol)
     val leading = stringResource(Res.string.card_percent_leading) == "1"
     fun pct(value: Double) = percentDigits(value, sep).let { if (leading) "$symbol$it" else "$it$symbol" }
 
     val stats = buildList {
         if (data.districtsTotal > 0) add(StatItem("${data.districtsCompleted}/${data.districtsTotal}", stringResource(Res.string.card_city_districts)))
-        add(StatItem("${kmText(data.weekNewLengthM, sep)} ${stringResource(Res.string.card_unit_km)}", stringResource(Res.string.card_city_week)))
+        add(StatItem("${distanceText(data.weekNewLengthM, unit, sep)} $unitLabel", stringResource(Res.string.card_city_week)))
         add(StatItem(pct(data.percentMajor), stringResource(Res.string.card_city_major)))
     }.take(3)
 

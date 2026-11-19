@@ -65,6 +65,15 @@ class DrivenRoadsProvider(
     private val driveTiles = HashMap<Long, Set<Long>>()
     private val mutex = Mutex()
 
+    /** Drops every cache (used after all data was erased); the next build starts from scratch. */
+    suspend fun reset() {
+        mutex.withLock {
+            cache.clear()
+            missing.clear()
+            driveTiles.clear()
+        }
+    }
+
     private fun boundsOf(id: Long): GeoBounds? =
         packProvider.pack.regionBbox(id)?.let { GeoBounds(it.west, it.south, it.east, it.north) }
 

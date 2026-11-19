@@ -24,3 +24,6 @@ DELETE FROM privacy_zone WHERE id = ?;
 
 lastInsertedId:
 SELECT last_insert_rowid();
+
+deleteAll:
+DELETE FROM privacy_zone;

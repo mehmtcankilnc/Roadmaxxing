@@ -2,7 +2,7 @@
 <resources>
     <string name="notification_result_channel">Drive results</string>
     <string name="notification_result_title">Drive saved</string>
-    <!-- %1$s = distance in km, %2$s = new road length in km (both already formatted for the locale) -->
-    <string name="notification_result_body_new">%1$s km · %2$s km new roads</string>
-    <string name="notification_result_body_none">%1$s km · No new roads this time</string>
+    <!-- %1$s = distance, %2$s = new road length (both formatted for the locale), %3$s = unit label -->
+    <string name="notification_result_body_new">%1$s %3$s · %2$s %3$s new roads</string>
+    <string name="notification_result_body_none">%1$s %2$s · No new roads this time</string>
 </resources>

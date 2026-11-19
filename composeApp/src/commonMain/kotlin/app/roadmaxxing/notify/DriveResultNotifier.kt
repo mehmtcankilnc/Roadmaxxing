@@ -5,6 +5,15 @@ import app.roadmaxxing.resources.decimal_separator
 import app.roadmaxxing.resources.notification_result_body_new
 import app.roadmaxxing.resources.notification_result_body_none
 import app.roadmaxxing.resources.notification_result_title
+import app.roadmaxxing.resources.unit_km
+import app.roadmaxxing.resources.unit_mi
+import app.roadmaxxing.shared.settings.DistanceUnit
+import app.roadmaxxing.shared.settings.SettingsRepository
+import app.roadmaxxing.shared.units.isQuietAt
+import app.roadmaxxing.shared.units.metersIn
+import kotlinx.datetime.TimeZone
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 import app.roadmaxxing.shared.data.DriveStore
 import app.roadmaxxing.shared.drive.DriveVerdict
 import app.roadmaxxing.ui.main.formatDecimal
@@ -28,11 +37,12 @@ interface DriveResultPoster {
 
 /**
  * Posts one local "drive saved" notification per processed drive that counted as a drive. Silent when the
- * permission is missing. The text carries distance and new kilometres only, never speed.
+ * permission is missing. The text carries distance and new road length only, never speed.
  */
 class DriveResultNotifier(
     private val store: DriveStore,
     private val poster: DriveResultPoster,
+    private val settings: SettingsRepository,
 ) {
     private val mutex = Mutex()
     private val handled = mutableSetOf<Long>()
@@ -48,20 +58,28 @@ class DriveResultNotifier(
                 if (fresh.isEmpty() || !poster.canPost()) return@withLock
                 for (id in fresh) {
                     handled += id
+                    // Quiet hours: the drive counts as handled, but nothing is shown (now or later).
+                    if (isQuietAt(settings.quietHours.value, nowMs(), TimeZone.currentSystemDefault())) continue
                     val summary = withContext(Dispatchers.Default) { store.drive(id)?.summary } ?: continue
                     if (summary.verdict != DriveVerdict.Drive) continue
                     val separator = getString(Res.string.decimal_separator)
-                    val km = formatDecimal(summary.distanceM / 1000.0, 1, separator)
+                    val unit = settings.distanceUnit.value
+                    val unitLabel = getString(if (unit == DistanceUnit.Miles) Res.string.unit_mi else Res.string.unit_km)
+                    val distance = formatDecimal(metersIn(summary.distanceM, unit), 1, separator)
                     val body = if (summary.newLengthDm >= MIN_NEW_DM) {
-                        getString(Res.string.notification_result_body_new, km, formatDecimal(summary.newLengthDm / 10_000.0, 1, separator))
+                        val fresh = formatDecimal(metersIn(summary.newLengthDm / 10.0, unit), 1, separator)
+                        getString(Res.string.notification_result_body_new, distance, fresh, unitLabel)
                     } else {
-                        getString(Res.string.notification_result_body_none, km)
+                        getString(Res.string.notification_result_body_none, distance, unitLabel)
                     }
                     poster.post(id, getString(Res.string.notification_result_title), body)
                 }
             }
         }
     }
+
+    @OptIn(ExperimentalTime::class)
+    private fun nowMs(): Long = Clock.System.now().toEpochMilliseconds()
 
     private companion object {
         /** Below 50 m (500 dm) of new road the text says there was none. */

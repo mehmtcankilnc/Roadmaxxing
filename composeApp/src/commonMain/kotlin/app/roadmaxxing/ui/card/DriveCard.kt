@@ -25,13 +25,18 @@ import app.roadmaxxing.resources.card_stat_distance
 import app.roadmaxxing.resources.card_stat_duration
 import app.roadmaxxing.resources.card_stat_region
 import app.roadmaxxing.resources.card_stat_speed
-import app.roadmaxxing.resources.card_unit_km
 import app.roadmaxxing.resources.card_zero_new
 import app.roadmaxxing.resources.decimal_separator
 import app.roadmaxxing.shared.summary.CardPolyline
 import app.roadmaxxing.shared.summary.DriveCardData
 import app.roadmaxxing.theme.RoadmaxxingPalette
+import app.roadmaxxing.shared.settings.DistanceUnit
+import app.roadmaxxing.shared.units.metersIn
+import app.roadmaxxing.shared.units.speedIn
+import app.roadmaxxing.ui.main.distanceUnitLabel
 import app.roadmaxxing.ui.main.formatDecimal
+import app.roadmaxxing.ui.main.rememberDistanceUnit
+import app.roadmaxxing.ui.main.speedUnitLabel
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
@@ -39,10 +44,10 @@ import kotlin.math.roundToLong
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
-/** Kilometres with one decimal, two when the value is tiny so it never reads "0,0". */
-internal fun kmText(meters: Double, sep: String): String {
-    val km = meters / 1000.0
-    return formatDecimal(km, if (km in 0.0001..0.0999) 2 else 1, sep)
+/** Distance in [unit] with one decimal, two when the value is tiny so it never reads "0,0". */
+internal fun distanceText(meters: Double, unit: DistanceUnit, sep: String): String {
+    val value = metersIn(meters, unit)
+    return formatDecimal(value, if (value in 0.0001..0.0999) 2 else 1, sep)
 }
 
 /** Numeric date (dd.MM.yyyy) in the device time zone; identical in Turkish and English. */
@@ -64,11 +69,13 @@ fun DriveCard(
 ) {
     val story = format == CardFormat.Story
     val sep = stringResource(Res.string.decimal_separator)
-    val unitKm = stringResource(Res.string.card_unit_km)
+    val unit = rememberDistanceUnit()
+    val unitLabel = distanceUnitLabel(unit)
+    val speedLabel = speedUnitLabel(unit)
     val hasNew = data.newLengthM >= 1.0
     val heroMeters = if (hasNew) data.newLengthM else data.distanceM
-    val heroValue = kmText(if (routeProgress >= 1f) heroMeters else heroMeters * routeProgress.coerceIn(0f, 1f), sep)
-    val heroLabel = stringResource(if (hasNew) Res.string.card_label_new_road else Res.string.card_label_driven)
+    val heroValue = distanceText(if (routeProgress >= 1f) heroMeters else heroMeters * routeProgress.coerceIn(0f, 1f), unit, sep)
+    val heroLabel = stringResource(if (hasNew) Res.string.card_label_new_road else Res.string.card_label_driven, unitLabel)
 
     val minutes = (data.durationMs / 60_000.0).roundToLong()
     val duration = if (minutes >= 60) {
@@ -76,12 +83,12 @@ fun DriveCard(
     } else {
         stringResource(Res.string.card_duration_m, minutes.toString())
     }
-    val distanceStat = StatItem("${kmText(data.distanceM, sep)} $unitKm", stringResource(Res.string.card_stat_distance))
+    val distanceStat = StatItem("${distanceText(data.distanceM, unit, sep)} $unitLabel", stringResource(Res.string.card_stat_distance))
     val durationStat = StatItem(duration, stringResource(Res.string.card_stat_duration))
     val speedStat = if (hideSpeed) null else data.avgSpeedMps?.let { avg ->
-        val a = (avg * 3.6).roundToLong().toString()
-        val m = data.maxSpeedMps?.let { (it * 3.6).roundToLong().toString() }
-        StatItem(if (m != null) "$a / $m" else a, stringResource(Res.string.card_stat_speed))
+        val a = speedIn(avg, unit).roundToLong().toString()
+        val m = data.maxSpeedMps?.let { speedIn(it, unit).roundToLong().toString() }
+        StatItem(if (m != null) "$a / $m" else a, stringResource(Res.string.card_stat_speed, speedLabel))
     }
     val regionStat = data.regionName?.takeIf { it.isNotBlank() }?.let { StatItem(it, stringResource(Res.string.card_stat_region)) }
     // Max three supporting stats; the hero already shows the distance when there is no new road.

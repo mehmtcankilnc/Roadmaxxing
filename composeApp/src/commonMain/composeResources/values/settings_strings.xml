@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_row">Settings</string>
+    <string name="settings_row_hint">Units, language, notifications and your data</string>
+    <string name="settings_title">Settings</string>
+    <string name="settings_back">Back</string>
+    <string name="settings_units_title">Units</string>
+    <string name="settings_unit_km">Kilometres</string>
+    <string name="settings_unit_mi">Miles</string>
+    <string name="settings_language_title">Language</string>
+    <string name="settings_language_row">App language</string>
+    <string name="settings_language_name">English</string>
+    <string name="settings_notifications_title">Notifications</string>
+    <string name="settings_quiet_hours">Quiet hours</string>
+    <string name="settings_quiet_hours_hint">End-of-drive notifications are not shown during these hours</string>
+    <string name="settings_quiet_start">From</string>
+    <string name="settings_quiet_end">Until</string>
+    <string name="settings_time_ok">OK</string>
+    <string name="settings_time_cancel">Cancel</string>
+    <string name="settings_time_pick_start">Quiet hours start</string>
+    <string name="settings_time_pick_end">Quiet hours end</string>
+    <string name="settings_data_title">Your data</string>
+    <string name="settings_export">Export my data</string>
+    <string name="settings_export_hint">All your drives in one GPX file, shared through the system share sheet. Nothing is uploaded.</string>
+    <string name="settings_exporting">Preparing export…</string>
+    <string name="settings_export_nothing">You have no drives to export yet.</string>
+    <string name="settings_export_failed">The export failed. Please try again.</string>
+    <string name="settings_delete">Delete all my data</string>
+    <string name="settings_delete_hint">Removes everything from this device and starts over.</string>
+    <string name="settings_deleting">Deleting…</string>
+    <string name="settings_delete_title">Delete all your data?</string>
+    <string name="settings_delete_body">This permanently deletes your drives, driven roads and percentages, privacy zones and settings from this device. There is no backup and it cannot be undone. The app will return to the welcome screen.</string>
+    <string name="settings_delete_continue">Continue</string>
+    <string name="settings_delete_confirm_title">Are you absolutely sure?</string>
+    <string name="settings_delete_confirm_body">Type %1$s to confirm. Everything will be erased immediately.</string>
+    <string name="settings_delete_word">DELETE</string>
+    <string name="settings_delete_field_label">Confirmation word</string>
+    <string name="settings_delete_confirm_button">Delete everything</string>
+    <string name="settings_delete_failed">Your data could not be deleted. Nothing was changed; try again.</string>
+    <string name="settings_cancel">Cancel</string>
+    <string name="settings_about_title">About</string>
+    <string name="settings_about_version">Version %1$s</string>
+    <string name="settings_about_legal_hint">Privacy policy and terms of use are in the Profile tab.</string>
+</resources>

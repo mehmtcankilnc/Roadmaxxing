@@ -31,7 +31,7 @@
     <string name="progress_loading">Bölge paketi yükleniyor…</string>
     <string name="drives_title">Sürüşler</string>
     <string name="drives_empty">Henüz sürüş yok. Sadece sür; kayıt kendiliğinden başlar.</string>
-    <string name="drive_line">%1$s km · %2$s dk · +%3$s km yeni</string>
+    <string name="drive_line">%1$s %4$s · %2$s dk · +%3$s %4$s yeni</string>
     <string name="drive_verdict_drive">Sürüş</string>
     <string name="drive_verdict_not_drive">Sürüş değil</string>
     <string name="drive_status_recording">Kaydediliyor</string>
@@ -58,9 +58,12 @@
     <string name="summary_max_speed">En yüksek hız</string>
     <string name="summary_new_roads">Yeni yollar</string>
     <string name="summary_region">Bölge</string>
-    <string name="summary_km">%1$s km</string>
+    <string name="summary_value_unit">%1$s %2$s</string>
+    <string name="unit_km">km</string>
+    <string name="unit_mi">mil</string>
+    <string name="unit_kmh">km/sa</string>
+    <string name="unit_mph">mil/sa</string>
     <string name="summary_min">%1$s dk</string>
-    <string name="summary_kmh">%1$s km/sa</string>
     <string name="summary_not_drive">Bu iz sürüş sayılmadı, paylaşılacak kart yok.</string>
     <string name="summary_pending">Bu sürüş hâlâ işleniyor.</string>
     <string name="summary_unavailable">Kart verisi henüz hazır değil.</string>
