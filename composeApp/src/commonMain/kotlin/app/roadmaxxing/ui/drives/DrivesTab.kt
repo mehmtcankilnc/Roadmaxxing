@@ -36,7 +36,10 @@ import app.roadmaxxing.ui.components.SecondaryText
 import app.roadmaxxing.ui.components.TabTitle
 import app.roadmaxxing.ui.main.MainUiState
 import app.roadmaxxing.ui.main.formatDateTime
+import app.roadmaxxing.ui.main.distanceUnitLabel
 import app.roadmaxxing.ui.main.formatDecimal
+import app.roadmaxxing.ui.main.formatDistanceValue
+import app.roadmaxxing.ui.main.rememberDistanceUnit
 import org.jetbrains.compose.resources.stringResource
 
 /** Drives tab: every recorded drive with distance, duration and the km it newly explored. */
@@ -56,6 +59,7 @@ fun DrivesTab(state: MainUiState, onOpenDrive: (Long) -> Unit) {
 
 @Composable
 private fun DriveRow(drive: DriveRecord, selected: Boolean, onClick: () -> Unit) {
+    val unit = rememberDistanceUnit()
     val sep = stringResource(Res.string.decimal_separator)
     val summary = drive.summary
     val (label, isDrive) = when {
@@ -90,9 +94,10 @@ private fun DriveRow(drive: DriveRecord, selected: Boolean, onClick: () -> Unit)
             SecondaryText(
                 stringResource(
                     Res.string.drive_line,
-                    formatDecimal(summary.distanceM / 1000.0, 2, sep),
+                    formatDistanceValue(summary.distanceM, unit, 2, sep),
                     formatDecimal(summary.durationMs / 60_000.0, 1, sep),
-                    formatDecimal(summary.newLengthDm / 10_000.0, 2, sep),
+                    formatDistanceValue(summary.newLengthDm / 10.0, unit, 2, sep),
+                    distanceUnitLabel(unit),
                 ),
             )
         }

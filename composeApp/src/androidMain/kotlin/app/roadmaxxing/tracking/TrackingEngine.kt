@@ -13,6 +13,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.util.concurrent.Executors
 
@@ -31,6 +33,13 @@ class TrackingEngine(
     val triggers = IdleTriggers(app)
     val trackingDispatcher = Executors.newSingleThreadExecutor { r -> Thread(r, "rmx-tracking") }.asCoroutineDispatcher()
     val scope = CoroutineScope(SupervisorJob() + trackingDispatcher)
+
+    /** True while "erase everything" runs: the service, receivers and triggers must not record or start anything. */
+    @Volatile var discarding: Boolean = false
+        private set
+
+    /** Serialises matching with [stopAndDiscard], so erase never deletes rows under a running match. */
+    private val processingLock = Mutex()
 
     /** Last activity transition seen, with its time (for skipping probes while the user walks). */
     @Volatile var lastActivity: Pair<ActivityType, Long>? = null
@@ -59,7 +68,7 @@ class TrackingEngine(
         Log.i(TAG, "idle triggers armed: activity=$ar geofence=$fence")
     }
 
-    suspend fun processPendingDrives() {
+    suspend fun processPendingDrives() = processingLock.withLock {
         val processed = runCatching { processor.processPending() }
             .onFailure { Log.e(TAG, "processing failed; drives stay PENDING and are retried", it) }
             .getOrDefault(emptyList())
@@ -69,8 +78,33 @@ class TrackingEngine(
         }
     }
 
+    /**
+     * Stops the tracking service (GPS off, foreground notification gone), closes any open recording and blocks every
+     * entry point until [resumeAfterDiscard]. The closed drive row is then removed by the data eraser. Waits for a
+     * running match to finish first.
+     */
+    suspend fun stopAndDiscard() {
+        discarding = true
+        app.stopService(Intent(app, DriveTrackingService::class.java))
+        processingLock.withLock {
+            withContext(trackingDispatcher) {
+                if (recorder.isRecording) recorder.manualStop(System.currentTimeMillis())
+                status.set(TrackingStatus.Idle)
+            }
+        }
+        triggers.disarmGeofence()
+    }
+
+    /** Re-enables tracking after an erase and re-arms the low-power triggers. */
+    suspend fun resumeAfterDiscard() {
+        withContext(trackingDispatcher) { status.set(TrackingStatus.Idle) }
+        discarding = false
+        armIdleTriggers()
+    }
+
     /** Activity transition from Play services. Starts recording on IN_VEHICLE. */
     suspend fun onActivity(type: ActivityType, timeMs: Long) = withContext(trackingDispatcher) {
+        if (discarding) return@withContext
         lastActivity = type to timeMs
         if (recorder.isRecording) {
             // The running service sees the activity through the recorder on its next fix/tick.
@@ -85,6 +119,7 @@ class TrackingEngine(
 
     /** The stationary geofence was left: probe with GPS unless the user is known to be on foot. */
     suspend fun onGeofenceExit(lat: Double?, lon: Double?, timeMs: Long) = withContext(trackingDispatcher) {
+        if (discarding) return@withContext
         if (recorder.isRecording || status.status.value !is TrackingStatus.Idle) return@withContext
         val act = lastActivity
         val onFootRecently = act != null && act.first.isOutOfVehicle && timeMs - act.second < ON_FOOT_SKIP_MS

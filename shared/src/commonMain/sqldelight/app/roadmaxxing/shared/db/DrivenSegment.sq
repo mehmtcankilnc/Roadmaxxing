@@ -25,3 +25,6 @@ SELECT segment_id FROM driven_segment WHERE first_driven_ms >= ?;
 
 selectAllWithFirstDrive:
 SELECT segment_id, first_drive_id FROM driven_segment;
+
+deleteAll:
+DELETE FROM driven_segment;

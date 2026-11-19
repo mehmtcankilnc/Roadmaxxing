@@ -46,7 +46,7 @@ We do not sell your location data or any other personal data. We do not use your
 
 ## Keeping and deleting your data
 
-Your data lives on your phone. You can delete it at any time by uninstalling the app. The app does not yet have an in-app "delete my data" button; we plan to add one. Note that roads you have driven are kept on your map as long as the app is installed.
+Your data lives on your phone. You can export your drives as a single GPX file and share it through your phone's share sheet; nothing is uploaded. You can delete all your data in the app under Profile → Settings. Deletion is immediate and irreversible, and there is no backup we could restore it from. You can also delete your data by uninstalling the app. Note that roads you have driven are kept on your map until you delete your data.
 
 ## Children
 

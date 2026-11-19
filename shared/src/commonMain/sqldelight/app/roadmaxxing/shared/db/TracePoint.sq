@@ -25,3 +25,6 @@ SELECT * FROM trace_point WHERE drive_id = ? ORDER BY time_ms DESC LIMIT 1;
 
 countForDrive:
 SELECT count(*) FROM trace_point WHERE drive_id = ?;
+
+deleteAll:
+DELETE FROM trace_point;

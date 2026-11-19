@@ -24,6 +24,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import platform.CoreLocation.CLActivityTypeAutomotiveNavigation
 import platform.CoreLocation.CLCircularRegion
 import platform.CoreLocation.CLLocation
@@ -96,6 +98,8 @@ class IosTrackingEngine(
     private var idleCenter: Pair<Double, Double>? = null
     private var awaitingCenter = false
     private var tickJob: Job? = null
+    private var discarding = false
+    private val processingLock = Mutex()
 
     // ------------------------------------------------------------------ lifecycle
 
@@ -125,6 +129,40 @@ class IosTrackingEngine(
     fun onPermissionsChanged() {
         onMain { startMotionUpdates() }
         scope.launch { if (!sessionActive) armIdle(null, null, keepExistingRegion = false) }
+    }
+
+    /**
+     * "Erase everything": stops GPS and the idle triggers, closes any open recording without matching it and blocks
+     * every entry point until [resumeAfterDiscard]. The closed drive row is removed by the data eraser afterwards.
+     */
+    suspend fun stopAndDiscard() {
+        scope.launch {
+            discarding = true
+            tickJob?.cancel()
+            tickJob = null
+            stopUpdates()
+            processingLock.withLock {
+                if (recorder.isRecording) recorder.manualStop(currentTimeMs())
+            }
+            probeStartedMs = null
+            sessionActive = false
+            finishing = false
+            idleCenter = null
+            awaitingCenter = false
+            status.set(TrackingStatus.Idle)
+            onMain {
+                idleManager.stopMonitoringSignificantLocationChanges()
+                idleManager.monitoredRegions.filterIsInstance<CLCircularRegion>().forEach { idleManager.stopMonitoringForRegion(it) }
+            }
+        }.join()
+    }
+
+    /** Re-enables tracking after an erase and re-arms the idle triggers. */
+    suspend fun resumeAfterDiscard() {
+        scope.launch {
+            discarding = false
+            armIdle(null, null, keepExistingRegion = false)
+        }.join()
     }
 
     fun manualStart() {
@@ -184,7 +222,7 @@ class IosTrackingEngine(
     // ------------------------------------------------------------------ logic (tracking scope)
 
     private fun onFix(point: TracePoint) {
-        if (!sessionActive || finishing) return
+        if (!sessionActive || finishing || discarding) return
         lastFixLat = point.lat
         lastFixLon = point.lon
         handle(recorder.onLocation(point))
@@ -195,6 +233,7 @@ class IosTrackingEngine(
     }
 
     private fun onActivity(type: ActivityType, timeMs: Long) {
+        if (discarding) return
         lastActivity = type to timeMs
         if (recorder.isRecording) {
             handle(recorder.onActivity(type, timeMs))
@@ -207,7 +246,7 @@ class IosTrackingEngine(
 
     /** A significant-change fix while idle. Fixes still inside the stationary fence are ignored. */
     private suspend fun onIdleLocation(lat: Double, lon: Double, timeMs: Long) {
-        if (sessionActive || recorder.isRecording) return
+        if (discarding || sessionActive || recorder.isRecording) return
         val center = idleCenter
         if (center == null || awaitingCenter) {
             awaitingCenter = false
@@ -220,7 +259,7 @@ class IosTrackingEngine(
 
     /** A low-power trigger fired: decide between an activity start, no probe (on foot) and a short GPS probe. */
     private suspend fun wake(lat: Double?, lon: Double?, timeMs: Long, reason: String) {
-        if (sessionActive || recorder.isRecording) return
+        if (discarding || sessionActive || recorder.isRecording) return
         queryRecentActivity(timeMs)?.let { lastActivity = it }
         val act = lastActivity
         val onFootRecently = act != null && act.first.isOutOfVehicle && timeMs - act.second < ON_FOOT_SKIP_MS
@@ -233,6 +272,7 @@ class IosTrackingEngine(
     }
 
     private fun beginSession(mode: Mode) {
+        if (discarding) return
         val now = currentTimeMs()
         if (sessionActive) {
             // Already probing or recording: only feed the activity.
@@ -309,7 +349,7 @@ class IosTrackingEngine(
         endBackgroundTask()
     }
 
-    private suspend fun processPendingDrives() {
+    private suspend fun processPendingDrives() = processingLock.withLock {
         val processed = runCatching { processor.processPending() }
             .onFailure { println("$TAG processing failed; drives stay PENDING and are retried: $it") }
             .getOrDefault(emptyList())

@@ -38,6 +38,11 @@ class OnboardingRepository(private val store: AppMetaStore) {
 
     val isCompleted: StateFlow<Boolean> = completed.asStateFlow()
 
+    /** Re-reads storage (used after all data was erased). */
+    fun reload() {
+        completed.value = store.get(KEY_COMPLETED) == TRUE
+    }
+
     fun markCompleted() {
         store.put(KEY_COMPLETED, TRUE)
         completed.value = true

@@ -50,6 +50,11 @@ class PrivacyZoneRepository(
         state.value = load()
     }
 
+    /** Re-reads zones from the database (used after all data was erased). */
+    fun reload() {
+        state.value = load()
+    }
+
     fun delete(id: Long) {
         queries.deleteZone(id)
         state.value = load()

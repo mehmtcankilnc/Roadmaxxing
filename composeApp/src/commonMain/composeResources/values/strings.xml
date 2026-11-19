@@ -31,7 +31,7 @@
     <string name="progress_loading">Loading region pack…</string>
     <string name="drives_title">Drives</string>
     <string name="drives_empty">No drives yet. Just drive; recording starts by itself.</string>
-    <string name="drive_line">%1$s km · %2$s min · +%3$s km new</string>
+    <string name="drive_line">%1$s %4$s · %2$s min · +%3$s %4$s new</string>
     <string name="drive_verdict_drive">Drive</string>
     <string name="drive_verdict_not_drive">Not a drive</string>
     <string name="drive_status_recording">Recording</string>
@@ -58,9 +58,12 @@
     <string name="summary_max_speed">Top speed</string>
     <string name="summary_new_roads">New roads</string>
     <string name="summary_region">Region</string>
-    <string name="summary_km">%1$s km</string>
+    <string name="summary_value_unit">%1$s %2$s</string>
+    <string name="unit_km">km</string>
+    <string name="unit_mi">mi</string>
+    <string name="unit_kmh">km/h</string>
+    <string name="unit_mph">mph</string>
     <string name="summary_min">%1$s min</string>
-    <string name="summary_kmh">%1$s km/h</string>
     <string name="summary_not_drive">This was not counted as a drive, so there is no card to share.</string>
     <string name="summary_pending">This drive is still being processed.</string>
     <string name="summary_unavailable">The card data is not available yet.</string>

@@ -83,6 +83,12 @@ class DriveTrackingService : Service() {
             stopSelf()
             return START_NOT_STICKY
         }
+        if (engine.discarding) {
+            // "Erase everything" is running: satisfy startForeground, then leave without recording.
+            stopForeground(STOP_FOREGROUND_REMOVE)
+            stopSelf()
+            return START_NOT_STICKY
+        }
         engine.scope.launch {
             when {
                 action == ACTION_ENDED -> finishDrive()
@@ -145,6 +151,7 @@ class DriveTrackingService : Service() {
         tickJob = engine.scope.launch {
             while (isActive) {
                 delay(TICK_MS)
+                if (engine.discarding) continue
                 val now = System.currentTimeMillis()
                 handle(engine.recorder.onTick(now))
                 val probe = probeStartedMs
@@ -157,7 +164,7 @@ class DriveTrackingService : Service() {
     }
 
     private fun onFix(loc: Location) {
-        if (finishing) return
+        if (finishing || engine.discarding) return
         lastFix = loc
         val point = TracePoint(
             timeMs = loc.time,
@@ -175,6 +182,7 @@ class DriveTrackingService : Service() {
     }
 
     private fun handle(update: RecorderUpdate) {
+        if (engine.discarding) return
         if (update.startedDriveId != null) {
             Log.i(TAG, "drive ${update.startedDriveId} started")
             probeStartedMs = null

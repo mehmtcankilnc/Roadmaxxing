@@ -1,5 +1,8 @@
 package app.roadmaxxing.di
 
+import app.roadmaxxing.data.AndroidDataPlatform
+import app.roadmaxxing.data.DataPlatform
+import app.roadmaxxing.data.dataModule
 import app.roadmaxxing.notify.AndroidDriveResultPoster
 import app.roadmaxxing.notify.DriveResultPoster
 import app.roadmaxxing.notify.notifyModule
@@ -11,8 +14,9 @@ import org.koin.core.module.Module
 import org.koin.dsl.module
 
 internal actual val platformAppModule: Module = module {
-    includes(notifyModule)
+    includes(notifyModule, dataModule)
     single<DriveResultPoster> { AndroidDriveResultPoster(androidContext()) }
     single { TrackingEngine(androidContext(), recorder = get(), processor = get(), status = get(), notifier = get()) }
     single<TrackingPlatform> { AndroidTrackingPlatform(androidContext(), engine = get()) }
+    single<DataPlatform> { AndroidDataPlatform(androidContext(), engine = get()) }
 }

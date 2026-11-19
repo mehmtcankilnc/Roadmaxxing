@@ -47,7 +47,7 @@ Konum verini veya başka bir kişisel verini satmayız. Konumunu reklam için ku
 
 ## Verini saklama ve silme
 
-Verin telefonunda durur. Uygulamayı kaldırarak istediğin an silebilirsin. Uygulamada henüz "verilerimi sil" düğmesi yok; eklemeyi planlıyoruz. Sürdüğün yolların, uygulama kurulu olduğu sürece haritanda kaldığını unutma.
+Verin telefonunda durur. Sürüşlerini tek bir GPX dosyası olarak dışa aktarıp telefonunun paylaşım menüsüyle paylaşabilirsin; hiçbir şey yüklenmez. Tüm verini uygulamada Profil → Ayarlar altından silebilirsin. Silme anında gerçekleşir ve geri alınamaz; geri yükleyebileceğimiz bir yedek yoktur. Verini uygulamayı kaldırarak da silebilirsin. Sürdüğün yolların, sen verini silene kadar haritanda kaldığını unutma.
 
 ## Çocuklar
 

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_row">Ayarlar</string>
+    <string name="settings_row_hint">Birimler, dil, bildirimler ve verilerin</string>
+    <string name="settings_title">Ayarlar</string>
+    <string name="settings_back">Geri</string>
+    <string name="settings_units_title">Birimler</string>
+    <string name="settings_unit_km">Kilometre</string>
+    <string name="settings_unit_mi">Mil</string>
+    <string name="settings_language_title">Dil</string>
+    <string name="settings_language_row">Uygulama dili</string>
+    <string name="settings_language_name">Türkçe</string>
+    <string name="settings_notifications_title">Bildirimler</string>
+    <string name="settings_quiet_hours">Sessiz saatler</string>
+    <string name="settings_quiet_hours_hint">Bu saatlerde sürüş bitti bildirimleri gösterilmez</string>
+    <string name="settings_quiet_start">Başlangıç</string>
+    <string name="settings_quiet_end">Bitiş</string>
+    <string name="settings_time_ok">Tamam</string>
+    <string name="settings_time_cancel">Vazgeç</string>
+    <string name="settings_time_pick_start">Sessiz saatlerin başlangıcı</string>
+    <string name="settings_time_pick_end">Sessiz saatlerin bitişi</string>
+    <string name="settings_data_title">Verilerin</string>
+    <string name="settings_export">Verilerimi dışa aktar</string>
+    <string name="settings_export_hint">Tüm sürüşlerin tek bir GPX dosyasında, sistem paylaşım menüsüyle paylaşılır. Hiçbir şey yüklenmez.</string>
+    <string name="settings_exporting">Dışa aktarma hazırlanıyor…</string>
+    <string name="settings_export_nothing">Henüz dışa aktarılacak sürüşün yok.</string>
+    <string name="settings_export_failed">Dışa aktarma başarısız oldu. Lütfen tekrar dene.</string>
+    <string name="settings_delete">Tüm verilerimi sil</string>
+    <string name="settings_delete_hint">Bu cihazdaki her şeyi siler ve baştan başlar.</string>
+    <string name="settings_deleting">Siliniyor…</string>
+    <string name="settings_delete_title">Tüm verilerin silinsin mi?</string>
+    <string name="settings_delete_body">Sürüşlerin, sürdüğün yollar ve yüzdelerin, gizlilik bölgelerin ve ayarların bu cihazdan kalıcı olarak silinir. Yedek yoktur ve geri alınamaz. Uygulama karşılama ekranına döner.</string>
+    <string name="settings_delete_continue">Devam</string>
+    <string name="settings_delete_confirm_title">Kesinlikle emin misin?</string>
+    <string name="settings_delete_confirm_body">Onaylamak için %1$s yaz. Her şey hemen silinecek.</string>
+    <string name="settings_delete_word">SİL</string>
+    <string name="settings_delete_field_label">Onay kelimesi</string>
+    <string name="settings_delete_confirm_button">Her şeyi sil</string>
+    <string name="settings_delete_failed">Verilerin silinemedi. Hiçbir şey değişmedi; tekrar dene.</string>
+    <string name="settings_cancel">Vazgeç</string>
+    <string name="settings_about_title">Hakkında</string>
+    <string name="settings_about_version">Sürüm %1$s</string>
+    <string name="settings_about_legal_hint">Gizlilik politikası ve kullanım koşulları Profil sekmesinde.</string>
+</resources>

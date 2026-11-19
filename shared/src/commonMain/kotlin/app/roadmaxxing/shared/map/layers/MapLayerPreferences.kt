@@ -26,6 +26,12 @@ class MapLayerPreferences(private val store: AppMetaStore) {
         privacyZones.value = value
     }
 
+    /** Re-reads storage (used after all data was erased; missing keys mean on). */
+    fun reload() {
+        undiscovered.value = read(KEY_UNDISCOVERED)
+        privacyZones.value = read(KEY_PRIVACY_ZONES)
+    }
+
     private fun read(key: String): Boolean = store.get(key) != "false"
 
     internal companion object {

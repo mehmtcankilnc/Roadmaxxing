@@ -5,6 +5,7 @@ import app.roadmaxxing.ui.explore.ExploreViewModel
 import app.roadmaxxing.ui.main.MainViewModel
 import app.roadmaxxing.ui.onboarding.OnboardingViewModel
 import app.roadmaxxing.ui.privacy.PrivacyZonesViewModel
+import app.roadmaxxing.ui.settings.SettingsViewModel
 import app.roadmaxxing.ui.summary.SummaryViewModel
 import org.koin.core.KoinApplication
 import org.koin.core.context.startKoin
@@ -22,6 +23,7 @@ val appModule: Module = module {
     viewModelOf(::ExploreViewModel)
     viewModelOf(::SummaryViewModel)
     viewModelOf(::PrivacyZonesViewModel)
+    viewModelOf(::SettingsViewModel)
     viewModel { OnboardingViewModel(repository = get(), introRoadsProvider = get()) }
 }
 

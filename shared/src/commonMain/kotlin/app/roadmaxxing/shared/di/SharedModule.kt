@@ -19,6 +19,9 @@ import app.roadmaxxing.shared.onboarding.IntroRoadsProvider
 import app.roadmaxxing.shared.onboarding.SqlAppMetaStore
 import app.roadmaxxing.shared.onboarding.OnboardingRepository
 import app.roadmaxxing.shared.privacy.PrivacyZoneRepository
+import app.roadmaxxing.shared.settings.DataEraser
+import app.roadmaxxing.shared.settings.DataExporter
+import app.roadmaxxing.shared.settings.SettingsRepository
 import app.roadmaxxing.shared.summary.SummaryRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -50,6 +53,14 @@ val sharedModule: Module = module {
     single { ProgressRepository(store = get(), packProvider = get(), cpuDispatcher = Dispatchers.Default) }
     single {
         DrivenRoadsProvider(packProvider = get(), store = get(), dispatcher = Dispatchers.Default)
+    }
+    single { SettingsRepository(store = SqlAppMetaStore(get())) }
+    single { DataExporter(store = get(), dispatcher = Dispatchers.Default) }
+    single {
+        DataEraser(
+            database = get(), onboarding = get(), privacyZones = get(), layerPreferences = get(),
+            settings = get(), drivenRoads = get(), dispatcher = Dispatchers.Default,
+        )
     }
     single { MapLayerPreferences(store = SqlAppMetaStore(get())) }
     single {

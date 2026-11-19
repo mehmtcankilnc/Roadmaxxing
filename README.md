@@ -44,7 +44,7 @@ is in and what is not; everything else is "planned".
 | 7b | End-of-drive notification | done (Phase 0) | One local notification per drive that counted, only when the notification permission is granted; text carries distance and new km, never speed. Tapping it opens that drive's summary. Android: own "Drive results" channel. iOS: `UNUserNotificationCenter`. Not tried on a physical device; the iOS code compiles in CI only. |
 | 8 | Account and sync | planned | No Firebase. Data stays in the local database. |
 | 9 | Subscription and paywall | planned | No RevenueCat. |
-| 10 | Settings | partial | Profile → Privacy zones: list, add / edit / delete (delete asks for confirmation), map editor with a centre pin, radius slider and circle preview; one dismissible suggestion ("add a zone here?") after at least 5 counted drives when a start/end place repeats at least 3 times (never creates a zone by itself). Zones live in the new `privacy_zone` table (schema 2→3). Not tried on a physical device. **Planned:** other settings. |
+| 10 | Settings | partial | Profile → Privacy zones: list, add / edit / delete (delete asks for confirmation), map editor with a centre pin, radius slider and circle preview; one dismissible suggestion ("add a zone here?") after at least 5 counted drives when a start/end place repeats at least 3 times (never creates a zone by itself). Zones live in the new `privacy_zone` table (schema 2→3). Profile → Settings: distance unit (km / mi, speed km/h / mph; default miles for US and GB system regions, else km; applies to the Drives list, summary, drive and city cards including the PNG, and the notification; percentages unchanged); app language (opens the system per-app language page, Android 13+ and iOS; hidden below Android 13); quiet hours (default off, 22:00–07:00, suppresses only the end-of-drive notification, not the recording notification); export of all drives as one GPX 1.1 file through the share sheet (nothing is uploaded); delete all data in the app (two-step confirmation, immediate and irreversible, no backup; an ongoing recording is stopped and discarded first); About with the version. Not tried on a physical device. |
 
 ## Tech stack
 
@@ -388,6 +388,7 @@ Locally, configuration files and keys live in git-ignored files (`local.properti
 - **Privacy zones cut shared images only.** The card route still omits the first and last 300 m along the road
   (nothing is drawn for drives shorter than 600 m), and user-defined zones are cut out on top of that. The route and
   roads in the app itself, the percentages and the stored data are never cut. There is no direct Instagram Story share (it needs a Meta app ID); use the system share sheet.
+- **iOS settings, export and erase not run on an iPhone.** The iOS paths for units, language settings, GPX export (`UIActivityViewController`) and data erase compile in CI only; they have not run on an iPhone.
 - **No account, sync, subscription or analytics.** All data is local.
 - **Emulator timing.** The emulator GPS reports at 1 Hz with jitter; repeated replays of the same route can add a few
   extra segments. With the segment summary index the first progress computation on a cold Pixel_8 emulator takes about 0.4–0.8 s.
