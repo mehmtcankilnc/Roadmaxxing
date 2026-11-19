@@ -72,6 +72,29 @@ class ExploreViewModel(
         userTouchedMap = true
     }
 
+    private var focusNudge = false
+
+    /**
+     * Moves the map to a region (e.g. a tapped district in Stats). An explicit user request, so it overrides the
+     * "keep the camera once the user touched the map" rule (decision 39). The map re-fits only when [MapFocus]
+     * changes by value, so each request alternates a ~1 cm epsilon; that way requesting the same region again
+     * after panning away still moves the camera.
+     */
+    fun focusRegion(regionId: Long) {
+        viewModelScope.launch {
+            val bounds = try {
+                withContext(Dispatchers.Default) { provider.regionBounds(regionId) }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                null
+            } ?: return@launch
+            focusNudge = !focusNudge
+            val eps = if (focusNudge) FOCUS_EPSILON else 0.0
+            _state.update { it.copy(focus = bounds.toFocus().let { f -> f.copy(east = f.east + eps) }) }
+        }
+    }
+
     private var lastView: Pair<GeoBounds, Double>? = null
     private var undiscoveredJob: Job? = null
 
@@ -177,5 +200,7 @@ class ExploreViewModel(
 }
 
 private fun GeoBounds.toFocus() = MapFocus(west = west, south = south, east = east, north = north)
+
+private const val FOCUS_EPSILON = 1e-7
 
 private const val EMPTY_GEOJSON = "{\"type\":\"FeatureCollection\",\"features\":[]}"

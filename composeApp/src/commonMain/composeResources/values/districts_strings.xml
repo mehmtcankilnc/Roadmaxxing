@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="districts_sort_label">Sort districts</string>
+    <string name="districts_sort_completion">By completion</string>
+    <string name="districts_sort_name">By name</string>
+    <string name="districts_completed_badge">Completed</string>
+    <!-- %1$s = major roads percent, %2$s = local roads percent (already formatted) -->
+    <string name="districts_secondary_line">Major %1$s% · Local %2$s%</string>
+    <!-- %1$s = district name, %2$s = percent (already formatted with the % sign) -->
+    <string name="districts_row_description">%1$s, %2$s explored. Show on map</string>
+    <string name="districts_row_description_completed">%1$s, %2$s explored, completed. Show on map</string>
+</resources>

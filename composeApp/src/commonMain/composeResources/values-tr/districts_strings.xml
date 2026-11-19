@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="districts_sort_label">İlçeleri sırala</string>
+    <string name="districts_sort_completion">Tamamlanmaya göre</string>
+    <string name="districts_sort_name">Ada göre</string>
+    <string name="districts_completed_badge">Tamamlandı</string>
+    <!-- %1$s = ana yol yüzdesi, %2$s = yerel yol yüzdesi (biçimlendirilmiş) -->
+    <string name="districts_secondary_line">Ana yollar %%1$s · Yerel yollar %%2$s</string>
+    <!-- %1$s = ilçe adı, %2$s = yüzde (% işaretiyle biçimlendirilmiş) -->
+    <string name="districts_row_description">%1$s, %2$s keşfedildi. Haritada göster</string>
+    <string name="districts_row_description_completed">%1$s, %2$s keşfedildi, tamamlandı. Haritada göster</string>
+</resources>
