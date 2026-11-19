@@ -101,13 +101,19 @@ fun AppShell(
     LaunchedEffect(mapVisible) { exploreViewModel.onMapVisible(mapVisible) }
     LaunchedEffect(detail) { if (detail != null) summaryViewModel.show(detail) else summaryViewModel.clear() }
     val cardLoad by summaryViewModel.state.collectAsStateWithLifecycle()
+    val screenClass = currentScreenClass()
     ShellContent(
         state = state,
         explore = explore,
-        screenClass = currentScreenClass(),
+        screenClass = screenClass,
         onIntent = viewModel::onIntent,
         onRequestPermission = requestPermission,
         onMapTouched = exploreViewModel::onUserTouchedMap,
+        onDistrictClick = { id ->
+            exploreViewModel.focusRegion(id)
+            // Compact: the map is hidden behind the panel, so switch to it. Wide layouts show both: only focus.
+            if (screenClass == ScreenClass.Compact) viewModel.onIntent(MainIntent.SelectTab(AppTab.Map))
+        },
         detailPane = { modifier ->
             if (detail != null) {
                 SummaryScreen(
@@ -130,13 +136,14 @@ internal fun ShellContent(
     onIntent: (MainIntent) -> Unit,
     onRequestPermission: (AppPermission) -> Unit,
     onMapTouched: () -> Unit,
+    onDistrictClick: (Long) -> Unit = {},
     detailPane: @Composable (Modifier) -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         when (screenClass) {
-            ScreenClass.Compact -> CompactShell(state, explore, onIntent, onRequestPermission, onMapTouched, detailPane)
-            ScreenClass.Medium -> WideShell(state, explore, onIntent, onRequestPermission, panelWidth = MediumPanelWidth, onMapTouched = onMapTouched, detailPane = detailPane)
-            ScreenClass.Expanded -> WideShell(state, explore, onIntent, onRequestPermission, panelWidth = ExpandedPanelWidth, onMapTouched = onMapTouched, detailPane = detailPane)
+            ScreenClass.Compact -> CompactShell(state, explore, onIntent, onRequestPermission, onMapTouched, onDistrictClick, detailPane)
+            ScreenClass.Medium -> WideShell(state, explore, onIntent, onRequestPermission, panelWidth = MediumPanelWidth, onMapTouched = onMapTouched, onDistrictClick = onDistrictClick, detailPane = detailPane)
+            ScreenClass.Expanded -> WideShell(state, explore, onIntent, onRequestPermission, panelWidth = ExpandedPanelWidth, onMapTouched = onMapTouched, onDistrictClick = onDistrictClick, detailPane = detailPane)
         }
     }
 }
@@ -148,6 +155,7 @@ private fun CompactShell(
     onIntent: (MainIntent) -> Unit,
     onRequestPermission: (AppPermission) -> Unit,
     onMapTouched: () -> Unit,
+    onDistrictClick: (Long) -> Unit,
     detailPane: @Composable (Modifier) -> Unit,
 ) {
     val density = LocalDensity.current
@@ -191,7 +199,7 @@ private fun CompactShell(
                     .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
                     .padding(horizontal = PanelGap),
             ) {
-                if (state.detail != null) detailPane(Modifier.fillMaxSize()) else TabScroll(state, onIntent, onRequestPermission)
+                if (state.detail != null) detailPane(Modifier.fillMaxSize()) else TabScroll(state, onIntent, onRequestPermission, onDistrictClick)
             }
         }
         BottomTabBar(
@@ -214,6 +222,7 @@ private fun WideShell(
     onRequestPermission: (AppPermission) -> Unit,
     panelWidth: Dp,
     onMapTouched: () -> Unit,
+    onDistrictClick: (Long) -> Unit,
     detailPane: @Composable (Modifier) -> Unit,
 ) {
     val density = LocalDensity.current
@@ -265,7 +274,7 @@ private fun WideShell(
                     )
                 } else {
                     FloatingPanel(Modifier.fillMaxSize().padding(bottom = AttributionClearance - PanelGap)) {
-                        TabScroll(state, onIntent, onRequestPermission)
+                        TabScroll(state, onIntent, onRequestPermission, onDistrictClick)
                     }
                 }
             }
@@ -286,7 +295,12 @@ private fun WideShell(
 
 /** Scrollable tab content inside a panel; scroll position resets when the tab changes. */
 @Composable
-private fun TabScroll(state: MainUiState, onIntent: (MainIntent) -> Unit, onRequestPermission: (AppPermission) -> Unit) {
+private fun TabScroll(
+    state: MainUiState,
+    onIntent: (MainIntent) -> Unit,
+    onRequestPermission: (AppPermission) -> Unit,
+    onDistrictClick: (Long) -> Unit,
+) {
     key(state.selectedTab) {
         Column(
             modifier = Modifier
@@ -297,7 +311,7 @@ private fun TabScroll(state: MainUiState, onIntent: (MainIntent) -> Unit, onRequ
             when (state.selectedTab) {
                 AppTab.Map -> Unit
                 AppTab.Drives -> DrivesTab(state) { onIntent(MainIntent.OpenDetail(DetailTarget.Drive(it))) }
-                AppTab.Stats -> StatsTab(state)
+                AppTab.Stats -> StatsTab(state, onDistrictClick)
                 AppTab.Profile -> ProfileTab(state, onIntent, onRequestPermission)
             }
         }

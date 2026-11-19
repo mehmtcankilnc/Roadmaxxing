@@ -22,6 +22,7 @@ import app.roadmaxxing.shared.privacy.PrivacyZoneRepository
 import app.roadmaxxing.shared.settings.DataEraser
 import app.roadmaxxing.shared.settings.DataExporter
 import app.roadmaxxing.shared.settings.SettingsRepository
+import app.roadmaxxing.shared.stats.StatsRepository
 import app.roadmaxxing.shared.summary.SummaryRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -54,6 +55,7 @@ val sharedModule: Module = module {
     single {
         DrivenRoadsProvider(packProvider = get(), store = get(), dispatcher = Dispatchers.Default)
     }
+    single { StatsRepository(store = get(), packProvider = get(), dispatcher = Dispatchers.Default) }
     single { SettingsRepository(store = SqlAppMetaStore(get())) }
     single { DataExporter(store = get(), dispatcher = Dispatchers.Default) }
     single {

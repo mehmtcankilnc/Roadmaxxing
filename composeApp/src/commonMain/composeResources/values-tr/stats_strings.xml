@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="stats_loading">İstatistiklerin yükleniyor…</string>
+    <string name="stats_empty_title">İstatistiklerin ilk sürüşle başlar</string>
+    <string name="stats_empty_body">Yeni bir yola çık; ilerlemen, haftalık grafiğin ve ilçelerin burada belirsin.</string>
+    <string name="stats_province_fallback">İlin</string>
+    <string name="stats_header_caption">keşfedildi</string>
+    <string name="stats_milestone_next">%%2$s için %1$s kaldı</string>
+    <string name="stats_milestone_target">Sıradaki eşik: %%1$s</string>
+    <string name="stats_complete">%1$s — %2$s tamamlandı</string>
+    <string name="stats_tile_new_week">Bu hafta yeni</string>
+    <string name="stats_tile_districts">Tamamlanan ilçe</string>
+    <string name="stats_tile_districts_value">%1$d/%2$d</string>
+    <string name="stats_tile_streets">Bu hafta yeni sokak</string>
+    <string name="stats_tile_streets_total">Toplam %1$d sokak</string>
+    <string name="stats_tile_major">Ana yollar</string>
+    <string name="stats_tile_major_sub">Yerel yollar %%1$s</string>
+    <string name="stats_chart_title">Haftalık yeni yol</string>
+    <string name="stats_chart_week_value">%1$s haftası: %2$s %3$s</string>
+    <string name="stats_chart_this_week">Bu hafta: %1$s %2$s</string>
+    <string name="stats_chart_description">Haftalık yeni yol, son 8 hafta. %1$s</string>
+    <string name="stats_chart_empty">Son 8 haftada henüz yeni yol yok.</string>
+    <string-array name="stats_months_short">
+        <item>Oca</item>
+        <item>Şub</item>
+        <item>Mar</item>
+        <item>Nis</item>
+        <item>May</item>
+        <item>Haz</item>
+        <item>Tem</item>
+        <item>Ağu</item>
+        <item>Eyl</item>
+        <item>Eki</item>
+        <item>Kas</item>
+        <item>Ara</item>
+    </string-array>
+    <string name="stats_districts_title">İlçeler</string>
+    <string name="stats_classic_title">Klasik</string>
+    <string name="stats_classic_distance">Toplam mesafe</string>
+    <string name="stats_classic_time">Toplam süre</string>
+    <string name="stats_classic_drives">Sayılan sürüş</string>
+    <string name="stats_classic_avg_speed">Ortalama hız</string>
+    <string name="stats_classic_max_speed">En yüksek hız</string>
+    <string name="stats_value_with_unit">%1$s %2$s</string>
+</resources>

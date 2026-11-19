@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="stats_loading">Loading your stats…</string>
+    <string name="stats_empty_title">Your stats start with the first drive</string>
+    <string name="stats_empty_body">Drive somewhere new and this page fills up with your progress, weekly chart and districts.</string>
+    <string name="stats_province_fallback">Your province</string>
+    <string name="stats_header_caption">explored</string>
+    <string name="stats_milestone_next">%1$s to %2$s%</string>
+    <string name="stats_milestone_target">Next milestone: %1$s%</string>
+    <string name="stats_complete">%1$s — %2$s complete</string>
+    <string name="stats_tile_new_week">New this week</string>
+    <string name="stats_tile_districts">Districts completed</string>
+    <string name="stats_tile_districts_value">%1$d/%2$d</string>
+    <string name="stats_tile_streets">New streets this week</string>
+    <string name="stats_tile_streets_total">%1$d streets in total</string>
+    <string name="stats_tile_major">Major roads</string>
+    <string name="stats_tile_major_sub">Local roads %1$s%</string>
+    <string name="stats_chart_title">New roads per week</string>
+    <string name="stats_chart_week_value">Week of %1$s: %2$s %3$s</string>
+    <string name="stats_chart_this_week">This week: %1$s %2$s</string>
+    <string name="stats_chart_description">New roads per week, last 8 weeks. %1$s</string>
+    <string name="stats_chart_empty">No new roads in the last 8 weeks yet.</string>
+    <string-array name="stats_months_short">
+        <item>Jan</item>
+        <item>Feb</item>
+        <item>Mar</item>
+        <item>Apr</item>
+        <item>May</item>
+        <item>Jun</item>
+        <item>Jul</item>
+        <item>Aug</item>
+        <item>Sep</item>
+        <item>Oct</item>
+        <item>Nov</item>
+        <item>Dec</item>
+    </string-array>
+    <string name="stats_districts_title">Districts</string>
+    <string name="stats_classic_title">Classic</string>
+    <string name="stats_classic_distance">Total distance</string>
+    <string name="stats_classic_time">Total time</string>
+    <string name="stats_classic_drives">Drives counted</string>
+    <string name="stats_classic_avg_speed">Average speed</string>
+    <string name="stats_classic_max_speed">Top speed</string>
+    <string name="stats_value_with_unit">%1$s %2$s</string>
+</resources>
