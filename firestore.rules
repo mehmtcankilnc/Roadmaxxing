@@ -1,0 +1,29 @@
+// Roadmaxxing Firestore security rules.
+//
+// Policy: deny everything by default. A signed-in user may read and write only
+// the documents under their own `users/{uid}` path (the document itself and
+// every subcollection below it). No other path is accessible, and anonymous
+// (unauthenticated) requests are always rejected.
+//
+// Deploy: see docs/firebase/README.md.
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Everything below users/{uid}, including nested subcollections.
+    match /users/{uid}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // The user document itself (the recursive match above does not cover it).
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Default deny for every other path.
+    match /{path=**} {
+      allow read, write: if false;
+    }
+  }
+}

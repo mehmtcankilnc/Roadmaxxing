@@ -22,6 +22,12 @@ koin = "4.2.2"
 sqldelight = "2.4.1"
 play-services-location = "21.4.0"
 maplibre-compose = "0.20.0"
+# GitLive Firebase Kotlin SDK 2.8.0 (stable). Built with Kotlin 2.2.21; bundles Firebase Android BoM 34.18.0.
+# iOS links the Firebase iOS SDK 13.1.1 as a Swift Package in the Xcode project (see iosApp/iosApp.xcodeproj).
+gitlive-firebase = "2.8.0"
+# Google sign-in on Android (Credential Manager + Sign in with Google ID token).
+androidx-credentials = "1.6.0"
+google-id = "1.2.1"
 
 android-compileSdk = "37"
 android-targetSdk = "36"
@@ -72,6 +78,16 @@ play-services-location = { module = "com.google.android.gms:play-services-locati
 # MapLibre Compose (pre-1.0 API, pinned exactly). Built with Kotlin 2.4.20 / CMP 1.12.1; iOS needs 15.5+.
 maplibre-compose = { module = "org.maplibre.compose:maplibre-compose", version.ref = "maplibre-compose" }
 maplibre-compose-runtime-opengl-android = { module = "org.maplibre.compose:maplibre-compose-runtime-opengl-android", version.ref = "maplibre-compose" }
+
+# Firebase (GitLive, common API over the official SDKs). composeApp only; :shared stays Firebase-free.
+gitlive-firebase-app = { module = "dev.gitlive:firebase-app", version.ref = "gitlive-firebase" }
+gitlive-firebase-auth = { module = "dev.gitlive:firebase-auth", version.ref = "gitlive-firebase" }
+gitlive-firebase-firestore = { module = "dev.gitlive:firebase-firestore", version.ref = "gitlive-firebase" }
+
+# Google sign-in (Android only)
+androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "androidx-credentials" }
+androidx-credentials-play-services-auth = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "androidx-credentials" }
+google-id = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "google-id" }
 
 # Testing
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }

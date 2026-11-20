@@ -8,6 +8,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import app.roadmaxxing.platform.TrackingPlatform
+import app.roadmaxxing.ui.account.AccountCard
 import app.roadmaxxing.platform.rememberPermissionStates
 import app.roadmaxxing.resources.legal_card_title
 import app.roadmaxxing.resources.permission_approximate
@@ -88,6 +89,7 @@ fun ProfileTab(state: MainUiState, onIntent: (MainIntent) -> Unit, onRequestPerm
     var showSettings by remember { mutableStateOf(false) }
     Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         TabTitle(stringResource(Res.string.tab_profile))
+        AccountCard(isDebugBuild = state.isDebugBuild)
         PermissionsCard(onRequestPermission)
         RecordingCard(state, onIntent)
         SettingsCard { showSettings = true }

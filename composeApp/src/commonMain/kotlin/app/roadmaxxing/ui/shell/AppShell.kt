@@ -45,6 +45,7 @@ import app.roadmaxxing.platform.AppPermission
 import app.roadmaxxing.platform.rememberPermissionRequester
 import app.roadmaxxing.ui.ScreenClass
 import app.roadmaxxing.ui.components.FloatingPanel
+import app.roadmaxxing.ui.account.AccountHost
 import app.roadmaxxing.ui.celebration.CelebrationHost
 import app.roadmaxxing.ui.currentScreenClass
 import app.roadmaxxing.ui.drives.DrivesTab
@@ -130,6 +131,8 @@ fun AppShell(
     )
     // Milestone celebration: only on the plain map and after the burn finished (K3).
     CelebrationHost(canShow = mapVisible && explore.burn == null)
+    // Account prompt (K3) and sign-in overlay; the prompt waits for the same calm map state and any celebration.
+    AccountHost(canShowPrompt = mapVisible && explore.burn == null)
     }
 }
 

@@ -142,6 +142,7 @@ private fun CardActions(drive: DriveCardData?, city: CityCardData?) {
     val speedLabel = speedUnitLabel(unit)
     val renderer = rememberCardRenderer()
     val sharer: CardSharer = rememberCardSharer()
+    val accountRepository = org.koin.compose.koinInject<app.roadmaxxing.shared.account.AccountRepository>()
     val scope = rememberCoroutineScope()
     var story by rememberSaveable { mutableStateOf(true) }
     var hideSpeed by rememberSaveable { mutableStateOf(false) }
@@ -211,6 +212,7 @@ private fun CardActions(drive: DriveCardData?, city: CityCardData?) {
                         else -> Res.string.summary_save_error
                     }
                 } else {
+                    accountRepository.onShareAttempted()
                     runCatching { sharer.share(png, name) }.onFailure { message = Res.string.summary_render_error }
                 }
             }

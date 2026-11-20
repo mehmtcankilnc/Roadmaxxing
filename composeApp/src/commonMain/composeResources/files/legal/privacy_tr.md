@@ -6,12 +6,14 @@ aynı kalmalıdır.
 
 # Gizlilik Politikası
 
+Son güncelleme: 2026-11-20
+
 Bu politika, Roadmaxxing'in verilerinle ne yaptığını anlatır. Uygulamanın bugünkü hâlini tarif eder. Kısa ve sade tutmaya çalıştık.
 
 ## Kısaca
 
 - Sürüşlerin ve onlardan hesaplanan yüzdeler **telefonunda kalır**.
-- Uygulamada bugün **hesap** ve **bulut senkronizasyonu** yoktur.
+- Hesap **isteğe bağlıdır**. Hesap oluşturursan yalnızca e-posta adresini, bir hesap kimliğini ve giriş yöntemini saklarız. Bugün **bulut senkronizasyonu yoktur**: sürüşlerin yüklenmez.
 - Konum verini **satmayız**, reklam amacıyla da paylaşmayız.
 - Verini herhangi bir yere gönderen analiz veya hata raporlama araçları kullanmıyoruz.
 
@@ -23,11 +25,15 @@ Bu politika, Roadmaxxing'in verilerinle ne yaptığını anlatır. Uygulamanın 
 
 **Sürüş sonuçları.** Sürüşten sonra uygulama izini yollarla eşleştirir ve hangi yolları sürdüğünü, ayrıca mesafe ve süre gibi basit değerleri saklar.
 
+**Hesap bilgileri (isteğe bağlı).** Uygulamayı hesapsız kullanabilirsin. Hesap oluşturmayı seçersen e-posta adresin ve bir parolayla kaydolabilir ya da Google ile giriş yapabilirsin. Bu durumda e-posta adresini, bir hesap kimliğini ve giriş sağlayıcısını (e-posta veya Google) saklarız. Google ile giriş yaparsan, Google'ın giriş için paylaştığı bilgileri (örneğin e-posta adresin) alırız. Parolanı uygulamada saklamayız; parolalar kimlik doğrulama hizmeti tarafından işlenir.
+
 ## Verin nerede işlenir ve saklanır?
 
 Yol eşleştirme ve yüzde hesabı **cihazında** yapılır. Kaydedilen izler, sürüşler ve sürülen yollar telefonundaki uygulama depolama alanında tutulur. Bize veya başka birine gönderilmez. Android ve iOS, kendi cihaz ayarlarına göre uygulama verisini yedekleyebilir; bu, uygulamanın kontrolü dışındadır.
 
-İleride hesap veya bulut senkronizasyonu eklersek, bu özellik yayına çıkmadan **önce** bu politikayı güncelleyeceğiz ve neyin değiştiğini sana bildireceğiz.
+**Hesaplar.** Hesaplar, Google LLC'nin bir hizmeti olan **Firebase Authentication** ile sağlanır; Google hesap bilgilerini bizim adımıza (veri işleyen olarak) işler. Giriş yapmak veya çıkış yapmak telefonundaki sürüşleri asla değiştirmez.
+
+**Bugün sürüş yüklemesi yok.** Hesabın olsa bile sürüşlerin, izlerin ve sürülen yolların **yüklenmez**. İleride bulut senkronizasyonu eklersek, bu özellik yayına çıkmadan **önce** bu politikayı güncelleyeceğiz ve neyin değiştiğini sana bildireceğiz.
 
 ## Bildirimler
 
@@ -47,7 +53,9 @@ Konum verini veya başka bir kişisel verini satmayız. Konumunu reklam için ku
 
 ## Verini saklama ve silme
 
-Verin telefonunda durur. Sürüşlerini tek bir GPX dosyası olarak dışa aktarıp telefonunun paylaşım menüsüyle paylaşabilirsin; hiçbir şey yüklenmez. Tüm verini uygulamada Profil → Ayarlar altından silebilirsin. Silme anında gerçekleşir ve geri alınamaz; geri yükleyebileceğimiz bir yedek yoktur. Verini uygulamayı kaldırarak da silebilirsin. Sürdüğün yolların, sen verini silene kadar haritanda kaldığını unutma.
+Sürüş verin telefonunda durur. Sürüşlerini tek bir GPX dosyası olarak dışa aktarıp telefonunun paylaşım menüsüyle paylaşabilirsin; hiçbir şey yüklenmez. Tüm verini uygulamada Profil → Ayarlar altından silebilirsin. Silme anında gerçekleşir ve geri alınamaz; geri yükleyebileceğimiz bir yedek yoktur. Verini uygulamayı kaldırarak da silebilirsin. Sürdüğün yolların, sen verini silene kadar haritanda kaldığını unutma.
+
+Hesabın varsa, uygulamada Profil altından silebilirsin. Hesabı silmek, hesap bilgilerini (e-posta adresi, hesap kimliği ve giriş sağlayıcısı) ve hesabın için saklanan tüm veriyi kaldırır. Uygulama, telefonundaki sürüş verisini de silmek isteyip istemediğini sorar; bu kısım isteğe bağlıdır ve işaretlemezsen yerel verin telefonunda kalır.
 
 ## Çocuklar
 
@@ -55,7 +63,7 @@ Roadmaxxing araç kullanabilecek yaştaki kişiler içindir ve çocuklara yönel
 
 ## Haklarının özeti
 
-Yaşadığın yere bağlı olarak 6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) ve AB Genel Veri Koruma Tüzüğü (GDPR) gibi yasalar, kişisel verin üzerinde sana haklar tanır. Kısaca: verinin işlenip işlenmediğini öğrenebilir; erişim, düzeltme veya silme talep edebilir; işlemeye itiraz edebilir ve veri koruma otoritene şikâyette bulunabilirsin. Uygulama verini yalnızca cihazında tuttuğu için bu haklarının çoğunu zaten kendin kullanabilirsin; uygulamayı silmek veriyi de siler. Her türlü talebin için aşağıdaki iletişim bilgisinden bize yazabilirsin.
+Yaşadığın yere bağlı olarak 6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) ve AB Genel Veri Koruma Tüzüğü (GDPR) gibi yasalar, kişisel verin üzerinde sana haklar tanır. Kısaca: verinin işlenip işlenmediğini öğrenebilir; erişim, düzeltme veya silme talep edebilir; işlemeye itiraz edebilir ve veri koruma otoritene şikâyette bulunabilirsin. Uygulama sürüş verini yalnızca cihazında tuttuğu ve hesabını uygulamada silebildiğin için bu haklarının çoğunu zaten kendin kullanabilirsin; uygulamayı silmek yerel veriyi de siler. Her türlü talebin için aşağıdaki iletişim bilgisinden bize yazabilirsin.
 
 ## Politikadaki değişiklikler
 

@@ -1,6 +1,7 @@
 package app.roadmaxxing.di
 
 import app.roadmaxxing.shared.di.sharedModule
+import app.roadmaxxing.ui.account.AccountViewModel
 import app.roadmaxxing.ui.celebration.CelebrationViewModel
 import app.roadmaxxing.ui.explore.ExploreViewModel
 import app.roadmaxxing.ui.main.MainViewModel
@@ -28,6 +29,7 @@ val appModule: Module = module {
     viewModelOf(::PrivacyZonesViewModel)
     viewModelOf(::SettingsViewModel)
     viewModelOf(::StatsViewModel)
+    viewModelOf(::AccountViewModel)
     viewModel { OnboardingViewModel(repository = get(), introRoadsProvider = get()) }
 }
 

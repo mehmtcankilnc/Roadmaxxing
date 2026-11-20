@@ -293,6 +293,7 @@ private class CardActions(
     private val renderer: app.roadmaxxing.ui.card.CardRenderer,
     private val sharer: CardSharer,
     private val scope: kotlinx.coroutines.CoroutineScope,
+    private val onShare: () -> Unit,
 ) {
     var busy by mutableStateOf(false)
         private set
@@ -317,6 +318,7 @@ private class CardActions(
                         else -> Res.string.summary_save_error
                     }
                 } else {
+                    onShare()
                     runCatching { sharer.share(png, name) }.onFailure { message = Res.string.summary_render_error }
                 }
             }
@@ -330,7 +332,8 @@ private fun rememberCardActions(data: MilestoneCardData): CardActions {
     val renderer = rememberCardRenderer()
     val sharer = rememberCardSharer()
     val scope = rememberCoroutineScope()
-    return remember(data, renderer, sharer, scope) { CardActions(data, renderer, sharer, scope) }
+    val account = org.koin.compose.koinInject<app.roadmaxxing.shared.account.AccountRepository>()
+    return remember(data, renderer, sharer, scope) { CardActions(data, renderer, sharer, scope, account::onShareAttempted) }
 }
 
 private fun fileName(c: Celebration): String {

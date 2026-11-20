@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="account_card_title">Hesap</string>
+    <string name="account_card_benefit">Yollarını başka bir telefonda da koru. Eşitleme yakında geliyor.</string>
+    <string name="account_sign_in">Giriş yap</string>
+    <string name="account_signed_in_as">%1$s olarak giriş yapıldı</string>
+    <string name="account_provider_google">Google</string>
+    <string name="account_provider_email">E-posta</string>
+    <string name="account_provider_apple">Apple</string>
+    <string name="account_provider_line">%1$s ile giriş yapıldı</string>
+    <string name="account_sign_out">Çıkış yap</string>
+    <string name="account_delete">Hesabı sil</string>
+    <string name="account_unavailable_debug">Hesaplar yapılandırılmadı</string>
+
+    <string name="account_screen_title">Hesabın</string>
+    <string name="account_screen_why">Yollarını başka bir telefonda da koru — eşitleme yakında geliyor.</string>
+    <string name="account_back">Geri</string>
+    <string name="account_google">Google ile devam et</string>
+    <string name="account_or_email">ya da e-postanla</string>
+    <string name="account_email">E-posta</string>
+    <string name="account_password">Şifre</string>
+    <string name="account_mode_sign_in">Giriş yap</string>
+    <string name="account_mode_create">Hesap oluştur</string>
+    <string name="account_forgot">Şifreni mi unuttun?</string>
+    <string name="account_reset_sent">Bu e-posta için bir hesap varsa sıfırlama bağlantısı yolda.</string>
+    <string name="account_reassure">Bu telefondaki sürüşlerin olduğu gibi kalır.</string>
+    <string name="account_working">Lütfen bekle…</string>
+
+    <string name="account_error_invalid_email">E-posta adresi doğru görünmüyor.</string>
+    <string name="account_error_wrong_credentials">E-posta ya da şifre yanlış.</string>
+    <string name="account_error_weak_password">Daha güçlü bir şifre seç (en az 6 karakter).</string>
+    <string name="account_error_email_in_use">Bu e-postayla zaten bir hesap var. Giriş yapmayı dene.</string>
+    <string name="account_error_network">Bağlantı yok. İnternetini kontrol edip tekrar dene.</string>
+    <string name="account_error_unavailable">Hesaplar şu anda kullanılamıyor.</string>
+    <string name="account_error_recent_login">Lütfen yeniden giriş yap, sonra tekrar dene.</string>
+    <string name="account_error_generic">Bir şeyler ters gitti. Lütfen tekrar dene.</string>
+
+    <string name="account_prompt_third_title">İlerlemeni bir hesapla sakla</string>
+    <string name="account_prompt_third_body">Yolların bu telefonda zaten güvende. Hesap, telefon değiştirsen bile onları korumanı sağlar.</string>
+    <string name="account_prompt_share_title">Hesap ister misin? Hesapsız da paylaşabilirsin</string>
+    <string name="account_prompt_share_body">Kartın her iki durumda da paylaşıma hazır. Hesap yalnızca ilerlemeni güvende tutmak için.</string>
+    <string name="account_prompt_primary">Hesap oluştur / Giriş yap</string>
+    <string name="account_prompt_dismiss">Şimdi değil</string>
+
+    <string name="account_delete_title">Hesabın silinsin mi?</string>
+    <string name="account_delete_explain">Hesabın ve çevrimiçi saklanan verilerin silinir. Aşağıdaki kutuyu işaretlemezsen bu telefondaki sürüşlerin kalır.</string>
+    <string name="account_delete_also_local">Bu telefondaki verileri de sil</string>
+    <string name="account_delete_continue">Devam</string>
+    <string name="account_delete_confirm_title">Emin misin?</string>
+    <string name="account_delete_confirm_online">Hesabın ve çevrimiçi verilerin silinecek. Bu geri alınamaz.</string>
+    <string name="account_delete_confirm_local">Bu telefondaki sürüşlerin ve ilerlemen de silinecek.</string>
+    <string name="account_delete_confirm_button">Hesabı sil</string>
+    <string name="account_cancel">Vazgeç</string>
+</resources>

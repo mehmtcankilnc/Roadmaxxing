@@ -3,6 +3,7 @@ package app.roadmaxxing
 // NOT VERIFIED on CI yet: iosMain cannot be compiled on the developer's Windows machine.
 
 import app.roadmaxxing.di.initKoin
+import app.roadmaxxing.firebase.FirebaseBootstrap
 import app.roadmaxxing.tracking.IosTrackingEngine
 import org.koin.mp.KoinPlatform
 
@@ -15,6 +16,8 @@ import org.koin.mp.KoinPlatform
  * (one line; see the report). Not wired in Swift yet: pure Kotlin has no early hook in a SwiftUI app.
  */
 fun startTrackingOnLaunch() {
+    // Idempotent; stays off when the bundled GoogleService-Info.plist is an empty placeholder.
+    FirebaseBootstrap.init()
     if (KoinPlatform.getKoinOrNull() == null) {
         initKoin()
     }

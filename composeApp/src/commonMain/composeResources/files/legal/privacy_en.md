@@ -5,12 +5,14 @@ finalize this text before launch. It must stay in sync with privacy_tr.md and wi
 
 # Privacy Policy
 
+Last updated: 2026-11-20
+
 This policy explains what Roadmaxxing does with your data. It describes the app as it works today. We tried to keep it short and plain.
 
 ## In short
 
 - Your drives and the percentages we compute from them **stay on your phone**.
-- There is **no account** and **no cloud sync** in the app today.
+- An account is **optional**. If you create one, we store only your email address, an account ID and the sign-in method. There is **no cloud sync** today: your drives are not uploaded.
 - We **do not sell** your location data, and we do not share it for advertising.
 - We do not use analytics or crash-reporting tools that send your data anywhere.
 
@@ -22,11 +24,15 @@ This policy explains what Roadmaxxing does with your data. It describes the app 
 
 **Drive results.** After a drive, the app matches your trace to roads and stores which roads you have driven, plus simple figures such as distance and duration.
 
+**Account details (optional).** You can use the app without an account. If you choose to create one, you can sign up with your email address and a password, or sign in with Google. We then store your email address, an account ID and the sign-in provider (email or Google). If you sign in with Google, we receive the details Google shares for sign-in, such as your email address. We do not store your password in the app; passwords are handled by the authentication service.
+
 ## Where your data is processed and stored
 
 Road matching and percentage calculation happen **on your device**. Recorded traces, drives and driven roads are stored in the app's local storage on your phone. They are not sent to us or to anyone else. Android and iOS may also back up app data according to your own device settings, which is outside the app's control.
 
-If we add accounts or cloud sync in the future, we will update this policy **before** that feature is released, and we will tell you what changes.
+**Accounts.** Accounts are provided through **Firebase Authentication**, a service of Google LLC, which processes your account details on our behalf (as a processor). Signing in or out never changes the drives stored on your phone.
+
+**No drive upload today.** Your drives, traces and driven roads are **not** uploaded, even if you have an account. If we add cloud sync in the future, we will update this policy **before** that feature is released, and we will tell you what changes.
 
 ## Notifications
 
@@ -46,7 +52,9 @@ We do not sell your location data or any other personal data. We do not use your
 
 ## Keeping and deleting your data
 
-Your data lives on your phone. You can export your drives as a single GPX file and share it through your phone's share sheet; nothing is uploaded. You can delete all your data in the app under Profile → Settings. Deletion is immediate and irreversible, and there is no backup we could restore it from. You can also delete your data by uninstalling the app. Note that roads you have driven are kept on your map until you delete your data.
+Your drive data lives on your phone. You can export your drives as a single GPX file and share it through your phone's share sheet; nothing is uploaded. You can delete all your data in the app under Profile → Settings. Deletion is immediate and irreversible, and there is no backup we could restore it from. You can also delete your data by uninstalling the app. Note that roads you have driven are kept on your map until you delete your data.
+
+If you have an account, you can delete it in the app under Profile. Deleting the account removes your account details (email address, account ID and sign-in provider) and any data stored for your account. The app asks whether you also want to delete the drive data on your phone; that part is optional, and if you do not tick it, your local data stays on your phone.
 
 ## Children
 
@@ -54,7 +62,7 @@ Roadmaxxing is meant for people who are old enough to drive and is not directed 
 
 ## Your rights
 
-Depending on where you live, laws such as the Turkish Personal Data Protection Law (KVKK) and the EU General Data Protection Regulation (GDPR) give you rights over your personal data. In short, you can ask whether your data is processed, ask for access, correction or deletion, object to processing, and complain to your data protection authority. Because the app keeps your data only on your device, you can already exercise most of these rights yourself, and deleting the app removes the data. For any request, write to us using the contact below.
+Depending on where you live, laws such as the Turkish Personal Data Protection Law (KVKK) and the EU General Data Protection Regulation (GDPR) give you rights over your personal data. In short, you can ask whether your data is processed, ask for access, correction or deletion, object to processing, and complain to your data protection authority. Because the app keeps your drive data only on your device, and you can delete your account in the app, you can already exercise most of these rights yourself; deleting the app removes the local data. For any request, write to us using the contact below.
 
 ## Changes to this policy
 

@@ -22,7 +22,7 @@ The app keeps a "drive safely" message. It has no feature, badge or text that re
 > **Status: Phase 0 (technical validation, pilot city Adana).** Steps 1–5 are in the code. Steps 1–3 run end to end
 > on the Android emulator, the exploration map (four-tab app shell: Map, Drives, Stats, Profile) draws the driven
 > roads there, and the drive summary, the drive and city cards and sharing (system share sheet, save to gallery) were
-> verified on the emulator too. Everything server- or account-related is **planned**. iOS has automatic drive
+> verified on the emulator too. Accounts (email and Google sign-in) are done and optional; cloud sync and everything else server-related is **planned**. iOS has automatic drive
 > recording code, the map and the card sharing code that compile and pass the shared tests on GitHub Actions, but they
 > have **not been run on any physical device**; Android has not been tried on a physical device either (see
 > [Known limitations](#known-limitations)).
@@ -44,7 +44,7 @@ is in and what is not; everything else is "planned".
 | 7 | Onboarding and permissions | done (Phase 0) | First-launch gate: intro (animated Adana roads drawn from the region pack) → safe-driving consent (two checkboxes; stored locally in `app_meta` with a consent version) → one permission card at a time (location, background location with a Google Play prominent disclosure first, physical activity, notifications) → map. Notifications are optional and advance automatically; required permissions stay on their card when denied, and everything can be skipped. Permission states include `Blocked` (only system Settings can grant) and `Approximate` (coarse / reduced location), with an "open settings" route; the Profile tab shows the states and lets the user fix them later. Privacy policy and Terms are readable in the app (Profile) in Turkish and English, but they are **drafts**: contact, data controller and jurisdiction are placeholders and they need owner or lawyer review before launch. No paywall in onboarding (no RevenueCat yet). Not tried on a physical device; the iOS code compiles in CI only. |
 | 7b | End-of-drive notification | done (Phase 0) | One local notification per drive that counted, only when the notification permission is granted; text carries distance and new km, never speed. Tapping it opens that drive's summary. Android: own "Drive results" channel. iOS: `UNUserNotificationCenter`. The text also mentions a milestone when the drive crossed one ("Adana: 5% explored · 3.2 km new roads" or "Seyhan completed · …"); there is no second notification. Quiet hours still suppress it, but the celebration is queued anyway. Not tried on a physical device; the iOS code compiles in CI only. |
 | 7c | Milestone celebrations | done (Phase 0) | Province thresholds 1/5/10/25/50/75/90/100 % and district completion at 95 % (completion only, no district percent steps). State lives in `app_meta` (`milestones_achieved`, `milestones_pending`); thresholds already passed on the first run are recorded silently. One celebration per drive (highest new province threshold plus newly completed districts), queued and shown once. Overlay only while the Map tab is visible and no burn animation is playing: calm ring and number animation (skipped with reduce motion), card preview, Share, Save to gallery, Close (also back and tap outside) and a "Drive safe" line; EN "5% of Adana explored", TR "Adana · %5 keşfedildi". Adaptive layout. Persistence verified on the Android emulator (shown once, not again after reopening). Not tried on a physical device; the iOS code compiles in CI only. |
-| 8 | Account and sync | planned | No Firebase. Data stays in the local database. |
+| 8 | Account and sync | partial | **Accounts done:** optional sign-up and sign-in with email (password reset by email) or Google through Firebase Authentication (GitLive `firebase-kotlin-sdk`); sign-out; account deletion (Profile, two steps, optional "also delete local data"). The prompt appears once after the 3rd counted drive and once on the first share, is dismissible, and never blocks sharing. Signing in or out never changes local data. The account logic is Firebase-free in `shared` (`AuthBackend`, `AccountRepository`). Without Firebase config the app runs as before with accounts hidden. Verified on the Android emulator (email flows, Google sign-in, both delete flows, TR and EN errors); the iOS side compiles in CI only. **Planned:** Sign in with Apple (required before App Store release), drive sync to Firestore. **No drive or location data is uploaded today.** |
 | 9 | Subscription and paywall | planned | No RevenueCat. |
 | 10 | Settings | partial | Profile → Privacy zones: list, add / edit / delete (delete asks for confirmation), map editor with a centre pin, radius slider and circle preview; one dismissible suggestion ("add a zone here?") after at least 5 counted drives when a start/end place repeats at least 3 times (never creates a zone by itself). Zones live in the new `privacy_zone` table (schema 2→3). Profile → Settings: distance unit (km / mi, speed km/h / mph; default miles for US and GB system regions, else km; applies to the Drives list, summary, drive and city cards including the PNG, and the notification; percentages unchanged); app language (opens the system per-app language page, Android 13+ and iOS; hidden below Android 13); quiet hours (default off, 22:00–07:00, suppresses only the end-of-drive notification, not the recording notification); export of all drives as one GPX 1.1 file through the share sheet (nothing is uploaded); delete all data in the app (two-step confirmation, immediate and irreversible, no backup; an ongoing recording is stopped and discarded first); About with the version. Not tried on a physical device. |
 
@@ -70,6 +70,10 @@ and [tools/gpx/requirements.txt](tools/gpx/requirements.txt). All versions are p
 | DI | Koin | 4.2.2 |
 | Local database | SQLDelight | 2.4.1 |
 | Map | MapLibre Compose (pre-1.0, pinned exactly) + Android OpenGL runtime (`maplibre-compose-runtime-opengl-android`) | 0.20.0 |
+| Accounts | GitLive `firebase-kotlin-sdk` (`firebase-app`, `firebase-auth`, `firebase-firestore`; `composeApp` only; stable line rather than the 3.0 beta) | 2.8.0 |
+| Accounts (Android) | `androidx.credentials` + `credentials-play-services-auth` (Credential Manager) | 1.6.0 |
+| Accounts (Android) | `com.google.android.libraries.identity.googleid:googleid` | 1.2.1 |
+| Accounts (iOS) | Firebase iOS SDK as a Swift Package in the Xcode project (FirebaseCore, FirebaseAuth, FirebaseFirestore) | 13.1.1 |
 | Test only | `app.cash.sqldelight:sqlite-driver` (`shared` androidHostTest: real SQLite for the privacy zone and migration tests; not in the app) | 2.4.1 |
 | Map tiles | OpenFreeMap vector tiles (no API key); style embedded in the app | – |
 | Android location | Google Play services location (fused location, activity transitions, geofencing) | 21.4.0 |
@@ -81,7 +85,7 @@ and [tools/gpx/requirements.txt](tools/gpx/requirements.txt). All versions are p
 
 ### Planned (not in the code yet)
 
-Firebase Auth (GitLive `firebase-kotlin-sdk`), Firestore (Spark plan) for user data, RevenueCat (`purchases-kmp`),
+Firestore drive sync (the Firestore library is in the build, but nothing is uploaded yet; Spark plan), Sign in with Apple, RevenueCat (`purchases-kmp`),
 PostHog (`posthog-kmp`), Ktor client, region packs hosted on Cloudflare R2
 and built by GitHub Actions. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
@@ -131,6 +135,21 @@ You need:
 - Windows, Linux or macOS. iOS builds need macOS and are meant to run only on GitHub Actions (see
   [CI and TestFlight](#ci-and-testflight)). The minimum iOS version is **15.5** (required by MapLibre Compose).
 - Internet access on the emulator or device: the map tiles are loaded from OpenFreeMap.
+
+### Enable Firebase locally (optional)
+
+The app builds and runs **without** any Firebase files: `FirebaseBootstrap.isAvailable` is then false and the account
+UI is hidden. To try accounts, create a Firebase project and place its config files at these git-ignored paths. **Never
+commit them** and never paste their contents anywhere:
+
+- Android: `androidApp/google-services.json`. The `generateFirebaseConfig` task reads it into generated build code (no
+  Google Services Gradle plugin).
+- iOS: `GoogleService-Info.plist`, referenced by the Xcode project and git-ignored. CI writes an empty placeholder when
+  its secret is empty, and the app then does not initialise Firebase.
+
+For Google sign-in on Android, register your debug keystore SHA-1 in the Firebase console (once per developer machine).
+Setup steps, console settings and the Firestore rules are in [docs/firebase/README.md](docs/firebase/README.md);
+[firestore.rules](firestore.rules) gives each user access only to `users/{uid}/**`.
 
 Commands below use `./gradlew` (Git Bash, Linux, macOS). In PowerShell or cmd use `.\gradlew.bat` instead.
 
@@ -318,7 +337,7 @@ Both ran green on the pull request that introduced them.
 | Workflow | Triggers | What it does |
 | --- | --- | --- |
 | [ios.yml](.github/workflows/ios.yml) | Push to `main` and pull requests that touch `composeApp/`, `shared/`, `iosApp/`, `gradle/`, `*.gradle.kts`, `gradle.properties`, `test-data/regions/` or the workflow file; push of a `v*` tag; manual (`workflow_dispatch`) | `build` job (`macos-15`): runs `:shared:iosSimulatorArm64Test` on the iOS simulator, then an unsigned simulator build with `xcodebuild`. `testflight` job: archive, export and upload to TestFlight. |
-| [android.yml](.github/workflows/android.yml) | Push to `main` and pull requests with changes under `composeApp/`, `androidApp/`, `shared/`, `gradle/`, `*.gradle.kts`, `gradle.properties`, `test-data/regions/` or the workflow file; manual | One job (`ubuntu-24.04`): `./gradlew :androidApp:assembleDebug :shared:testAndroidHostTest`. No signing, no Play upload. |
+| [android.yml](.github/workflows/android.yml) | Push to `main` and pull requests with changes under `composeApp/`, `androidApp/`, `shared/`, `gradle/`, `*.gradle.kts`, `gradle.properties`, `test-data/regions/` or the workflow file; manual | One job (`ubuntu-24.04`): writes `androidApp/google-services.json` from the secret `GOOGLE_SERVICES_JSON_BASE64` (skipped when empty), then `./gradlew :androidApp:assembleDebug :shared:testAndroidHostTest`. No signing, no Play upload. |
 
 Details:
 
@@ -332,8 +351,8 @@ Details:
 - **Fork pull requests and unset secrets:** the `build` job reads three secrets into the environment and works when
   they are empty. If `GOOGLE_SERVICE_INFO_PLIST_BASE64` is empty (Firebase is not set up yet, or a fork PR), the
   workflow writes a valid empty placeholder `GoogleService-Info.plist` instead of failing, and removes the file at the
-  end of the job. The workflow already contains the Firebase, RevenueCat and PostHog steps so it does not have to be
-  touched again when those services are added; the app does not use them yet.
+  end of the job. The workflow already contains the RevenueCat and PostHog steps so it does not have to be
+  touched again when those services are added; the app does not use them yet. Firebase Auth is in use.
 - Failed test runs upload their reports as an artifact (7 days) in both workflows.
 - Play internal-track upload for Android is not set up.
 
@@ -348,6 +367,7 @@ GitHub Actions secrets (names only; values never go into the repository or any o
 | `GOOGLE_SERVICE_INFO_PLIST_BASE64` | build, testflight | may be empty in `build` (placeholder plist is written) |
 | `REVENUECAT_IOS_API_KEY` | build, testflight | may be empty in `build` |
 | `POSTHOG_API_KEY` | build, testflight | may be empty in `build` |
+| `GOOGLE_SERVICES_JSON_BASE64` | android.yml | may be empty; accounts are then hidden in that build |
 
 Locally, configuration files and keys live in git-ignored files (`local.properties`, `*.xcconfig`); see
 [.gitignore](.gitignore).
@@ -393,7 +413,10 @@ Locally, configuration files and keys live in git-ignored files (`local.properti
   roads in the app itself, the percentages and the stored data are never cut. There is no direct Instagram Story share (it needs a Meta app ID); use the system share sheet.
 - **iOS settings, export and erase not run on an iPhone.** The iOS paths for units, language settings, GPX export (`UIActivityViewController`) and data erase compile in CI only; they have not run on an iPhone.
 - **Stats two-column layout not visible yet.** The Stats tab switches to two columns only when its content is at least 640 dp wide; the current shell panels (380 / 440 dp) never reach that. The iOS side of the Stats tab and the district-to-map focus compiles in CI only and has not run on an iPhone.
-- **No account, sync, subscription or analytics.** All data is local.
+- **iOS sign-in untested on a device.** The iOS email and Google sign-in code (including the `ASWebAuthenticationSession` OAuth + PKCE flow) compiles in CI only and has not run on an iPhone.
+- **Apple sign-in missing.** App Store guideline 4.8 requires Sign in with Apple because Google sign-in is offered; it must be added before an App Store release.
+- **Google sign-in needs SHA-1 registration.** Each developer machine's debug-keystore SHA-1 must be registered in Firebase for Google sign-in on Android, and the Play app-signing SHA-1 must be added at release.
+- **No data uploaded yet; no subscription or analytics.** Drive data stays local. Only the optional account details (email address, account ID, sign-in provider) are held by Firebase Authentication. Drive sync is a later stage.
 - **Emulator timing.** The emulator GPS reports at 1 Hz with jitter; repeated replays of the same route can add a few
   extra segments. With the segment summary index the first progress computation on a cold Pixel_8 emulator takes about 0.4–0.8 s.
 

@@ -5,6 +5,8 @@ avukat bu metni gözden geçirip kesinleştirmelidir. terms_en.md ile aynı kalm
 
 # Kullanım Koşulları
 
+Son güncelleme: 2026-11-20
+
 Roadmaxxing'i kullanarak bu koşulları kabul etmiş olursun. Kısa tuttuk, lütfen oku.
 
 ## Uygulama ne yapar?
@@ -25,6 +27,10 @@ Konum, yol eşleştirme ve yüzdeler birer tahmindir. GPS yanlış olabilir, yol
 ## Harita ve veri kaynakları
 
 Yol verisi © OpenStreetMap katkıda bulunanlar olup Açık Veritabanı Lisansı (ODbL) kapsamında kullanılabilir. Harita karoları OpenFreeMap tarafından sağlanır. Uygulamayla oluşturduğun harita veya kartları paylaşırken bu atıfı korumalısın.
+
+## Hesaplar
+
+Hesap isteğe bağlıdır. E-posta adresinle veya Google ile, Firebase Authentication (Google LLC) üzerinden hesap oluşturabilirsin. Giriş bilgilerini güvende tutmaktan ve hesabınla yapılan işlemlerden sen sorumlusun. Hesabını istediğin zaman uygulamada Profil altından silebilirsin.
 
 ## Verilerin
 

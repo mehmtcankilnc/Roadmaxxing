@@ -1,5 +1,8 @@
 package app.roadmaxxing.shared.di
 
+import app.roadmaxxing.shared.account.AccountRepository
+import app.roadmaxxing.shared.account.AuthBackend
+import app.roadmaxxing.shared.account.NoopAuthBackend
 import app.roadmaxxing.shared.data.DriveStore
 import app.roadmaxxing.shared.data.SetupRepository
 import app.roadmaxxing.shared.data.SqlDriveStore
@@ -69,6 +72,13 @@ val sharedModule: Module = module {
     single {
         MilestoneRepository(
             store = get(), packProvider = get(), appMeta = SqlAppMetaStore(get()), dispatcher = Dispatchers.Default,
+        )
+    }
+    single<AuthBackend> { NoopAuthBackend() }
+    single {
+        AccountRepository(
+            backend = get(), store = get(), appMeta = SqlAppMetaStore(get()), dataEraser = get(),
+            dispatcher = Dispatchers.Default,
         )
     }
     single { MapLayerPreferences(store = SqlAppMetaStore(get())) }
