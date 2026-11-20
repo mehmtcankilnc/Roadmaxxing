@@ -1,9 +1,11 @@
 // Roadmaxxing Firestore security rules.
 //
-// Policy: deny everything by default. A signed-in user may read and write only
-// the documents under their own `users/{uid}` path (the document itself and
-// every subcollection below it). No other path is accessible, and anonymous
-// (unauthenticated) requests are always rejected.
+// Policy: deny everything by default. A signed-in user may access only their own data:
+//   users/{uid}                 profile document (settings, privacy zones, ...)
+//   users/{uid}/drives/{syncId} one document per synced drive
+// No other collection or subcollection is reachable. Anonymous requests are always rejected.
+// Writes are schema-checked (field whitelist, types, size bounds) so a buggy or tampered client cannot fill the
+// free-tier quota with junk. Reads and deletes stay unrestricted for the owner (account deletion needs delete).
 //
 // Deploy: see docs/firebase/README.md.
 rules_version = '2';
@@ -11,17 +13,48 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Everything below users/{uid}, including nested subcollections.
-    match /users/{uid}/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
     }
 
-    // The user document itself (the recursive match above does not cover it).
+    function validProfile(d) {
+      return d.keys().hasOnly(['v', 'updatedAt', 'settings', 'zones'])
+        && d.keys().hasAll(['v', 'updatedAt'])
+        && d.v is int && d.v >= 1 && d.v < 1000
+        && d.updatedAt is int
+        && (!('settings' in d) || (d.settings is map && d.settings.size() <= 200))
+        && (!('zones' in d) || (d.zones is list && d.zones.size() <= 200));
+    }
+
+    function validDrive(d) {
+      return d.keys().hasOnly(['v', 'start', 'end', 'verdict', 'dist', 'dur', 'avg', 'max', 'newDm', 'route', 'segs'])
+        && d.keys().hasAll(['v', 'start', 'route', 'segs'])
+        && d.v is int && d.v >= 1 && d.v < 1000
+        && d.start is int
+        && (!('end' in d) || d.end is int)
+        && (!('verdict' in d) || (d.verdict is string && d.verdict.size() <= 32))
+        && (!('dist' in d) || d.dist is number)
+        && (!('dur' in d) || d.dur is int)
+        && (!('avg' in d) || d.avg is number)
+        && (!('max' in d) || d.max is number)
+        && (!('newDm' in d) || d.newDm is int)
+        && d.route is string && d.route.size() <= 200000
+        && d.segs is string && d.segs.size() <= 700000;
+    }
+
     match /users/{uid} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
+      allow read, delete: if isOwner(uid);
+      allow create, update: if isOwner(uid) && validProfile(request.resource.data);
+
+      match /drives/{syncId} {
+        allow read, delete: if isOwner(uid);
+        allow create, update: if isOwner(uid)
+          && syncId.matches('[A-Za-z0-9_-]{1,64}')
+          && validDrive(request.resource.data);
+      }
     }
 
-    // Default deny for every other path.
+    // Default deny for every other path (including any other subcollection under users/{uid}).
     match /{path=**} {
       allow read, write: if false;
     }

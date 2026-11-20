@@ -1,5 +1,6 @@
 package app.roadmaxxing.shared.stats
 
+import app.roadmaxxing.shared.testdata.PerfBudget
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import app.roadmaxxing.shared.data.SqlDriveStore
 import app.roadmaxxing.shared.db.RoadmaxxingDatabase
@@ -237,7 +238,7 @@ class StatsRepositoryTest {
         val s = e.latest { true }
         val ms = (System.nanoTime() - t0) / 1_000_000
         println("PERF stats cold emit: ${ms}ms, extra tile loads=${pack.tileLoads - loadsBefore}, segments=${driven.size}, streets=${s.streetsDriven}")
-        assertTrue(ms < 200, "cold emit $ms ms")
+        assertTrue(ms < PerfBudget.ms(200L), "cold emit $ms ms")
         assertEquals(0, pack.tileLoads - loadsBefore, "stats must not decode tiles")
     }
 

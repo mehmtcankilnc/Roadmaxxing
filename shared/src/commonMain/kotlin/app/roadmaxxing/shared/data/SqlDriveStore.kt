@@ -11,7 +11,9 @@ import app.roadmaxxing.shared.domain.DriveRecord
 import app.roadmaxxing.shared.domain.DriveStatus
 import app.roadmaxxing.shared.domain.DriveSummary
 import app.roadmaxxing.shared.drive.DriveVerdict
+import app.roadmaxxing.shared.geo.Geo
 import app.roadmaxxing.shared.model.TracePoint
+import app.roadmaxxing.shared.sync.SyncEncoding
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -51,8 +53,32 @@ class SqlDriveStore(
 
     override fun drive(driveId: Long): DriveRecord? = drives.selectById(driveId).executeAsOneOrNull()?.toRecord()
 
-    override fun points(driveId: Long, fromMs: Long, toMs: Long): List<TracePoint> =
-        tracePoints.selectRange(driveId, fromMs, toMs).executeAsList().map { it.toTracePoint() }
+    override fun points(driveId: Long, fromMs: Long, toMs: Long): List<TracePoint> {
+        val real = tracePoints.selectRange(driveId, fromMs, toMs).executeAsList().map { it.toTracePoint() }
+        return real.ifEmpty { remotePoints(driveId, fromMs, toMs) }
+    }
+
+    /**
+     * Drives imported from the cloud have no raw fixes, only a simplified route. Synthesize fixes along it, spaced in
+     * time by path length between the drive's keep range, so cards and segment scans work unchanged.
+     */
+    private fun remotePoints(driveId: Long, fromMs: Long, toMs: Long): List<TracePoint> {
+        val row = drives.selectById(driveId).executeAsOneOrNull() ?: return emptyList()
+        val text = row.remote_route?.takeIf { it.isNotEmpty() } ?: return emptyList()
+        val route = SyncEncoding.decodeRoute(text) ?: return emptyList()
+        if (route.isEmpty()) return emptyList()
+        val start = row.keep_from_ms ?: row.start_ms
+        val end = maxOf(row.keep_to_ms ?: (start + (row.duration_ms ?: 0L)), start)
+        val cum = DoubleArray(route.size)
+        for (i in 1 until route.size) {
+            cum[i] = cum[i - 1] + Geo.distanceM(route[i - 1].lat, route[i - 1].lon, route[i].lat, route[i].lon)
+        }
+        val total = cum.last()
+        return route.mapIndexed { i, p ->
+            val fraction = if (total > 0.0) cum[i] / total else if (route.size > 1) i.toDouble() / (route.size - 1) else 0.0
+            TracePoint(start + ((end - start) * fraction).toLong(), p.lat, p.lon, null, null, null)
+        }.filter { it.timeMs in fromMs..toMs }
+    }
 
     override fun completeProcessing(
         driveId: Long,

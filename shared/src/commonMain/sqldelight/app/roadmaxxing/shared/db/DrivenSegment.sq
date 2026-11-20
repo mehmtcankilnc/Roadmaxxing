@@ -8,6 +8,10 @@ CREATE TABLE driven_segment (
 insertIfNew:
 INSERT OR IGNORE INTO driven_segment(segment_id, first_driven_ms, first_drive_id) VALUES (?, ?, ?);
 
+-- A drive imported from the cloud may be older than the local drive that first drove the segment.
+updateIfEarlier:
+UPDATE driven_segment SET first_driven_ms = ?, first_drive_id = ? WHERE segment_id = ? AND first_driven_ms > ?;
+
 changes:
 SELECT changes();
 

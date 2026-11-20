@@ -18,10 +18,14 @@ CREATE TABLE drive (
     driven_segment_count INTEGER,
     new_length_dm INTEGER,
     processing_ms INTEGER,
-    processed_at_ms INTEGER
+    processed_at_ms INTEGER,
+    sync_id TEXT,
+    synced_at_ms INTEGER,
+    remote_route TEXT
 );
 
 CREATE INDEX drive_status ON drive(status);
+CREATE UNIQUE INDEX drive_sync_id ON drive(sync_id) WHERE sync_id IS NOT NULL;
 
 insertDrive:
 INSERT INTO drive(start_ms, start_reason, status) VALUES (?, ?, 'RECORDING');
@@ -58,3 +62,35 @@ SELECT id FROM drive WHERE status = 'PROCESSED' ORDER BY processed_at_ms DESC, i
 
 deleteAll:
 DELETE FROM drive;
+
+-- Cloud sync (see SyncStore).
+selectIdsWithoutSyncId:
+SELECT id FROM drive WHERE status = 'PROCESSED' AND sync_id IS NULL ORDER BY start_ms, id;
+
+setSyncId:
+UPDATE drive SET sync_id = ? WHERE id = ? AND sync_id IS NULL;
+
+selectAllSyncIds:
+SELECT sync_id FROM drive WHERE sync_id IS NOT NULL;
+
+selectUnsyncedIds:
+SELECT id FROM drive WHERE status = 'PROCESSED' AND sync_id IS NOT NULL AND synced_at_ms IS NULL ORDER BY start_ms, id;
+
+countUnsynced:
+SELECT count(*) FROM drive WHERE status = 'PROCESSED' AND synced_at_ms IS NULL;
+
+markSynced:
+UPDATE drive SET synced_at_ms = ? WHERE sync_id = ?;
+
+clearSynced:
+UPDATE drive SET synced_at_ms = NULL;
+
+selectRemoteRoute:
+SELECT remote_route FROM drive WHERE id = ?;
+
+insertImported:
+INSERT INTO drive(
+    start_ms, start_reason, status, end_decision_ms, end_reason, keep_from_ms, keep_to_ms, verdict, distance_m,
+    duration_ms, point_count, matched_point_fraction, driven_segment_count, new_length_dm, processing_ms,
+    processed_at_ms, sync_id, synced_at_ms, remote_route
+) VALUES (?, 'SYNC', 'PROCESSED', ?, 'SYNC', ?, ?, ?, ?, ?, 0, 1.0, ?, ?, 0, ?, ?, ?, ?);

@@ -42,13 +42,15 @@ class FirebaseAuthBackend(private val google: GoogleCredentialProvider) : AuthBa
         }
     }
 
-    override suspend fun signUpWithEmail(email: String, password: String): AuthResult = guarded {
-        Firebase.auth.createUserWithEmailAndPassword(email.trim(), password)
-    }
+    override suspend fun signUpWithEmail(email: String, password: String): AuthResult =
+        guarded(signedInAs = SignedInAs.Email(email.trim())) {
+            Firebase.auth.createUserWithEmailAndPassword(email.trim(), password)
+        }
 
-    override suspend fun signInWithEmail(email: String, password: String): AuthResult = guarded {
-        Firebase.auth.signInWithEmailAndPassword(email.trim(), password)
-    }
+    override suspend fun signInWithEmail(email: String, password: String): AuthResult =
+        guarded(signedInAs = SignedInAs.Email(email.trim())) {
+            Firebase.auth.signInWithEmailAndPassword(email.trim(), password)
+        }
 
     override suspend fun sendPasswordReset(email: String): AuthResult = guarded {
         Firebase.auth.sendPasswordResetEmail(email.trim())
@@ -59,7 +61,7 @@ class FirebaseAuthBackend(private val google: GoogleCredentialProvider) : AuthBa
         return when (val picked = google.requestCredential()) {
             GoogleCredentialResult.Cancelled -> AuthResult.Cancelled
             is GoogleCredentialResult.Failure -> AuthResult.Failure(picked.error)
-            is GoogleCredentialResult.Token -> guarded {
+            is GoogleCredentialResult.Token -> guarded(signedInAs = SignedInAs.Anyone) {
                 Firebase.auth.signInWithCredential(GoogleAuthProvider.credential(picked.idToken, picked.accessToken))
             }
         }
@@ -79,10 +81,23 @@ class FirebaseAuthBackend(private val google: GoogleCredentialProvider) : AuthBa
     override suspend fun deleteAccount(): AuthResult {
         if (!available) return unavailable
         val user = Firebase.auth.currentUser ?: return AuthResult.Failure(AuthError.UserNotFound)
-        return guarded { user.delete() }
+        return guarded(signedInAs = SignedInAs.Nobody) { user.delete() }
     }
 
-    private suspend fun guarded(block: suspend () -> Unit): AuthResult {
+    /** What the signed-in user must look like for a failed call to count as having actually succeeded. */
+    private sealed interface SignedInAs {
+        data class Email(val address: String) : SignedInAs
+        data object Anyone : SignedInAs
+        data object Nobody : SignedInAs
+    }
+
+    /**
+     * Runs [block] without an artificial timeout (Firebase applies its own). On a slow network the SDK can report
+     * a failure after the server already completed the request, so a failed call re-checks the actual session
+     * ([signedInAs]) before reporting the failure: otherwise a created account would answer "failed", and a retry
+     * "already exists".
+     */
+    private suspend fun guarded(signedInAs: SignedInAs? = null, block: suspend () -> Unit): AuthResult {
         if (!available) return unavailable
         return try {
             block()
@@ -90,7 +105,28 @@ class FirebaseAuthBackend(private val google: GoogleCredentialProvider) : AuthBa
         } catch (e: CancellationException) {
             throw e
         } catch (t: Throwable) {
-            AuthResult.Failure(mapAuthFailure(t))
+            val error = mapAuthFailure(t)
+            if (signedInAs != null && error.isAmbiguous() && sessionMatches(signedInAs)) {
+                AuthResult.Success
+            } else {
+                AuthResult.Failure(error)
+            }
+        }
+    }
+
+    /** Definitive answers from the server (wrong password, email taken, ...) are never second-guessed. */
+    private fun AuthError.isAmbiguous(): Boolean = this == AuthError.Network || this == AuthError.Unknown
+
+    private fun sessionMatches(expected: SignedInAs): Boolean {
+        val current = try {
+            Firebase.auth.currentUser
+        } catch (_: Throwable) {
+            return false
+        }
+        return when (expected) {
+            SignedInAs.Nobody -> current == null
+            SignedInAs.Anyone -> current != null
+            is SignedInAs.Email -> current?.email.equals(expected.address, ignoreCase = true)
         }
     }
 }

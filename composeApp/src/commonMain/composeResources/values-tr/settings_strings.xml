@@ -41,4 +41,10 @@
     <string name="settings_about_title">Hakkında</string>
     <string name="settings_about_version">Sürüm %1$s</string>
     <string name="settings_about_legal_hint">Gizlilik politikası ve kullanım koşulları Profil sekmesinde.</string>
+
+    <string name="settings_delete_body_signed_in">Sürüşlerin, sürülen yollar ve yüzdeler, gizlilik bölgeleri ve ayarlar bu cihazdan kalıcı olarak silinir. Uygulama karşılama ekranına döner.</string>
+    <string name="settings_delete_cloud_checkbox">Bulut yedeğimi de sil</string>
+    <string name="settings_delete_cloud_hint">Yedeği tutarsan hesabında sürüşlerin durur ve yeniden giriş yaptığında geri gelebilir.</string>
+    <string name="settings_delete_cloud_failed">Bulut yedeğin silinemedi. Hiçbir şey değişmedi; bağlantını kontrol edip yeniden dene.</string>
+    <string name="settings_delete_cloud_deleting">Bulut yedeği siliniyor…</string>
 </resources>

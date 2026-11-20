@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -297,8 +298,11 @@ private fun ZoneEditorPanel(
     var center by remember(editor.id, editor.centerLat, editor.centerLon) {
         mutableStateOf(editor.centerLat to editor.centerLon)
     }
+    BoxWithConstraints(modifier = modifier) {
+    // Map height follows the window height (never a device): at most 45 % so the controls stay in reach.
+    val mapHeight = minOf(if (compact) CompactMapHeight else WideMapHeight, maxHeight * 0.45f)
     Column(
-        modifier = modifier.padding(horizontal = if (compact) 20.dp else 0.dp, vertical = if (compact) 16.dp else 0.dp),
+        modifier = Modifier.fillMaxSize().padding(horizontal = if (compact) 20.dp else 0.dp, vertical = if (compact) 16.dp else 0.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(
@@ -310,7 +314,7 @@ private fun ZoneEditorPanel(
         )
         key(editor.id, editor.centerLat, editor.centerLon) {
             // Fixed height: resizing a live map view when the controls change leaves the pin off the camera centre.
-            val mapModifier = Modifier.fillMaxWidth().height(if (compact) CompactMapHeight else WideMapHeight)
+            val mapModifier = Modifier.fillMaxWidth().height(mapHeight)
             ZoneEditorMap(
                 initialLat = editor.centerLat,
                 initialLon = editor.centerLon,
@@ -359,20 +363,22 @@ private fun ZoneEditorPanel(
                 valueRange = PrivacyZonesViewModel.MIN_RADIUS.toFloat()..PrivacyZonesViewModel.MAX_RADIUS.toFloat(),
                 steps = steps,
             )
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                OutlinedButton(onClick = { onIntent(PrivacyZonesIntent.CancelEditor) }, modifier = Modifier.weight(1f)) {
-                    Text(stringResource(Res.string.privacy_zone_cancel))
-                }
-                Button(
-                    onClick = { onIntent(PrivacyZonesIntent.Save(center.first, center.second)) },
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary,
-                    ),
-                ) { Text(stringResource(Res.string.privacy_zone_save)) }
-            }
         }
+        // Pinned below the scrolling controls so Save and Cancel are always reachable.
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+            OutlinedButton(onClick = { onIntent(PrivacyZonesIntent.CancelEditor) }, modifier = Modifier.weight(1f)) {
+                Text(stringResource(Res.string.privacy_zone_cancel))
+            }
+            Button(
+                onClick = { onIntent(PrivacyZonesIntent.Save(center.first, center.second)) },
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                ),
+            ) { Text(stringResource(Res.string.privacy_zone_save)) }
+        }
+    }
     }
 }
 

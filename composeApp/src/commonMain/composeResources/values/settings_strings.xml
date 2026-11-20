@@ -41,4 +41,10 @@
     <string name="settings_about_title">About</string>
     <string name="settings_about_version">Version %1$s</string>
     <string name="settings_about_legal_hint">Privacy policy and terms of use are in the Profile tab.</string>
+
+    <string name="settings_delete_body_signed_in">This permanently deletes your drives, driven roads and percentages, privacy zones and settings from this device. The app will return to the welcome screen.</string>
+    <string name="settings_delete_cloud_checkbox">Also delete my cloud backup</string>
+    <string name="settings_delete_cloud_hint">If you keep it, your account still holds your drives and they can come back when you sign in again.</string>
+    <string name="settings_delete_cloud_failed">Your cloud backup could not be deleted. Nothing was changed; check your connection and try again.</string>
+    <string name="settings_delete_cloud_deleting">Deleting cloud backup…</string>
 </resources>

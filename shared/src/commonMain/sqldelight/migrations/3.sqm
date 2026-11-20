@@ -1,0 +1,8 @@
+-- Version 3 -> 4: cloud sync (Stage N).
+-- sync_id: random id shared by every device of an account (set on processed drives only, unique when present).
+-- synced_at_ms: when the drive document was uploaded (null = pending).
+-- remote_route: polyline (SyncEncoding.encodeRoute) of drives imported from the cloud, which have no trace points.
+ALTER TABLE drive ADD COLUMN sync_id TEXT;
+ALTER TABLE drive ADD COLUMN synced_at_ms INTEGER;
+ALTER TABLE drive ADD COLUMN remote_route TEXT;
+CREATE UNIQUE INDEX drive_sync_id ON drive(sync_id) WHERE sync_id IS NOT NULL;

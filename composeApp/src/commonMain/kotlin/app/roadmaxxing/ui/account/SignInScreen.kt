@@ -52,6 +52,7 @@ import app.roadmaxxing.resources.account_password
 import app.roadmaxxing.resources.account_reassure
 import app.roadmaxxing.resources.account_reset_sent
 import app.roadmaxxing.resources.account_screen_title
+import app.roadmaxxing.resources.account_signin_uploads_note
 import app.roadmaxxing.resources.account_screen_why
 import app.roadmaxxing.resources.account_working
 import app.roadmaxxing.shared.account.AuthError
@@ -180,6 +181,7 @@ fun SignInScreen(form: AccountForm, onIntent: (AccountIntent) -> Unit) {
                     Text(stringResource(Res.string.account_forgot))
                 }
             }
+            SecondaryText(stringResource(Res.string.account_signin_uploads_note))
             Text(
                 text = stringResource(Res.string.account_reassure),
                 style = MaterialTheme.typography.labelLarge,

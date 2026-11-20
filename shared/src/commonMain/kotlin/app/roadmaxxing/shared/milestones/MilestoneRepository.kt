@@ -115,6 +115,24 @@ class MilestoneRepository internal constructor(
      */
     suspend fun evaluate(driveId: Long?): List<MilestoneEvent> = run(driveId, seedAll = false)
 
+    /**
+     * Records every threshold passed right now as achieved without queuing a celebration. Used after drives were
+     * imported from the cloud (restore / merge): milestones crossed only because of imported data must stay silent.
+     * Idempotent; the later automatic evaluation then finds nothing new.
+     */
+    suspend fun recordSilently() {
+        withContext(dispatcher) {
+            mutex.withLock {
+                val achieved = (appMeta.get(KEY_ACHIEVED) ?: "").split(',').filter { it.isNotEmpty() }
+                val now = reached(progress.state(null)).map { it.key }
+                val merged = (achieved + now).distinct()
+                if (merged != achieved || appMeta.get(KEY_ACHIEVED) == null) {
+                    appMeta.put(KEY_ACHIEVED, merged.joinToString(","))
+                }
+            }
+        }
+    }
+
     /** Removes [celebration] from the queue (it stays achieved). */
     fun markCelebrated(celebration: Celebration) {
         queue.value = queue.value.filterNot { it == celebration }

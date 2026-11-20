@@ -30,7 +30,7 @@ Yol verisi © OpenStreetMap katkıda bulunanlar olup Açık Veritabanı Lisansı
 
 ## Hesaplar
 
-Hesap isteğe bağlıdır. E-posta adresinle veya Google ile, Firebase Authentication (Google LLC) üzerinden hesap oluşturabilirsin. Giriş bilgilerini güvende tutmaktan ve hesabınla yapılan işlemlerden sen sorumlusun. Hesabını istediğin zaman uygulamada Profil altından silebilirsin.
+Hesap isteğe bağlıdır. E-posta adresinle veya Google ile, Firebase Authentication (Google LLC) üzerinden hesap oluşturabilirsin. Giriş bilgilerini güvende tutmaktan ve hesabınla yapılan işlemlerden sen sorumlusun. Hesabın varsa uygulama, sürüşlerinin özetini, ayarlarını, gizlilik bölgelerini ve kilometre taşlarını başka bir telefonda geri yükleyebilmen için buluta yedekler; tam olarak nelerin saklandığı Gizlilik Politikası'nda anlatılır. Hesabını ve onunla birlikte bulut yedeğini istediğin zaman uygulamada Profil altından silebilirsin.
 
 ## Verilerin
 

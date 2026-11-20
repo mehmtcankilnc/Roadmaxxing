@@ -7,6 +7,10 @@ import app.roadmaxxing.shared.account.AccountRepository
 import app.roadmaxxing.shared.account.AuthError
 import app.roadmaxxing.shared.account.AuthResult
 import app.roadmaxxing.shared.account.AuthState
+import app.roadmaxxing.shared.sync.AccountConflict
+import app.roadmaxxing.shared.sync.ConflictChoice
+import app.roadmaxxing.shared.sync.SyncManager
+import app.roadmaxxing.shared.sync.SyncStatus
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -33,12 +37,16 @@ data class AccountForm(
     val deleteStep: AccountDeleteStep = AccountDeleteStep.None,
     val alsoDeleteLocal: Boolean = false,
     val deleteError: AuthError? = null,
+    /** True while the "clear this phone and download" confirm step of the account conflict dialog is up. */
+    val conflictConfirmReplace: Boolean = false,
 )
 
 data class AccountUiState(
     val auth: AuthState = AuthState.Unavailable,
     val prompt: AccountPromptReason? = null,
     val form: AccountForm = AccountForm(),
+    val sync: SyncStatus = SyncStatus.Disabled,
+    val conflict: AccountConflict? = null,
 )
 
 sealed interface AccountIntent {
@@ -58,16 +66,30 @@ sealed interface AccountIntent {
     data class SetAlsoDeleteLocal(val value: Boolean) : AccountIntent
     data object CancelDelete : AccountIntent
     data object ConfirmDelete : AccountIntent
+    data object SyncNow : AccountIntent
+    data class ResolveConflict(val choice: ConflictChoice) : AccountIntent
+    data class SetConflictConfirm(val open: Boolean) : AccountIntent
 }
 
 /** MVI view model over [AccountRepository]: sign-in form, the account prompt and the delete flow. */
-class AccountViewModel(private val repository: AccountRepository) : ViewModel() {
+class AccountViewModel(
+    private val repository: AccountRepository,
+    private val syncManager: SyncManager,
+) : ViewModel() {
 
     private val form = MutableStateFlow(AccountForm())
 
-    val state: StateFlow<AccountUiState> = combine(repository.state, repository.prompt, form) { auth, prompt, f ->
-        AccountUiState(auth, prompt, f)
-    }.stateIn(viewModelScope, SharingStarted.Eagerly, AccountUiState(repository.state.value, repository.prompt.value, form.value))
+    val state: StateFlow<AccountUiState> = combine(
+        combine(repository.state, repository.prompt, form) { auth, prompt, f -> Triple(auth, prompt, f) },
+        syncManager.status,
+        syncManager.conflict,
+    ) { (auth, prompt, f), sync, conflict ->
+        AccountUiState(auth, prompt, f, sync, conflict)
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.Eagerly,
+        AccountUiState(repository.state.value, repository.prompt.value, form.value, syncManager.status.value, syncManager.conflict.value),
+    )
 
     fun onIntent(intent: AccountIntent) {
         when (intent) {
@@ -91,6 +113,12 @@ class AccountViewModel(private val repository: AccountRepository) : ViewModel() 
             is AccountIntent.SetAlsoDeleteLocal -> form.update { it.copy(alsoDeleteLocal = intent.value) }
             AccountIntent.CancelDelete -> form.update { it.copy(deleteStep = AccountDeleteStep.None, deleteError = null) }
             AccountIntent.ConfirmDelete -> confirmDelete()
+            AccountIntent.SyncNow -> syncManager.syncNow()
+            is AccountIntent.SetConflictConfirm -> form.update { it.copy(conflictConfirmReplace = intent.open) }
+            is AccountIntent.ResolveConflict -> {
+                form.update { it.copy(conflictConfirmReplace = false) }
+                syncManager.resolveConflict(intent.choice)
+            }
         }
     }
 
