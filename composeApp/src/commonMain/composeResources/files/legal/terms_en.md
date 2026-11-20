@@ -5,6 +5,8 @@ finalize this text before launch. It must stay in sync with terms_tr.md.
 
 # Terms of Use
 
+Last updated: 2026-11-20
+
 By using Roadmaxxing you agree to these terms. Please read them; they are short.
 
 ## What the app does
@@ -25,6 +27,10 @@ Location, road matching and percentages are estimates. GPS can be inaccurate, ro
 ## Maps and data sources
 
 Road data is © OpenStreetMap contributors and available under the Open Database Licence (ODbL). Map tiles are provided by OpenFreeMap. You must keep this attribution when you share maps or cards made with the app.
+
+## Accounts
+
+An account is optional. You can create one with your email address or with Google, through Firebase Authentication (Google LLC). You are responsible for keeping your sign-in details safe and for activity under your account. You can delete your account at any time in the app under Profile.
 
 ## Your data
 

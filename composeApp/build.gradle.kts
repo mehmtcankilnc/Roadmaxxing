@@ -75,6 +75,87 @@ val generateAppVersion = tasks.register<GenerateAppVersionTask>("generateAppVers
     dependsOn(checkIosVersion)
 }
 
+/**
+ * Writes GeneratedFirebaseConfig.kt (androidMain) from the git-ignored androidApp/google-services.json, so Firebase can be
+ * initialised from code without the Google Services Gradle plugin. Without the file every value is empty and
+ * FirebaseBootstrap.isAvailable stays false. The output lives in build/ (git-ignored) and values are never logged.
+ */
+@DisableCachingByDefault(because = "The output can contain project identifiers; never store it in a build cache.")
+abstract class GenerateFirebaseConfigTask : DefaultTask() {
+    /** google-services.json when present (the collection is empty or points at a missing file otherwise). */
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.NONE)
+    abstract val configFile: ConfigurableFileCollection
+
+    @get:Input
+    abstract val applicationId: Property<String>
+
+    @get:OutputDirectory
+    abstract val outputDir: DirectoryProperty
+
+    @TaskAction
+    fun generate() {
+        val file = configFile.files.firstOrNull { it.isFile }
+        var appId = ""
+        var apiKey = ""
+        var projectId = ""
+        var projectNumber = ""
+        var storageBucket = ""
+        var webClientId = ""
+        if (file != null) {
+            @Suppress("UNCHECKED_CAST")
+            val root = groovy.json.JsonSlurper().parse(file) as Map<String, Any?>
+            fun str(v: Any?): String = (v as? String).orEmpty()
+            val info = root["project_info"] as? Map<String, Any?>
+            projectId = str(info?.get("project_id"))
+            projectNumber = str(info?.get("project_number"))
+            storageBucket = str(info?.get("storage_bucket"))
+            val clients = (root["client"] as? List<Map<String, Any?>>).orEmpty()
+            val client = clients.firstOrNull {
+                val ci = it["client_info"] as? Map<String, Any?>
+                val android = ci?.get("android_client_info") as? Map<String, Any?>
+                str(android?.get("package_name")) == applicationId.get()
+            } ?: clients.firstOrNull()
+            if (client != null) {
+                appId = str((client["client_info"] as? Map<String, Any?>)?.get("mobilesdk_app_id"))
+                apiKey = str((client["api_key"] as? List<Map<String, Any?>>)?.firstOrNull()?.get("current_key"))
+                // oauth_client type 3 is the Web client; Credential Manager needs it as the server client id.
+                webClientId = (client["oauth_client"] as? List<Map<String, Any?>>).orEmpty()
+                    .firstOrNull { (it["client_type"] as? Number)?.toInt() == 3 }
+                    ?.let { str(it["client_id"]) }.orEmpty()
+            }
+        }
+        // Only a complete config counts: a half-filled file must not half-initialise Firebase.
+        if (appId.isEmpty() || apiKey.isEmpty() || projectId.isEmpty()) {
+            appId = ""; apiKey = ""; projectId = ""; projectNumber = ""; storageBucket = ""
+        }
+        fun lit(v: String) = "\"" + v.replace("\\", "\\\\").replace("\"", "\\\"").replace("$", "\\$") + "\""
+        val dir = outputDir.get().asFile.resolve("app/roadmaxxing/firebase")
+        dir.mkdirs()
+        dir.resolve("GeneratedFirebaseConfig.kt").writeText(
+            """
+            |package app.roadmaxxing.firebase
+            |
+            |// Generated from androidApp/google-services.json (git-ignored). Do not edit, do not commit.
+            |internal object GeneratedFirebaseConfig {
+            |    const val APPLICATION_ID = ${lit(appId)}
+            |    const val API_KEY = ${lit(apiKey)}
+            |    const val PROJECT_ID = ${lit(projectId)}
+            |    const val GCM_SENDER_ID = ${lit(projectNumber)}
+            |    const val STORAGE_BUCKET = ${lit(storageBucket)}
+            |    const val GOOGLE_WEB_CLIENT_ID = ${lit(webClientId)}
+            |}
+            |""".trimMargin(),
+        )
+    }
+}
+
+val generateFirebaseConfig = tasks.register<GenerateFirebaseConfigTask>("generateFirebaseConfig") {
+    configFile.from(rootProject.layout.projectDirectory.file("androidApp/google-services.json"))
+    applicationId.set("app.roadmaxxing")
+    outputDir.set(layout.buildDirectory.dir("generated/firebaseConfig/kotlin"))
+}
+
 kotlin {
     android {
         namespace = "app.roadmaxxing.composeapp"
@@ -120,7 +201,19 @@ kotlin {
             implementation(libs.kotlinx.datetime)
             implementation(libs.maplibre.compose)
         }
+        commonMain.dependencies {
+            // Firebase (GitLive). composeApp only: :shared stays Firebase-free so its iOS tests need no Firebase SDK.
+            implementation(libs.gitlive.firebase.app)
+            implementation(libs.gitlive.firebase.auth)
+            implementation(libs.gitlive.firebase.firestore)
+        }
+        androidMain {
+            kotlin.srcDir(generateFirebaseConfig.flatMap { it.outputDir })
+        }
         androidMain.dependencies {
+            implementation(libs.androidx.credentials)
+            implementation(libs.androidx.credentials.play.services.auth)
+            implementation(libs.google.id)
             implementation(libs.play.services.location)
             implementation(libs.androidx.activity.compose)
             implementation(libs.androidx.core.ktx)

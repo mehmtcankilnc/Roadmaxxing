@@ -29,6 +29,7 @@
 | `APPSTORE_API_KEY_P8` | testflight | Contents of the `.p8` API key |
 | `APPLE_TEAM_ID` | testflight | Apple Developer team ID |
 | `GOOGLE_SERVICE_INFO_PLIST_BASE64` | build, testflight | Base64 of `GoogleService-Info.plist` |
+| `GOOGLE_SERVICES_JSON_BASE64` | android (`android.yml`) | Base64 of `androidApp/google-services.json`; may be empty |
 | `REVENUECAT_IOS_API_KEY` | build, testflight | RevenueCat public iOS SDK key |
 | `POSTHOG_API_KEY` | build, testflight | PostHog project API key |
 
@@ -42,4 +43,6 @@ The `testflight` job uses the GitHub environment `testflight`; put the App Store
 
 ## Android
 
-To be defined with the project skeleton: build + unit tests on every PR, upload to the Play internal track from `main`. Local tests run on a visible Android emulator (see CLAUDE.md).
+`.github/workflows/android.yml` runs build + unit tests on every PR and on `main` (`:androidApp:assembleDebug :shared:testAndroidHostTest`). Upload to the Play internal track is not set up. Local tests run on a visible Android emulator (see CLAUDE.md).
+
+**Firebase step.** Before Gradle runs, the workflow writes `androidApp/google-services.json` from the secret `GOOGLE_SERVICES_JSON_BASE64` (base64 decode; the file is git-ignored and never committed or printed). The `generateFirebaseConfig` Gradle task turns it into generated build code; there is no Google Services Gradle plugin. If the secret is empty (for example on fork pull requests), no file is written, `FirebaseBootstrap.isAvailable` is false and the app builds and runs with accounts hidden. Only the secret name is documented here, never its value.

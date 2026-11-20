@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="account_card_title">Account</string>
+    <string name="account_card_benefit">Keep your roads safe on another phone. Sync is coming soon.</string>
+    <string name="account_sign_in">Sign in</string>
+    <string name="account_signed_in_as">Signed in as %1$s</string>
+    <string name="account_provider_google">Google</string>
+    <string name="account_provider_email">Email</string>
+    <string name="account_provider_apple">Apple</string>
+    <string name="account_provider_line">Signed in with %1$s</string>
+    <string name="account_sign_out">Sign out</string>
+    <string name="account_delete">Delete account</string>
+    <string name="account_unavailable_debug">Accounts not configured</string>
+
+    <string name="account_screen_title">Your account</string>
+    <string name="account_screen_why">Keep your roads safe on another phone — sync comes soon.</string>
+    <string name="account_back">Back</string>
+    <string name="account_google">Continue with Google</string>
+    <string name="account_or_email">or use your email</string>
+    <string name="account_email">Email</string>
+    <string name="account_password">Password</string>
+    <string name="account_mode_sign_in">Sign in</string>
+    <string name="account_mode_create">Create account</string>
+    <string name="account_forgot">Forgot password?</string>
+    <string name="account_reset_sent">If an account exists for this email, a reset link is on its way.</string>
+    <string name="account_reassure">Your drives on this phone stay as they are.</string>
+    <string name="account_working">Please wait…</string>
+
+    <string name="account_error_invalid_email">That email address does not look right.</string>
+    <string name="account_error_wrong_credentials">Email or password is wrong.</string>
+    <string name="account_error_weak_password">Choose a stronger password (at least 6 characters).</string>
+    <string name="account_error_email_in_use">An account with this email already exists. Try signing in.</string>
+    <string name="account_error_network">No connection. Check your internet and try again.</string>
+    <string name="account_error_unavailable">Accounts are not available right now.</string>
+    <string name="account_error_recent_login">Please sign in again, then retry.</string>
+    <string name="account_error_generic">Something went wrong. Please try again.</string>
+
+    <string name="account_prompt_third_title">Save your progress with an account</string>
+    <string name="account_prompt_third_body">Your roads are already safe on this phone. An account lets you keep them if you ever switch phones.</string>
+    <string name="account_prompt_share_title">Want an account? You can share without one</string>
+    <string name="account_prompt_share_body">Your card is ready to share either way. An account is only for keeping your progress safe.</string>
+    <string name="account_prompt_primary">Create account / Sign in</string>
+    <string name="account_prompt_dismiss">Not now</string>
+
+    <string name="account_delete_title">Delete your account?</string>
+    <string name="account_delete_explain">This deletes your account and the data stored online. The drives on this phone stay unless you tick the box below.</string>
+    <string name="account_delete_also_local">Also delete the data on this phone</string>
+    <string name="account_delete_continue">Continue</string>
+    <string name="account_delete_confirm_title">Are you sure?</string>
+    <string name="account_delete_confirm_online">Your account and online data will be deleted. This cannot be undone.</string>
+    <string name="account_delete_confirm_local">The drives and progress on this phone will be deleted too.</string>
+    <string name="account_delete_confirm_button">Delete account</string>
+    <string name="account_cancel">Cancel</string>
+</resources>
