@@ -6,12 +6,15 @@ package app.roadmaxxing.auth
 
 import app.roadmaxxing.shared.account.AuthError
 import kotlinx.cinterop.BetaInteropApi
+import kotlinx.cinterop.UByteVar
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.convert
 import kotlinx.cinterop.reinterpret
 import kotlinx.cinterop.usePinned
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 import platform.AuthenticationServices.ASPresentationAnchor
 import platform.AuthenticationServices.ASWebAuthenticationPresentationContextProvidingProtocol
 import platform.AuthenticationServices.ASWebAuthenticationSession
@@ -21,7 +24,6 @@ import platform.CoreCrypto.CC_SHA256_DIGEST_LENGTH
 import platform.Foundation.NSBundle
 import platform.Foundation.NSData
 import platform.Foundation.NSDictionary
-import platform.Foundation.NSError
 import platform.Foundation.NSHTTPURLResponse
 import platform.Foundation.NSJSONSerialization
 import platform.Foundation.NSMutableURLRequest
@@ -29,13 +31,20 @@ import platform.Foundation.NSURL
 import platform.Foundation.NSURLComponents
 import platform.Foundation.NSURLQueryItem
 import platform.Foundation.NSURLSession
+import platform.Foundation.create
+import platform.Foundation.dataTaskWithRequest
 import platform.Foundation.dictionaryWithContentsOfFile
+import platform.Foundation.setHTTPBody
+import platform.Foundation.setHTTPMethod
+import platform.Foundation.setValue
 import platform.Security.SecRandomCopyBytes
 import platform.Security.kSecRandomDefault
 import platform.UIKit.UIApplication
 import platform.UIKit.UIWindow
 import platform.darwin.NSObject
 import kotlin.coroutines.resume
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 
 /**
  * Google sign-in on iOS without Swift or a Google SDK: the standard OAuth 2.0 authorization-code flow with PKCE in an
@@ -72,7 +81,8 @@ class IosGoogleCredentialProvider : GoogleCredentialProvider {
         )
         val authUrl = components.URL ?: return GoogleCredentialResult.Failure(AuthError.Unknown)
 
-        val callback = authenticate(authUrl, scheme)
+        // ASWebAuthenticationSession must be started on the main thread.
+        val callback = withContext(Dispatchers.Main) { authenticate(authUrl, scheme) }
         if (callback is Callback.Cancelled) return GoogleCredentialResult.Cancelled
         if (callback !is Callback.Url) return GoogleCredentialResult.Failure(AuthError.Unknown)
 
@@ -121,7 +131,7 @@ class IosGoogleCredentialProvider : GoogleCredentialProvider {
     private suspend fun exchangeCode(clientId: String, code: String, verifier: String, redirect: String): String? =
         suspendCancellableCoroutine { cont ->
             val request = NSMutableURLRequest(uRL = NSURL(string = "https://oauth2.googleapis.com/token"))
-            request.HTTPMethod = "POST"
+            request.setHTTPMethod("POST")
             request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField = "Content-Type")
             val body = listOf(
                 "client_id" to clientId,
@@ -130,11 +140,11 @@ class IosGoogleCredentialProvider : GoogleCredentialProvider {
                 "grant_type" to "authorization_code",
                 "redirect_uri" to redirect,
             ).joinToString("&") { (k, v) -> "$k=${formEncode(v)}" }
-            request.HTTPBody = body.encodeToByteArray().toNSData()
-            val task = NSURLSession.sharedSession.dataTaskWithRequest(request) { data: NSData?, response, error: NSError? ->
+            request.setHTTPBody(body.encodeToByteArray().toNSData())
+            val task = NSURLSession.sharedSession.dataTaskWithRequest(request) { data, response, error ->
                 val status = (response as? NSHTTPURLResponse)?.statusCode?.toInt() ?: 0
                 val token = if (error == null && status in 200..299 && data != null) {
-                    val json = NSJSONSerialization.JSONObjectWithData(data, 0u, null) as? NSDictionary
+                    val json = NSJSONSerialization.JSONObjectWithData(data, 0u, null) as? Map<*, *>
                     json?.get("id_token") as? String
                 } else {
                     null
@@ -151,12 +161,12 @@ class IosGoogleCredentialProvider : GoogleCredentialProvider {
     }
 }
 
-private fun bundledPlist(): NSDictionary? {
+private fun bundledPlist(): Map<Any?, *>? {
     val path = NSBundle.mainBundle.pathForResource("GoogleService-Info", "plist") ?: return null
     return NSDictionary.dictionaryWithContentsOfFile(path)
 }
 
-private fun NSDictionary.string(key: String): String? = (objectForKey(key) as? String)?.takeIf { it.isNotBlank() }
+private fun Map<Any?, *>.string(key: String): String? = (this[key] as? String)?.takeIf { it.isNotBlank() }
 
 private const val UNRESERVED = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~"
 
@@ -173,8 +183,8 @@ private fun formEncode(value: String): String = buildString {
     }
 }
 
-private fun base64Url(data: NSData): String =
-    data.base64EncodedStringWithOptions(0u).replace('+', '-').replace('/', '_').trimEnd('=')
+@OptIn(ExperimentalEncodingApi::class)
+private fun base64Url(data: ByteArray): String = Base64.UrlSafe.withPadding(Base64.PaddingOption.ABSENT).encode(data)
 
 /** 32 random bytes, base64url encoded (43 chars: a valid PKCE verifier). */
 private fun randomVerifier(): String? {
@@ -183,7 +193,7 @@ private fun randomVerifier(): String? {
         SecRandomCopyBytes(kSecRandomDefault, bytes.size.convert(), pinned.addressOf(0)) == 0
     }
     if (!ok) return null
-    return base64Url(bytes.toNSData())
+    return base64Url(bytes)
 }
 
 private fun sha256Base64Url(input: String): String {
@@ -191,10 +201,10 @@ private fun sha256Base64Url(input: String): String {
     val digest = ByteArray(CC_SHA256_DIGEST_LENGTH)
     data.usePinned { src ->
         digest.usePinned { dst ->
-            CC_SHA256(src.addressOf(0), data.size.convert(), dst.addressOf(0).reinterpret())
+            CC_SHA256(src.addressOf(0), data.size.convert(), dst.addressOf(0).reinterpret<UByteVar>())
         }
     }
-    return base64Url(digest.toNSData())
+    return base64Url(digest)
 }
 
 private fun ByteArray.toNSData(): NSData = usePinned { NSData.create(bytes = it.addressOf(0), length = size.convert()) }
