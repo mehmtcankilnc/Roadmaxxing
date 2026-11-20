@@ -1,5 +1,6 @@
 package app.roadmaxxing.shared.map.burn
 
+import app.roadmaxxing.shared.testdata.PerfBudget
 import app.roadmaxxing.shared.domain.DriveSummary
 import app.roadmaxxing.shared.domain.InMemoryDriveStore
 import app.roadmaxxing.shared.domain.RegionPackProvider
@@ -234,6 +235,6 @@ class BurnTimelineTest {
             if (ms > worst) worst = ms
         }
         println("PERF burn frame (500 segments): avg=${"%.3f".format(sum / n)} ms worst=${"%.3f".format(worst)} ms")
-        assertTrue(sum / n < 2.0, "avg frame ${sum / n} ms")
+        assertTrue(sum / n < PerfBudget.ms(2.0), "avg frame ${sum / n} ms")
     }
 }

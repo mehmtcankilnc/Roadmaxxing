@@ -1,5 +1,6 @@
 package app.roadmaxxing.shared.map
 
+import app.roadmaxxing.shared.testdata.PerfBudget
 import app.roadmaxxing.shared.domain.InMemoryDriveStore
 import app.roadmaxxing.shared.domain.RegionPackProvider
 import app.roadmaxxing.shared.testdata.TestData
@@ -41,7 +42,7 @@ class DrivenRoadsProviderPerfTest {
         val warm = ms { snap = p.render(ids, emptySet()) }
         println("PERF 5000 segments: cold=${cold}ms warm=${warm}ms size=${snap!!.geoJson.length / 1024}KiB count=${snap!!.segmentCount}")
         assertEquals(5000, snap!!.segmentCount)
-        assertTrue(warm < 200, "warm $warm ms")
+        assertTrue(warm < PerfBudget.ms(200L), "warm $warm ms")
     }
 
     @Test

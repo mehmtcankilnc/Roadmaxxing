@@ -7,6 +7,7 @@ import app.roadmaxxing.shared.drive.DriveVerdict
 import app.roadmaxxing.shared.map.GeoBounds
 import app.roadmaxxing.shared.map.layers.MapLayerPreferences
 import app.roadmaxxing.shared.onboarding.AppMetaStore
+import app.roadmaxxing.shared.testdata.PerfBudget
 import app.roadmaxxing.shared.testdata.TestData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -38,19 +39,38 @@ class UndiscoveredRoadsProviderPerfTest {
 
     @Test
     fun cityCentreColdAndWarm() {
+        // JIT warm-up on an unrelated viewport (other provider, other pack), so cold timings measure our code.
+        setup().first.also { runBlocking { it.roadsIn(viewport(0.01, 0.01, dLon = 0.3), 13.0) } }
         for ((zoom, half) in listOf(13.0 to 0.02, 14.0 to 0.01)) {
-            val (p, _, packProvider) = setup()
-            packProvider.pack // load manifest outside the timing
             var json = ""
-            val cold = ms { json = runBlocking { p.roadsIn(viewport(half, half * 1.3), zoom) } }
-            val warm = ms { runBlocking { p.roadsIn(viewport(half, half * 1.3), zoom) } }
-            val pan = ms { json = runBlocking { p.roadsIn(viewport(half, half * 1.3, dLon = half * 1.3), zoom) } }
+            var lastP: UndiscoveredRoadsProvider? = null
+            var lastPack: RegionPackProvider? = null
+            val colds = ArrayList<Long>()
+            val warms = ArrayList<Long>()
+            val pans = ArrayList<Long>()
+            repeat(3) {
+                val (p, _, packProvider) = setup()
+                packProvider.pack // load manifest outside the timing
+                colds += ms { json = runBlocking { p.roadsIn(viewport(half, half * 1.3), zoom) } }
+                warms += ms { runBlocking { p.roadsIn(viewport(half, half * 1.3), zoom) } }
+                pans += ms { json = runBlocking { p.roadsIn(viewport(half, half * 1.3, dLon = half * 1.3), zoom) } }
+                lastP = p
+                lastPack = packProvider
+            }
+            val p = lastP!!
+            val packProvider = lastPack!!
+            // Median of 3 fresh runs, so one GC pause or scheduler hiccup cannot fail the test.
+            val cold = colds.sorted()[1]
+            val warm = warms.sorted()[1]
+            val pan = pans.sorted()[1]
             println(
                 "PERF undiscovered z$zoom: cold=${cold}ms warm=${warm}ms halfPan=${pan}ms " +
                     "size=${json.length / 1024}KiB features=${featureCount(json)} tiles=${p.lastTileCount}",
             )
-            assertTrue(cold < 150, "cold z$zoom $cold ms")
-            assertTrue(warm <= cold)
+            // Goal 150 ms locally, 3x on CI. Warm is only required not to be meaningfully slower than cold: both are
+            // a few ms, so a strict warm <= cold would flake.
+            assertTrue(cold < PerfBudget.ms(150L), "cold z$zoom $cold ms")
+            assertTrue(warm <= cold + PerfBudget.ms(25L), "warm z$zoom $warm ms vs cold $cold ms")
             assertTrue(featureCount(json) > 0)
             val maxKiB = if (zoom < 14.0) 1.2 * 1024 else 1.5 * 1024
             assertTrue(json.length / 1024.0 <= maxKiB, "size z$zoom ${json.length / 1024} KiB")

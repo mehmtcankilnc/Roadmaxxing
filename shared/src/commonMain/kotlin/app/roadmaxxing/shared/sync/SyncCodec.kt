@@ -56,7 +56,7 @@ object SyncCodec {
     fun encodeProfile(p: RemoteProfile): Map<String, Any?> = mapOf(
         "v" to SCHEMA_VERSION.toLong(),
         "updatedAt" to p.updatedAtMs,
-        "settings" to p.settings.toSortedMap().toMap(),
+        "settings" to p.settings.entries.sortedBy { it.key }.associate { it.key to it.value },
         "zones" to p.zones.map { z ->
             buildMap<String, Any?> {
                 put("k", z.kind)

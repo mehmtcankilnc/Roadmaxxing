@@ -45,7 +45,7 @@ object SyncEncoding {
 
     /** Segment ids as a sorted, de-duplicated, delta-encoded varint string. */
     fun encodeIds(ids: Collection<Long>): String {
-        val sorted = ids.toSortedSet()
+        val sorted = ids.distinct().sorted()
         val sb = StringBuilder(sorted.size * 3)
         var prev = 0L
         for (id in sorted) {
@@ -74,10 +74,10 @@ object SyncEncoding {
     private fun writeVarint(sb: StringBuilder, value: Long) {
         var v = value
         while (v >= 0x20) {
-            sb.append(((v.toInt() and 0x1F) or 0x20).plus(63).toChar())
+            sb.append(Char(((v.toInt() and 0x1F) or 0x20) + 63))
             v = v ushr 5
         }
-        sb.append((v.toInt() + 63).toChar())
+        sb.append(Char(v.toInt() + 63))
     }
 
     private fun readVarints(text: String): List<Long>? {
