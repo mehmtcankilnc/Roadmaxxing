@@ -43,6 +43,7 @@ import app.roadmaxxing.resources.account_unavailable_debug
 import app.roadmaxxing.shared.account.AccountUser
 import app.roadmaxxing.shared.account.AuthProvider
 import app.roadmaxxing.shared.account.AuthState
+import app.roadmaxxing.shared.sync.SyncStatus
 import app.roadmaxxing.ui.components.InfoCard
 import app.roadmaxxing.ui.components.SecondaryText
 import org.jetbrains.compose.resources.stringResource
@@ -74,7 +75,7 @@ fun AccountCardContent(state: AccountUiState, isDebugBuild: Boolean, onIntent: (
         }
         is AuthState.SignedIn -> {
             InfoCard(stringResource(Res.string.account_card_title)) {
-                SignedInBody(auth.user, onIntent)
+                SignedInBody(auth.user, state.sync, onIntent)
             }
             DeleteDialogs(state.form, onIntent)
         }
@@ -82,7 +83,7 @@ fun AccountCardContent(state: AccountUiState, isDebugBuild: Boolean, onIntent: (
 }
 
 @Composable
-private fun SignedInBody(user: AccountUser, onIntent: (AccountIntent) -> Unit) {
+private fun SignedInBody(user: AccountUser, sync: SyncStatus, onIntent: (AccountIntent) -> Unit) {
     val identity = user.email ?: user.displayName ?: ""
     Text(
         text = stringResource(Res.string.account_signed_in_as, identity),
@@ -97,6 +98,7 @@ private fun SignedInBody(user: AccountUser, onIntent: (AccountIntent) -> Unit) {
         },
     )
     SecondaryText(stringResource(Res.string.account_provider_line, provider))
+    SyncRow(sync, onSyncNow = { onIntent(AccountIntent.SyncNow) })
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         OutlinedButton(onClick = { onIntent(AccountIntent.SignOut) }) { Text(stringResource(Res.string.account_sign_out)) }
         TextButton(onClick = { onIntent(AccountIntent.AskDelete) }) {

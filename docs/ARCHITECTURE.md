@@ -84,7 +84,7 @@ Amaç: Cihazın, internete gerek kalmadan, bir bölgedeki yolları ve toplam uzu
 3. Gerekli bölge paketi cihazda yoksa R2'den indirilir ve önbelleğe alınır.
 4. Cihazdaki eşleştirici izi yol parçalarına oturtur, yeni parçaları işaretler ve ilgili bölgelerin yüzdesini yerelde hesaplar.
 5. Uygulama yolun yanma animasyonunu oynatır, özeti ve kartı hazırlar.
-6. Sürüşün özeti ve yeni parça kimlikleri tek bir kayıt olarak Firestore'a senkronlanır (bağlantı yoksa kuyrukta bekler).
+6. Hesap varsa sürüşün özeti, sadeleştirilmiş rotası ve ilk sürdüğü parça kimlikleri tek bir kayıt olarak Firestore'a senkronlanır (bağlantı yoksa kuyrukta bekler; ham iz yüklenmez). Tetikleyiciler: her işlenen sürüş, uygulamanın öne gelmesi, "Şimdi senkronize et"; periyodik arka plan işi yoktur. Bkz. karar 94–106.
 
 ## Eşleştirme motoru (cihazda)
 
@@ -98,20 +98,20 @@ Amaç: Cihazın, internete gerek kalmadan, bir bölgedeki yolları ve toplam uzu
 
 | Varlık | Alanlar | Nerede |
 | --- | --- | --- |
-| `User` | kimlik, plan, tercihler (birim, dil, sessiz saatler) | Firestore |
-| `Drive` | başlangıç/bitiş, mesafe, süre, ortalama/maks hız, yeni km, sadeleştirilmiş rota | Yerel + Firestore |
+| `User` | kimlik, plan, tercihler (birim, sessiz saatler, harita katmanı seçimleri), ulaşılan kilometre taşları | Firestore (`users/{uid}`) + yerel |
+| `Drive` | başlangıç/bitiş, karar, mesafe, süre, ortalama/maks hız, yeni km, sadeleştirilmiş rota (≤ ~300 nokta); yerelde ayrıca `sync_id`, `synced_at_ms`, `remote_route` | Yerel + Firestore (`users/{uid}/drives/{syncId}`) |
 | `TracePoint` | zaman, koordinat, hız, yön, doğruluk | Sadece yerel |
 | `Segment` | OSM parça kimliği, uzunluk, yol tipi, bölge kimlikleri | Bölge paketi |
-| `DrivenSegment` | kullanıcı, parça kimliği, ilk sürülüş tarihi | Yerel + Firestore |
+| `DrivenSegment` | kullanıcı, parça kimliği, ilk sürülüş tarihi | Yerel; Firestore'da ayrı doküman değil, o parçayı ilk süren sürüş dokümanında kimlik listesi (delta-varint dizgesi) |
 | `Region` | seviye, ad (çevirileriyle), toplam yol uzunluğu (tip bazlı) | Bölge paketi |
-| `RegionProgress` | kullanıcı, bölge, sürülen uzunluk, yüzde | Yerel (türetilir) + Firestore özeti |
-| `PrivacyZone` | merkez, yarıçap | Yerel + Firestore |
+| `RegionProgress` | kullanıcı, bölge, sürülen uzunluk, yüzde | Yerel (türetilir); Firestore'a yüklenmez, geri yüklemede parça kimliklerinden yeniden hesaplanır |
+| `PrivacyZone` | merkez, yarıçap | Yerel + Firestore (profil dokümanında) |
 
-Firestore'da sürüş başına tek doküman yazılır (nokta nokta değil) ki ücretsiz kota uzun süre yetsin.
+Firestore'da sürüş başına tek doküman yazılır (nokta nokta değil) ki ücretsiz kota uzun süre yetsin; 1 saatlik sürüş yaklaşık 8 KB, doküman üst sınırı 900 KB (aşılırsa önce rota ayrıntısı atılır). Birleştirme: segmenti ilk süren en eski sürüştür; profil son yazan kazanır, kilometre taşları birleşimdir.
 
 ## Firestore güvenlik
 
-Her kullanıcı yalnızca kendi `users/{uid}/...` yolunu okuyup yazabilir. Kurallar dosyası depoda tutulur ve CI'da doğrulanır.
+Her kullanıcı yalnızca kendi `users/{uid}/...` yolunu okuyup yazabilir; kurallar ayrıca doküman şemasını doğrular (alan beyaz listesi, tip ve boyut sınırları). Kurallar dosyası depoda tutulur ve CI'da doğrulanır.
 
 ## CI/CD
 

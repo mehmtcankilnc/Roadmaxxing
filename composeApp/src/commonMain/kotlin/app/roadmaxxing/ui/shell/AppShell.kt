@@ -80,8 +80,10 @@ fun AppShell(
     val explore by exploreViewModel.state.collectAsStateWithLifecycle()
     val requestPermission = rememberPermissionRequester { viewModel.onIntent(MainIntent.PermissionsChanged) }
     // Permissions can change in system settings while the app is in the background.
+    val syncManager = koinInject<app.roadmaxxing.shared.sync.SyncManager>()
     LifecycleResumeEffect(Unit) {
         viewModel.onIntent(MainIntent.PermissionsChanged)
+        syncManager.onAppForeground()
         onPauseOrDispose { }
     }
     // Back from any other tab returns to the map; on the map the system handles back as usual.

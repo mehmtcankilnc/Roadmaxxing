@@ -17,12 +17,15 @@ import app.roadmaxxing.shared.privacy.PrivacyZoneRepository
 import app.roadmaxxing.shared.region.FixturePack
 import app.roadmaxxing.shared.settings.DataEraser
 import app.roadmaxxing.shared.settings.SettingsRepository
+import app.roadmaxxing.shared.sync.NoopSyncRemote
+import app.roadmaxxing.shared.sync.SyncRemote
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class AccountRepositoryTest {
     private val driver: SqlDriver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY).also { RoadmaxxingDatabase.Schema.create(it) }
@@ -62,7 +65,21 @@ class AccountRepositoryTest {
         )
     }
 
-    private fun repo(backend: AuthBackend) = AccountRepository(backend, store, meta, eraser(), Dispatchers.Unconfined)
+    private class FakeRemote(var failure: Throwable? = null) : SyncRemote {
+        val deletedUids = mutableListOf<String>()
+        override suspend fun listDriveIds(uid: String): Set<String> = emptySet()
+        override suspend fun fetchDrives(uid: String, ids: Collection<String>): List<Map<String, Any?>> = emptyList()
+        override suspend fun putDrive(uid: String, syncId: String, doc: Map<String, Any?>) {}
+        override suspend fun fetchProfile(uid: String): Map<String, Any?>? = null
+        override suspend fun putProfile(uid: String, doc: Map<String, Any?>) {}
+        override suspend fun deleteAll(uid: String) {
+            failure?.let { throw it }
+            deletedUids += uid
+        }
+    }
+
+    private fun repo(backend: AuthBackend, remote: SyncRemote = FakeRemote()) =
+        AccountRepository(backend, store, meta, eraser(), Dispatchers.Unconfined, remote)
 
     private fun driveCount(): Long = driver.executeQuery(null, "SELECT count(*) FROM drive", { c ->
         c.next()
@@ -168,6 +185,42 @@ class AccountRepositoryTest {
         val result = repo(backend).deleteAccount(alsoDeleteLocal = true)
         assertEquals(AuthResult.Failure(AuthError.RequiresRecentLogin), result)
         assertEquals(1L, driveCount())
+    }
+
+    @Test
+    fun cloudDataIsDeletedBeforeTheAccount() = runBlocking {
+        val backend = FakeBackend(AuthState.SignedIn(user))
+        val remote = FakeRemote()
+        assertEquals(AuthResult.Success, repo(backend, remote).deleteAccount(alsoDeleteLocal = false))
+        assertEquals(listOf("uid1"), remote.deletedUids)
+        assertEquals(1, backend.deleteCalls)
+    }
+
+    @Test
+    fun cloudDeleteFailureKeepsAccountAndLocalData() = runBlocking {
+        addDrive(1_000_000, DriveVerdict.Drive)
+        val backend = FakeBackend(AuthState.SignedIn(user))
+        val remote = FakeRemote(failure = RuntimeException("PERMISSION_DENIED"))
+        val result = repo(backend, remote).deleteAccount(alsoDeleteLocal = true)
+        assertTrue(result is AuthResult.Failure)
+        assertEquals(0, backend.deleteCalls)
+        assertEquals(1L, driveCount())
+    }
+
+    @Test
+    fun unavailableSyncRemoteBlocksSignedInDeletion() = runBlocking {
+        val backend = FakeBackend(AuthState.SignedIn(user))
+        val result = repo(backend, NoopSyncRemote()).deleteAccount(alsoDeleteLocal = false)
+        assertEquals(AuthResult.Failure(AuthError.Unknown), result)
+        assertEquals(0, backend.deleteCalls)
+    }
+
+    @Test
+    fun signedOutDeleteSkipsCloud() = runBlocking {
+        val backend = FakeBackend(AuthState.SignedOut)
+        val remote = FakeRemote()
+        repo(backend, remote).deleteAccount(alsoDeleteLocal = false)
+        assertTrue(remote.deletedUids.isEmpty())
     }
 
     @Test

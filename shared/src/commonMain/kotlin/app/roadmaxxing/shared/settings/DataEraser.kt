@@ -20,16 +20,29 @@ class DataEraser(
     private val dispatcher: CoroutineDispatcher,
     private val milestones: MilestoneRepository? = null,
 ) {
-    /** Deletes all user data in one transaction and resets in-memory state; afterwards onboarding is not completed. */
-    suspend fun eraseAll() {
+    /**
+     * Deletes all user data in one transaction and resets in-memory state; afterwards onboarding is not completed,
+     * unless [keepOnboarding] is set: then the onboarding and consent keys survive (used when a signed-in user
+     * replaces this phone's data with the account's cloud data).
+     */
+    suspend fun eraseAll(keepOnboarding: Boolean = false) {
         withContext(dispatcher) {
             database.transaction {
+                // The keys are read first: the bulk delete below removes everything except the schema version.
+                val kept = if (keepOnboarding) {
+                    KEPT_WITH_ONBOARDING.mapNotNull { key ->
+                        database.appMetaQueries.selectValue(key).executeAsOneOrNull()?.let { key to it }
+                    }
+                } else {
+                    emptyList()
+                }
                 database.tracePointQueries.deleteAll()
                 database.driveQueries.deleteAll()
                 database.drivenSegmentQueries.deleteAll()
                 database.privacyZoneQueries.deleteAll()
                 // Also removes the burn-shown flag, privacy suggestion flag, consent and layer keys.
                 database.appMetaQueries.deleteAllExcept(SCHEMA_VERSION_KEY)
+                for ((key, value) in kept) database.appMetaQueries.upsertValue(key, value)
             }
             onboarding.reload()
             privacyZones.reload()
@@ -42,5 +55,6 @@ class DataEraser(
 
     private companion object {
         const val SCHEMA_VERSION_KEY = "schema_version"
+        val KEPT_WITH_ONBOARDING = listOf("onboarding_completed", "consent_version", "consent_at")
     }
 }

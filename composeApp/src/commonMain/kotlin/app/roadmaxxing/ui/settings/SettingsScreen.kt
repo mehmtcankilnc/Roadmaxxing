@@ -17,6 +17,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -63,6 +64,11 @@ import app.roadmaxxing.resources.settings_delete_body
 import app.roadmaxxing.resources.settings_delete_confirm_body
 import app.roadmaxxing.resources.settings_delete_confirm_button
 import app.roadmaxxing.resources.settings_delete_confirm_title
+import app.roadmaxxing.resources.settings_delete_body_signed_in
+import app.roadmaxxing.resources.settings_delete_cloud_checkbox
+import app.roadmaxxing.resources.settings_delete_cloud_deleting
+import app.roadmaxxing.resources.settings_delete_cloud_failed
+import app.roadmaxxing.resources.settings_delete_cloud_hint
 import app.roadmaxxing.resources.settings_delete_continue
 import app.roadmaxxing.resources.settings_delete_failed
 import app.roadmaxxing.resources.settings_delete_field_label
@@ -173,12 +179,17 @@ fun SettingsScreen(state: SettingsUiState, onIntent: (SettingsIntent) -> Unit, o
     when (state.deleteStep) {
         DeleteStep.None -> Unit
         DeleteStep.Explain -> DeleteExplainDialog(
+            signedIn = state.signedIn,
+            alsoDeleteCloud = state.alsoDeleteCloud,
+            onAlsoDeleteCloud = { onIntent(SettingsIntent.SetAlsoDeleteCloud(it)) },
             onContinue = { onIntent(SettingsIntent.DeleteContinue) },
             onCancel = { onIntent(SettingsIntent.CancelDelete) },
         )
         DeleteStep.Confirm -> DeleteConfirmDialog(
             erasing = state.erasing,
             failed = state.eraseFailed,
+            cloudFailed = state.cloudDeleteFailed,
+            deletingCloud = state.signedIn && state.alsoDeleteCloud,
             onConfirm = { onIntent(SettingsIntent.ConfirmDelete) },
             onCancel = { onIntent(SettingsIntent.CancelDelete) },
         )
@@ -377,11 +388,39 @@ private fun timePickerColors() = TimePickerDefaults.colors(
 )
 
 @Composable
-private fun DeleteExplainDialog(onContinue: () -> Unit, onCancel: () -> Unit) {
+private fun DeleteExplainDialog(
+    signedIn: Boolean,
+    alsoDeleteCloud: Boolean,
+    onAlsoDeleteCloud: (Boolean) -> Unit,
+    onContinue: () -> Unit,
+    onCancel: () -> Unit,
+) {
     AlertDialog(
         onDismissRequest = onCancel,
         title = { Text(stringResource(Res.string.settings_delete_title)) },
-        text = { Text(stringResource(Res.string.settings_delete_body)) },
+        text = {
+            if (!signedIn) {
+                Text(stringResource(Res.string.settings_delete_body))
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(stringResource(Res.string.settings_delete_body_signed_in))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .toggleable(value = alsoDeleteCloud, role = Role.Checkbox, onValueChange = onAlsoDeleteCloud),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Checkbox(checked = alsoDeleteCloud, onCheckedChange = null)
+                        Text(
+                            text = stringResource(Res.string.settings_delete_cloud_checkbox),
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(start = 12.dp),
+                        )
+                    }
+                    SecondaryText(stringResource(Res.string.settings_delete_cloud_hint))
+                }
+            }
+        },
         confirmButton = {
             TextButton(
                 onClick = onContinue,
@@ -397,7 +436,14 @@ private fun DeleteExplainDialog(onContinue: () -> Unit, onCancel: () -> Unit) {
  * accidental double tap impossible, which matters because the erase has no backup and cannot be undone.
  */
 @Composable
-private fun DeleteConfirmDialog(erasing: Boolean, failed: Boolean, onConfirm: () -> Unit, onCancel: () -> Unit) {
+private fun DeleteConfirmDialog(
+    erasing: Boolean,
+    failed: Boolean,
+    cloudFailed: Boolean,
+    deletingCloud: Boolean,
+    onConfirm: () -> Unit,
+    onCancel: () -> Unit,
+) {
     val word = stringResource(Res.string.settings_delete_word)
     var typed by remember { mutableStateOf("") }
     val matches = normalizeWord(typed) == normalizeWord(word)
@@ -417,8 +463,17 @@ private fun DeleteConfirmDialog(erasing: Boolean, failed: Boolean, onConfirm: ()
                 if (erasing) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
-                        Text(stringResource(Res.string.settings_deleting), style = MaterialTheme.typography.bodyMedium)
+                        Text(
+                            stringResource(if (deletingCloud) Res.string.settings_delete_cloud_deleting else Res.string.settings_deleting),
+                            style = MaterialTheme.typography.bodyMedium)
                     }
+                }
+                if (cloudFailed) {
+                    Text(
+                        text = stringResource(Res.string.settings_delete_cloud_failed),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.error,
+                    )
                 }
                 if (failed) {
                     Text(

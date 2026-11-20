@@ -12,8 +12,8 @@ Bu politika, Roadmaxxing'in verilerinle ne yaptığını anlatır. Uygulamanın 
 
 ## Kısaca
 
-- Sürüşlerin ve onlardan hesaplanan yüzdeler **telefonunda kalır**.
-- Hesap **isteğe bağlıdır**. Hesap oluşturursan yalnızca e-posta adresini, bir hesap kimliğini ve giriş yöntemini saklarız. Bugün **bulut senkronizasyonu yoktur**: sürüşlerin yüklenmez.
+- Hesabın yoksa sürüşlerin ve onlardan hesaplanan yüzdeler **telefonunda kalır**. Hiçbir şey yüklenmez.
+- Hesap **isteğe bağlıdır**. Hesap oluşturursan e-posta adresini, bir hesap kimliğini ve giriş yöntemini saklarız; ayrıca uygulama sürüşlerinin bir özetini ve ayarlarını buluta **yedekler** (ayrıntılar aşağıda). **Ham GPS noktaları asla yüklenmez.**
 - Konum verini **satmayız**, reklam amacıyla da paylaşmayız.
 - Verini herhangi bir yere gönderen analiz veya hata raporlama araçları kullanmıyoruz.
 
@@ -23,17 +23,17 @@ Bu politika, Roadmaxxing'in verilerinle ne yaptığını anlatır. Uygulamanın 
 
 **Hareket etkinliği.** Uygulama, sürüşe başlamış olabileceğini fark etmek için telefonunun fiziksel etkinlik sensörünü kullanır; böylece GPS'in sürekli açık kalması gerekmez. Yalnızca etkinlik türü (örneğin "araçta") kullanılır.
 
-**Sürüş sonuçları.** Sürüşten sonra uygulama izini yollarla eşleştirir ve hangi yolları sürdüğünü, ayrıca mesafe ve süre gibi basit değerleri saklar.
+**Sürüş sonuçları.** Sürüşten sonra uygulama izini yollarla eşleştirir ve hangi yolları sürdüğünü, ayrıca mesafe, süre, ortalama ve en yüksek hız gibi basit değerleri saklar.
 
 **Hesap bilgileri (isteğe bağlı).** Uygulamayı hesapsız kullanabilirsin. Hesap oluşturmayı seçersen e-posta adresin ve bir parolayla kaydolabilir ya da Google ile giriş yapabilirsin. Bu durumda e-posta adresini, bir hesap kimliğini ve giriş sağlayıcısını (e-posta veya Google) saklarız. Google ile giriş yaparsan, Google'ın giriş için paylaştığı bilgileri (örneğin e-posta adresin) alırız. Parolanı uygulamada saklamayız; parolalar kimlik doğrulama hizmeti tarafından işlenir.
 
 ## Verin nerede işlenir ve saklanır?
 
-Yol eşleştirme ve yüzde hesabı **cihazında** yapılır. Kaydedilen izler, sürüşler ve sürülen yollar telefonundaki uygulama depolama alanında tutulur. Bize veya başka birine gönderilmez. Android ve iOS, kendi cihaz ayarlarına göre uygulama verisini yedekleyebilir; bu, uygulamanın kontrolü dışındadır.
+Yol eşleştirme ve yüzde hesabı **cihazında** yapılır. Kaydedilen izler, sürüşler ve sürülen yollar telefonundaki uygulama depolama alanında tutulur. Hesabın yoksa bize veya başka birine gönderilmez. Android ve iOS, kendi cihaz ayarlarına göre uygulama verisini yedekleyebilir; bu, uygulamanın kontrolü dışındadır.
 
 **Hesaplar.** Hesaplar, Google LLC'nin bir hizmeti olan **Firebase Authentication** ile sağlanır; Google hesap bilgilerini bizim adımıza (veri işleyen olarak) işler. Giriş yapmak veya çıkış yapmak telefonundaki sürüşleri asla değiştirmez.
 
-**Bugün sürüş yüklemesi yok.** Hesabın olsa bile sürüşlerin, izlerin ve sürülen yolların **yüklenmez**. İleride bulut senkronizasyonu eklersek, bu özellik yayına çıkmadan **önce** bu politikayı güncelleyeceğiz ve neyin değiştiğini sana bildireceğiz.
+**Bulut yedeği, yalnızca hesapla.** Ancak ve yalnızca hesabın olduğunda ve giriş yaptığında uygulama şunları **Google Cloud Firestore**'a (Google LLC'nin bir hizmeti olan Firebase'in parçası; verini bizim adımıza, veri işleyen olarak saklar) yedekler: her sürüş için bir özet (başlangıç ve bitiş zamanı, mesafe, süre, ortalama ve en yüksek hız, açtığı yeni yolun uzunluğu), sürüşün **sadeleştirilmiş rotası** ve sürdüğün **yol parçalarının kimlikleri**; ayrıca ayarların (mesafe birimi, sessiz saatler ve harita katmanı seçimleri), gizlilik bölgelerin ve ulaştığın kilometre taşları. **Ham GPS noktaları (kaydedilen izlerin) asla yüklenmez.** Amaç, ilerlemeni yedeklemek ve başka bir telefonda geri yüklemektir. Veri hesabının altında saklanır ve yalnızca sana, hesabın üzerinden görünür; başka kullanıcılar okuyamaz. Hesabın yoksa hiçbir şey yüklenmez. Bir telefonda giriş yaptığında, o telefondaki sürüşler hesabına yüklenir. Sürüşlerin olduğu bir telefonda farklı bir hesap giriş yaparsa uygulama, onları o hesaba ekleyip eklemeyeceğini, o hesabın verisiyle değiştirip değiştirmeyeceğini ya da iptal edip çıkış yapıp yapmayacağını sorar.
 
 ## Bildirimler
 
@@ -53,9 +53,9 @@ Konum verini veya başka bir kişisel verini satmayız. Konumunu reklam için ku
 
 ## Verini saklama ve silme
 
-Sürüş verin telefonunda durur. Sürüşlerini tek bir GPX dosyası olarak dışa aktarıp telefonunun paylaşım menüsüyle paylaşabilirsin; hiçbir şey yüklenmez. Tüm verini uygulamada Profil → Ayarlar altından silebilirsin. Silme anında gerçekleşir ve geri alınamaz; geri yükleyebileceğimiz bir yedek yoktur. Verini uygulamayı kaldırarak da silebilirsin. Sürdüğün yolların, sen verini silene kadar haritanda kaldığını unutma.
+Sürüş verin telefonunda durur; hesabın varsa bulut yedeğinde de bulunur. Sürüşlerini tek bir GPX dosyası olarak dışa aktarıp telefonunun paylaşım menüsüyle paylaşabilirsin; hiçbir şey yüklenmez. Telefondaki tüm verini uygulamada Profil → Ayarlar altından silebilirsin. Giriş yapmışsan uygulama bulut yedeğini de silmeyi önerir (varsayılan olarak işaretlidir); işaretlemezsen bulut yedeği kalır. Silme anında gerçekleşir ve geri alınamaz; senin tutmayı seçtiğin bir bulut yedeği dışında geri yükleyebileceğimiz bir yedek yoktur. Verini uygulamayı kaldırarak da silebilirsin. Sürdüğün yolların, sen verini silene kadar haritanda kaldığını unutma.
 
-Hesabın varsa, uygulamada Profil altından silebilirsin. Hesabı silmek, hesap bilgilerini (e-posta adresi, hesap kimliği ve giriş sağlayıcısı) ve hesabın için saklanan tüm veriyi kaldırır. Uygulama, telefonundaki sürüş verisini de silmek isteyip istemediğini sorar; bu kısım isteğe bağlıdır ve işaretlemezsen yerel verin telefonunda kalır.
+Hesabın varsa, uygulamada Profil altından silebilirsin. Hesabı silmek, hesap bilgilerini (e-posta adresi, hesap kimliği ve giriş sağlayıcısı) kaldırır ve **bulut yedeğini siler** (sürüşler, ayarlar, gizlilik bölgeleri ve kilometre taşları). Bulut yedeği silinemezse hesap silinmez ve uygulama bunu sana bildirir. Uygulama, telefonundaki sürüş verisini de silmek isteyip istemediğini sorar; bu kısım isteğe bağlıdır ve işaretlemezsen yerel verin telefonunda kalır. Çıkış yapmak hiçbir şeyi silmez: verin telefonunda ve bulut yedeğinde kalır.
 
 ## Çocuklar
 
@@ -63,7 +63,7 @@ Roadmaxxing araç kullanabilecek yaştaki kişiler içindir ve çocuklara yönel
 
 ## Haklarının özeti
 
-Yaşadığın yere bağlı olarak 6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) ve AB Genel Veri Koruma Tüzüğü (GDPR) gibi yasalar, kişisel verin üzerinde sana haklar tanır. Kısaca: verinin işlenip işlenmediğini öğrenebilir; erişim, düzeltme veya silme talep edebilir; işlemeye itiraz edebilir ve veri koruma otoritene şikâyette bulunabilirsin. Uygulama sürüş verini yalnızca cihazında tuttuğu ve hesabını uygulamada silebildiğin için bu haklarının çoğunu zaten kendin kullanabilirsin; uygulamayı silmek yerel veriyi de siler. Her türlü talebin için aşağıdaki iletişim bilgisinden bize yazabilirsin.
+Yaşadığın yere bağlı olarak 6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) ve AB Genel Veri Koruma Tüzüğü (GDPR) gibi yasalar, kişisel verin üzerinde sana haklar tanır. Kısaca: verinin işlenip işlenmediğini öğrenebilir; erişim, düzeltme veya silme talep edebilir; işlemeye itiraz edebilir ve veri koruma otoritene şikâyette bulunabilirsin. Sürüş verinin büyük bölümü cihazında olduğu ve bulut yedeğini ile hesabını uygulamada silebildiğin için bu haklarının çoğunu zaten kendin kullanabilirsin; uygulamayı silmek yerel veriyi de siler. Her türlü talebin için aşağıdaki iletişim bilgisinden bize yazabilirsin.
 
 ## Politikadaki değişiklikler
 

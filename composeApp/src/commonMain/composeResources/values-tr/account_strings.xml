@@ -13,7 +13,7 @@
     <string name="account_unavailable_debug">Hesaplar yapılandırılmadı</string>
 
     <string name="account_screen_title">Hesabın</string>
-    <string name="account_screen_why">Yollarını başka bir telefonda da koru — eşitleme yakında geliyor.</string>
+    <string name="account_screen_why">Yollarını güvende tut ve başka bir telefona taşı.</string>
     <string name="account_back">Geri</string>
     <string name="account_google">Google ile devam et</string>
     <string name="account_or_email">ya da e-postanla</string>
@@ -23,7 +23,7 @@
     <string name="account_mode_create">Hesap oluştur</string>
     <string name="account_forgot">Şifreni mi unuttun?</string>
     <string name="account_reset_sent">Bu e-posta için bir hesap varsa sıfırlama bağlantısı yolda.</string>
-    <string name="account_reassure">Bu telefondaki sürüşlerin olduğu gibi kalır.</string>
+    <string name="account_reassure">Sürüşlerin bu telefonda kalır ve hesabına yedeklenir.</string>
     <string name="account_working">Lütfen bekle…</string>
 
     <string name="account_error_invalid_email">E-posta adresi doğru görünmüyor.</string>
@@ -51,4 +51,33 @@
     <string name="account_delete_confirm_local">Bu telefondaki sürüşlerin ve ilerlemen de silinecek.</string>
     <string name="account_delete_confirm_button">Hesabı sil</string>
     <string name="account_cancel">Vazgeç</string>
+
+    <string name="account_signin_uploads_note">Giriş yaptığında bu telefondaki sürüşler hesabına yüklenir.</string>
+
+    <string name="sync_synced_just_now">Eşitlendi · az önce</string>
+    <string name="sync_synced_minutes">Eşitlendi · %1$d dk önce</string>
+    <string name="sync_synced_hours">Eşitlendi · %1$d sa önce</string>
+    <string name="sync_synced_days">Eşitlendi · %1$d gün önce</string>
+    <string name="sync_never">Henüz eşitlenmedi</string>
+    <string name="sync_pending">%1$d sürüş bekliyor</string>
+    <string name="sync_pending_one">1 sürüş bekliyor</string>
+    <string name="sync_syncing">%1$d sürüş eşitleniyor…</string>
+    <string name="sync_syncing_one">1 sürüş eşitleniyor…</string>
+    <string name="sync_syncing_plain">Eşitleniyor…</string>
+    <string name="sync_error_network">Bağlantı yok — yeniden denenecek</string>
+    <string name="sync_error_permission">Eşitlenemedi: izin hatası</string>
+    <string name="sync_error_quota">Günlük eşitleme sınırına ulaşıldı — yarın yeniden denenecek</string>
+    <string name="sync_error_unknown">Eşitlenemedi</string>
+    <string name="sync_now">Şimdi eşitle</string>
+
+    <string name="conflict_title">Bu telefonda başka bir hesaba ait sürüşler var</string>
+    <string name="conflict_body">Bu telefonda başka bir hesaba ait %1$d sürüş var. Az önce %2$s ile giriş yaptın.</string>
+    <string name="conflict_body_no_email">Bu telefonda başka bir hesaba ait %1$d sürüş var. Az önce yeni bir hesapla giriş yaptın.</string>
+    <string name="conflict_merge">Bu hesaba ekle</string>
+    <string name="conflict_replace">Telefonu temizle ve indir</string>
+    <string name="conflict_cancel">İptal et ve çıkış yap</string>
+    <string name="conflict_confirm_title">Telefon temizlensin mi?</string>
+    <string name="conflict_confirm_body">Bu telefondaki %1$d sürüş silinecek ve yerine bu hesapta kayıtlı sürüşler gelecek. Bu işlem geri alınamaz.</string>
+    <string name="conflict_confirm_button">Temizle ve indir</string>
+    <string name="conflict_confirm_back">Geri</string>
 </resources>

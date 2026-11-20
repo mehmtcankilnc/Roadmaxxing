@@ -53,6 +53,8 @@ fun AccountHost(
             settled = false
         }
     }
+    // K2: an unresolved account conflict sits above everything else (it appears right after a sign-in).
+    state.conflict?.let { AccountConflictDialog(it, state.form.conflictConfirmReplace, viewModel::onIntent) }
     if (state.auth is AuthState.SignedIn) return
     if (state.form.signInOpen) {
         SignInOverlay(form = state.form, onIntent = viewModel::onIntent)

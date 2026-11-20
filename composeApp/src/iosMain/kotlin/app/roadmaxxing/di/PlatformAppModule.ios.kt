@@ -8,12 +8,16 @@ import app.roadmaxxing.auth.IosGoogleCredentialProvider
 import app.roadmaxxing.data.DataPlatform
 import app.roadmaxxing.data.IosDataPlatform
 import app.roadmaxxing.data.dataModule
+import app.roadmaxxing.firebase.FirebaseBootstrap
 import app.roadmaxxing.notify.DriveResultPoster
 import app.roadmaxxing.notify.IosDriveResultPoster
 import app.roadmaxxing.notify.notifyModule
 import app.roadmaxxing.platform.IosTrackingPlatform
 import app.roadmaxxing.platform.TrackingPlatform
 import app.roadmaxxing.shared.account.AuthBackend
+import app.roadmaxxing.shared.sync.NoopSyncRemote
+import app.roadmaxxing.shared.sync.SyncRemote
+import app.roadmaxxing.sync.FirestoreSyncRemote
 import app.roadmaxxing.tracking.IosTrackingEngine
 import org.koin.core.module.Module
 import org.koin.dsl.module
@@ -29,4 +33,6 @@ internal actual val platformAppModule: Module = module {
     // Overrides NoopAuthBackend from sharedModule (appModule is loaded after it). Unavailable without Firebase config.
     single<GoogleCredentialProvider> { IosGoogleCredentialProvider() }
     single<AuthBackend> { FirebaseAuthBackend(google = get()) }
+    // Overrides NoopSyncRemote from sharedModule. Firestore only when Firebase is configured.
+    single<SyncRemote> { if (FirebaseBootstrap.isAvailable) FirestoreSyncRemote() else NoopSyncRemote() }
 }

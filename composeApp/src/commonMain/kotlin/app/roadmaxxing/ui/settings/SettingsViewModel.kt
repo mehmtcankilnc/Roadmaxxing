@@ -4,9 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.roadmaxxing.data.DataActions
 import app.roadmaxxing.data.ExportResult
+import app.roadmaxxing.shared.account.AccountRepository
+import app.roadmaxxing.shared.account.AuthState
 import app.roadmaxxing.shared.settings.DistanceUnit
 import app.roadmaxxing.shared.settings.QuietHours
 import app.roadmaxxing.shared.settings.SettingsRepository
+import app.roadmaxxing.shared.sync.SyncManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,6 +33,10 @@ data class SettingsUiState(
     val deleteStep: DeleteStep = DeleteStep.None,
     val erasing: Boolean = false,
     val eraseFailed: Boolean = false,
+    /** True when the user is signed in, so the delete flow offers to remove the cloud backup too (K4). */
+    val signedIn: Boolean = false,
+    val alsoDeleteCloud: Boolean = true,
+    val cloudDeleteFailed: Boolean = false,
     val editingBoundary: QuietBoundary? = null,
 )
 
@@ -44,21 +51,29 @@ sealed interface SettingsIntent {
     data object DeleteContinue : SettingsIntent
     data object CancelDelete : SettingsIntent
     data object ConfirmDelete : SettingsIntent
+    data class SetAlsoDeleteCloud(val value: Boolean) : SettingsIntent
 }
 
 /** Settings screen state: units, quiet hours, export and the two-step erase. */
 class SettingsViewModel(
     private val settings: SettingsRepository,
     private val data: DataActions,
+    private val accounts: AccountRepository,
+    private val syncManager: SyncManager,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(
-        SettingsUiState(unit = settings.distanceUnit.value, quietHours = settings.quietHours.value),
+        SettingsUiState(
+            unit = settings.distanceUnit.value,
+            quietHours = settings.quietHours.value,
+            signedIn = accounts.state.value is AuthState.SignedIn,
+        ),
     )
     val state: StateFlow<SettingsUiState> = _state.asStateFlow()
 
     init {
         viewModelScope.launch { settings.distanceUnit.collect { u -> _state.update { it.copy(unit = u) } } }
+        viewModelScope.launch { accounts.state.collect { a -> _state.update { it.copy(signedIn = a is AuthState.SignedIn) } } }
         viewModelScope.launch { settings.quietHours.collect { q -> _state.update { it.copy(quietHours = q) } } }
     }
 
@@ -77,10 +92,11 @@ class SettingsViewModel(
             }
             SettingsIntent.Export -> export()
             SettingsIntent.DismissExportMessage -> _state.update { it.copy(exportMessage = null) }
-            SettingsIntent.AskDelete -> _state.update { it.copy(deleteStep = DeleteStep.Explain, eraseFailed = false) }
+            SettingsIntent.AskDelete -> _state.update { it.copy(deleteStep = DeleteStep.Explain, eraseFailed = false, cloudDeleteFailed = false, alsoDeleteCloud = true) }
             SettingsIntent.DeleteContinue -> _state.update { it.copy(deleteStep = DeleteStep.Confirm) }
-            SettingsIntent.CancelDelete -> _state.update { it.copy(deleteStep = DeleteStep.None, eraseFailed = false) }
+            SettingsIntent.CancelDelete -> _state.update { it.copy(deleteStep = DeleteStep.None, eraseFailed = false, cloudDeleteFailed = false) }
             SettingsIntent.ConfirmDelete -> erase()
+            is SettingsIntent.SetAlsoDeleteCloud -> _state.update { it.copy(alsoDeleteCloud = intent.value) }
         }
     }
 
@@ -108,9 +124,15 @@ class SettingsViewModel(
 
     private fun erase() {
         if (_state.value.erasing) return
-        _state.update { it.copy(erasing = true, eraseFailed = false) }
+        _state.update { it.copy(erasing = true, eraseFailed = false, cloudDeleteFailed = false) }
         viewModelScope.launch {
             try {
+                // K4: the cloud backup goes first; if that fails nothing local is erased.
+                val current = _state.value
+                if (current.signedIn && current.alsoDeleteCloud && !syncManager.deleteCloudData()) {
+                    _state.update { it.copy(erasing = false, cloudDeleteFailed = true) }
+                    return@launch
+                }
                 data.eraseEverything()
                 // The app resets to onboarding on success and this overlay leaves with it.
                 _state.update { it.copy(erasing = false, deleteStep = DeleteStep.None) }

@@ -30,7 +30,7 @@ Road data is © OpenStreetMap contributors and available under the Open Database
 
 ## Accounts
 
-An account is optional. You can create one with your email address or with Google, through Firebase Authentication (Google LLC). You are responsible for keeping your sign-in details safe and for activity under your account. You can delete your account at any time in the app under Profile.
+An account is optional. You can create one with your email address or with Google, through Firebase Authentication (Google LLC). You are responsible for keeping your sign-in details safe and for activity under your account. If you have an account, the app backs up a summary of your drives, your settings, privacy zones and milestones to the cloud so you can restore them on another phone; the Privacy Policy describes exactly what is stored. You can delete your account, and with it your cloud backup, at any time in the app under Profile.
 
 ## Your data
 

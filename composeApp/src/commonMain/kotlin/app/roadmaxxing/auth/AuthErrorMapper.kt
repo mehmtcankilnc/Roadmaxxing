@@ -19,7 +19,9 @@ internal fun mapAuthFailure(typeName: String, message: String): AuthError {
         "COLLISION" in text || "EMAIL_EXISTS" in text || "EMAIL_ALREADY_IN_USE" in text ||
             "ALREADY IN USE" in text -> AuthError.EmailInUse
         "TOO_MANY" in text || "TOO MANY" in text || "BLOCKED ALL REQUESTS" in text -> AuthError.TooManyRequests
-        "NETWORK" in text || "UNREACHABLE" in text || "TIMEOUT" in text || "OFFLINE" in text -> AuthError.Network
+        "NETWORK" in text || "UNREACHABLE" in text || "TIMEOUT" in text || "TIMED OUT" in text ||
+            "OFFLINE" in text || "UNABLE TO RESOLVE HOST" in text || "UNKNOWNHOST" in text || "SOCKET" in text ||
+            "CONNECTION" in text || "INTERRUPTED" in text -> AuthError.Network
         "INVALID_EMAIL" in text || "BADLY FORMATTED" in text || "INVALID EMAIL" in text -> AuthError.InvalidEmail
         "INVALIDUSER" in text || "USER_NOT_FOUND" in text || "NO USER RECORD" in text ||
             "USER_DISABLED" in text -> AuthError.UserNotFound

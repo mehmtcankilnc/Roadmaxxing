@@ -28,6 +28,10 @@ import app.roadmaxxing.shared.settings.DataExporter
 import app.roadmaxxing.shared.settings.SettingsRepository
 import app.roadmaxxing.shared.stats.StatsRepository
 import app.roadmaxxing.shared.summary.SummaryRepository
+import app.roadmaxxing.shared.sync.NoopSyncRemote
+import app.roadmaxxing.shared.sync.SyncManager
+import app.roadmaxxing.shared.sync.SyncRemote
+import app.roadmaxxing.shared.sync.SyncStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import org.koin.core.module.Module
@@ -78,7 +82,7 @@ val sharedModule: Module = module {
     single {
         AccountRepository(
             backend = get(), store = get(), appMeta = SqlAppMetaStore(get()), dataEraser = get(),
-            dispatcher = Dispatchers.Default,
+            dispatcher = Dispatchers.Default, syncRemote = get(),
         )
     }
     single { MapLayerPreferences(store = SqlAppMetaStore(get())) }
@@ -105,6 +109,20 @@ val sharedModule: Module = module {
             dispatcher = Dispatchers.Default,
             boundarySource = get(),
             privacyZones = { zoneRepository.zones.value },
+        )
+    }
+    single<SyncRemote> { NoopSyncRemote() }
+    single {
+        SyncStore(
+            database = get(), store = get(), appMeta = SqlAppMetaStore(get()), zones = get(), settings = get(),
+            milestones = get(), layers = get(), dispatcher = Dispatchers.Default,
+        )
+    }
+    single(createdAtStart = true) {
+        SyncManager(
+            store = get(), remote = get(), account = get(), dataEraser = get(), driveStore = get(),
+            clock = { kotlin.time.Clock.System.now().toEpochMilliseconds() },
+            dispatcher = Dispatchers.Default, milestones = get(), burn = get(),
         )
     }
 }
